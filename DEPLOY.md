@@ -25,8 +25,7 @@ Copie `.env.example` para `.env` localmente. Na nuvem, configure:
 |----------|-----------|
 | `SECRET_KEY` | Chave aleatória longa (sessões Flask) |
 | `ADMIN_PASSWORD` | Senha do painel `/admin` |
-| `DATABASE_URL` | PostgreSQL em produção (`postgresql://...`) |
-| `WHATSAPP_SUPORTE` | Número com DDI (ex.: `5571987939074`) |
+| `DATABASE_URL` | PostgreSQL em produção (`postgresql://...`) — opcional no free |
 | `PIX_CHAVE`, `PIX_NOME`, `PIX_CIDADE` | Doação via Pix |
 | `GUNICORN_TIMEOUT` | Opcional; padrão `120` (busca de preços) |
 
@@ -100,7 +99,6 @@ O CertiGuia é gratuito — dá para hospedar **sem pagar nada**.
    |----------|-------|
    | `SECRET_KEY` | gere uma chave aleatória longa |
    | `ADMIN_PASSWORD` | senha forte (não use `admin123`) |
-   | `WHATSAPP_SUPORTE` | `5571987939074` (seu número) |
    | `PIX_CHAVE` | sua chave Pix |
    | `PIX_NOME` | seu nome |
    | `PIX_CIDADE` | `SALVADOR` |
@@ -186,7 +184,7 @@ gcloud run deploy certiguia `
   --cpu 2 `
   --timeout 300 `
   --set-env-vars "SECRET_KEY=SUA_SECRET,ADMIN_PASSWORD=SUA_SENHA,CERTIFICADORA_PADRAO=certisign" `
-  --set-env-vars "WHATSAPP_SUPORTE=5571987939074,PIX_CHAVE=sua-chave,PIX_NOME=SEU NOME,PIX_CIDADE=SALVADOR" `
+  --set-env-vars "PIX_CHAVE=sua-chave,PIX_NOME=SEU NOME,PIX_CIDADE=SALVADOR" `
   --set-env-vars "DATABASE_URL=postgresql://certiguia:SENHA@HOST:5432/certiguia"
 ```
 

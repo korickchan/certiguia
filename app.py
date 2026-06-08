@@ -71,7 +71,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
-WHATSAPP_SUPORTE = os.getenv("WHATSAPP_SUPORTE", "5571987939074")
 CERTIFICADORA_PADRAO = os.getenv("CERTIFICADORA_PADRAO", "certisign")
 PIX_CHAVE = os.getenv("PIX_CHAVE", "99f89727-3fb9-4982-b54e-74dc097a078a")
 PIX_NOME = os.getenv("PIX_NOME", "VICTOR NEVES")
@@ -324,7 +323,7 @@ def health():
 
 @app.route("/")
 def index():
-    return render_template("public/index.html", whatsapp=WHATSAPP_SUPORTE)
+    return render_template("public/index.html")
 
 
 @app.route("/comecar", methods=["GET", "POST"])
@@ -466,7 +465,6 @@ def jornada(protocolo):
         tipo_arm=tipo_arm,
         etapas=ETAPAS_USUARIO,
         certificadoras=certificadoras_ativas(),
-        whatsapp=WHATSAPP_SUPORTE,
         playwright_ok=playwright_disponivel(),
         precos_ok=request.args.get("precos_ok") == "1",
     )
@@ -611,7 +609,6 @@ def doar(protocolo):
         valor=valor,
         payload=payload,
         qr_b64=qr_b64,
-        whatsapp=WHATSAPP_SUPORTE,
     )
 
 
@@ -647,7 +644,6 @@ def guia():
         certificadoras=certificadoras_ativas(),
         tipos_certificado=TIPOS_CERTIFICADO,
         tipos_nao_usar=TIPOS_NAO_USAR,
-        whatsapp=WHATSAPP_SUPORTE,
     )
 
 

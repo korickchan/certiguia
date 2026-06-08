@@ -13,8 +13,6 @@ services:
         generateValue: true
       - key: ADMIN_PASSWORD
         sync: false
-      - key: WHATSAPP_SUPORTE
-        sync: false
       - key: PIX_CHAVE
         sync: false
       - key: PIX_NOME
