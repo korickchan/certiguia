@@ -1,0 +1,36 @@
+# Deploy no Render: conecte o repositório Git e use "Blueprint" ou configure manualmente.
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: certiguia
+    runtime: docker
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: WHATSAPP_SUPORTE
+        sync: false
+      - key: PIX_CHAVE
+        sync: false
+      - key: PIX_NOME
+        sync: false
+      - key: PIX_CIDADE
+        sync: false
+      - key: CERTIFICADORA_PADRAO
+        value: certisign
+      - key: GUNICORN_TIMEOUT
+        value: "120"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: certiguia-db
+          property: connectionString
+
+databases:
+  - name: certiguia-db
+    plan: free
+    databaseName: certiguia
+    user: certiguia

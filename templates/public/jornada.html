@@ -1,0 +1,468 @@
+{% extends "public/base.html" %}
+
+{% block title %}Seu guia — {{ vet.protocolo }}{% endblock %}
+
+
+
+{% block content %}
+{% if precos_ok %}
+<div class="flash flash-success public-inline-flash">Preços atualizados com sucesso. Confira os valores abaixo antes de comprar.</div>
+{% endif %}
+
+<div class="jornada-header">
+    <div>
+
+        <p class="protocolo-badge">Protocolo {{ vet.protocolo }}</p>
+
+        <h1>Olá, {{ vet.nome_completo.split()[0] }}!</h1>
+
+        <p class="text-muted">{{ profissao_info.nome }} · guia personalizado — guarde este link.</p>
+
+    </div>
+
+    <div class="jornada-actions">
+
+        {% if cert_escolhida %}
+
+        <a href="{{ url_for('download_guia', protocolo=vet.protocolo) }}" class="btn btn-outline">Baixar guia PDF/HTML</a>
+
+        {% else %}
+
+        <span class="btn btn-outline btn-disabled" title="Escolha uma certificadora primeiro">Baixar guia PDF/HTML</span>
+
+        {% endif %}
+
+        <a href="{{ url_for('doar', protocolo=vet.protocolo) }}" class="btn btn-donate-header">Apoiar o projeto</a>
+
+        <a href="https://wa.me/{{ whatsapp }}?text=Protocolo%20{{ vet.protocolo }}"
+
+           class="btn btn-whatsapp" target="_blank" rel="noopener">Ajuda</a>
+
+    </div>
+
+</div>
+
+
+
+<section class="progress-tracker">
+
+    {% for key, label in etapas %}
+
+    {% set step_index = loop.index0 %}
+
+    {% set max_index = vet.etapa_usuario_index() if cert_escolhida else 1 %}
+
+    <div class="progress-step {% if step_index <= max_index %}done{% endif %} {% if step_index == max_index %}current{% endif %} {% if not cert_escolhida and step_index > 1 %}locked{% endif %}">
+
+        <span class="step-num">{{ loop.index }}</span>
+
+        <span class="step-label">{{ label }}</span>
+
+    </div>
+
+    {% endfor %}
+
+</section>
+
+
+
+<form method="post" action="{{ url_for('atualizar_etapa_publico', protocolo=vet.protocolo) }}" class="etapa-form">
+
+    <label for="etapa_usuario">Onde você está?</label>
+
+    <select name="etapa_usuario" id="etapa_usuario" onchange="this.form.submit()">
+
+        {% for key, label in etapas %}
+
+        <option value="{{ key }}"
+
+                {% if vet.etapa_usuario == key %}selected{% endif %}
+
+                {% if not cert_escolhida and loop.index0 > 1 %}disabled{% endif %}>{{ label }}</option>
+
+        {% endfor %}
+
+    </select>
+
+    {% if not cert_escolhida %}
+
+    <p class="hint etapa-hint">As etapas a partir de «Compra» ficam disponíveis depois que você escolher a certificadora.</p>
+
+    {% endif %}
+
+</form>
+
+
+
+<section class="public-card">
+
+    <h2>Recomendação</h2>
+
+    {% if produto %}
+
+    <div class="recomendacao-box">
+
+        <h3>{{ produto.nome }}</h3>
+
+        <p>{{ produto.resumo }}</p>
+
+        {% if vet.motivo_recomendacao %}<p class="motivo">{{ vet.motivo_recomendacao }}</p>{% endif %}
+
+        {% if rec_secundario %}
+
+        <div class="secundario"><strong>Complementar:</strong> {{ rec_secundario.nome }}</div>
+
+        {% endif %}
+
+    </div>
+
+    <form method="post" action="{{ url_for('alterar_produto_publico', protocolo=vet.protocolo) }}" class="produto-selector">
+        <label for="produto_id">Comparar preços de qual certificado?</label>
+        <select name="produto_id" id="produto_id" onchange="this.form.submit()">
+            {% for pid, p in produtos.items() %}
+            <option value="{{ pid }}" {% if produto_atual == pid %}selected{% endif %}>{{ p.nome }}</option>
+            {% endfor %}
+        </select>
+        <p class="hint">Ao trocar o tipo, os preços são buscados novamente nas certificadoras (pode levar alguns minutos).</p>
+    </form>
+
+    {% endif %}
+
+</section>
+
+
+
+<section class="public-card certificadora-section">
+
+    <div class="card-header-row">
+
+        <h2>{% if cert_escolhida %}Certificadora escolhida{% else %}Escolha a certificadora{% endif %}</h2>
+
+        {% if playwright_ok %}
+
+        <a href="{{ url_for('atualizar_precos_publico', protocolo=vet.protocolo) }}" class="btn btn-sm">{% if precos %}Atualizar preços{% else %}Buscar preços de {{ produto.nome if produto else 'certificado' }}{% endif %}</a>
+
+        {% endif %}
+
+    </div>
+
+
+
+    {% if cert_escolhida %}
+
+    <div class="cert-escolhida-banner">
+
+        <strong>{{ cert_info.nome }}</strong>
+
+        {% if ac_credenciada_iti(cert_key) %}
+        <span class="badge-icp badge-icp-inline">{{ rotulo_icp_certificadora(cert_key) }}</span>
+        {% else %}
+        <p class="aviso-icp">{{ aviso_icp_certificadora(cert_key) }}</p>
+        {% endif %}
+
+        <p class="hint">Passo a passo abaixo é específico desta certificadora. Para trocar, selecione outra opção.</p>
+
+        <a href="{{ url_iti_certificadora(cert_key) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-iti">Conferir no ITI</a>
+
+    </div>
+
+    {% else %}
+
+    <p class="hint icp-nota">Compare preços (opcional) e <strong>selecione uma certificadora</strong> para liberar compra, instalação e receituário.</p>
+
+    {% endif %}
+
+    <div class="icp-info-box">
+        <strong>Como saber se é oficial?</strong>
+        <p>Certificados válidos perante o governo são emitidos por Autoridades Certificadoras credenciadas na
+            <a href="{{ iti_repositorio }}" target="_blank" rel="noopener noreferrer">ICP-Brasil (ITI)</a>.
+            Use «Conferir no ITI» em cada card para ver a lista oficial de ACs. Depois de emitir, valide em
+            <a href="{{ iti_validar }}" target="_blank" rel="noopener noreferrer">validar.iti.gov.br</a>.</p>
+    </div>
+
+
+
+    {% if precos %}
+
+    <p class="hint icp-nota">Preços para <strong>{{ produto.nome if produto else produtos[produto_atual].nome }}</strong>. Confira o valor final no site antes de comprar.</p>
+
+    <form method="post" action="{{ url_for('escolher_certificadora', protocolo=vet.protocolo) }}" class="cert-picker">
+
+        <label class="sr-only">Certificadora</label>
+
+        <div class="precos-grid">
+
+            {% for p in precos %}
+
+            <label class="preco-card {% if p.melhor_preco %}melhor{% endif %} {% if cert_key == p.certificadora %}selected{% endif %}">
+
+                <input type="radio" name="certificadora" value="{{ p.certificadora }}"
+
+                       {% if cert_key == p.certificadora %}checked{% endif %} onchange="this.form.submit()">
+
+                <h4>{{ p.nome }}</h4>
+
+                {% if p.melhor_preco and not cert_escolhida %}<span class="badge-melhor">Menor preço</span>{% endif %}
+
+                {% if p.ok %}<p class="preco-valor">{{ p.preco_formatado }}</p>{% else %}<p class="preco-erro">{{ p.erro }}</p>{% endif %}
+
+                {% with cert_key=p.certificadora, site_url=p.url %}
+                {% include "public/_icp_card_footer.html" %}
+                {% endwith %}
+
+            </label>
+
+            {% endfor %}
+
+        </div>
+
+    </form>
+
+    {% else %}
+
+    <p class="text-muted">{% if playwright_ok %}Clique em «Buscar preços» para comparar valores.{% else %}Instalação do Playwright necessária no servidor para busca automática de preços.{% endif %}</p>
+
+    <form method="post" action="{{ url_for('escolher_certificadora', protocolo=vet.protocolo) }}" class="cert-picker">
+
+        <label>Selecione a certificadora onde pretende comprar:</label>
+
+        <div class="precos-grid">
+
+            {% for key, cert in certificadoras.items() %}
+
+            <label class="preco-card {% if cert_key == key %}selected{% endif %}">
+
+                <input type="radio" name="certificadora" value="{{ key }}"
+
+                       {% if cert_key == key %}checked{% endif %} onchange="this.form.submit()">
+
+                <h4>{{ cert.nome }}</h4>
+
+                <p class="preco-hint">{{ cert.preco_a1_label if tipo_arm == 'A1' else cert.preco_a3_label }}</p>
+
+                {% set cat = produto.categoria if produto else produtos[produto_atual].categoria %}
+                {% with cert_key=key, site_url=url_certificadora(key, tipo_arm, cat) %}
+                {% include "public/_icp_card_footer.html" %}
+                {% endwith %}
+
+            </label>
+
+            {% endfor %}
+
+        </div>
+
+    </form>
+
+    {% endif %}
+
+</section>
+
+
+
+{% if cert_escolhida and guia %}
+
+<section class="public-card">
+
+    <h2>Compra — {{ cert_info.nome }}</h2>
+
+    <ol class="passos-lista">
+
+        {% for passo in guia.compra %}
+
+        <li><strong>{{ passo.titulo }}</strong><p>{{ passo.descricao }}</p></li>
+
+        {% endfor %}
+
+    </ol>
+
+</section>
+
+
+
+<section class="public-card">
+
+    <h2>Instalação — e-CPF {{ tipo_arm }} ({{ cert_info.nome }})</h2>
+
+    <ul class="instalacao-lista">
+
+        {% for item in guia.instalacao %}
+
+        <li>{{ item }}</li>
+
+        {% endfor %}
+
+    </ul>
+
+</section>
+
+
+
+<section class="public-card">
+
+    <h2>Receituário e documentos digitais</h2>
+
+    <h3 class="subsection">{{ legislacao.titulo }}</h3>
+
+    <ul class="instalacao-lista">
+
+        {% for item in legislacao.itens %}
+
+        <li>{{ item }}</li>
+
+        {% endfor %}
+
+    </ul>
+
+    {% if legislacao.links %}
+
+    <p class="links-ref">Referências:
+
+        {% for titulo, url in legislacao.links %}
+
+        <a href="{{ url }}" target="_blank" rel="noopener">{{ titulo }}</a>{% if not loop.last %} · {% endif %}
+
+        {% endfor %}
+
+    </p>
+
+    {% endif %}
+
+
+
+    <h3 class="subsection">Implementar no seu sistema{% if vet.sistema_receituario %} ({{ vet.sistema_receituario }}){% endif %}</h3>
+
+    <ol class="passos-lista">
+
+        {% for passo in impl_passos %}
+
+        <li>{{ passo }}</li>
+
+        {% endfor %}
+
+    </ol>
+
+
+
+    <h3 class="subsection">Na certificadora {{ cert_info.nome }} (e-CPF {{ tipo_arm }})</h3>
+
+    <ul class="instalacao-lista">
+
+        {% for item in guia.receituario %}
+
+        <li>{{ item }}</li>
+
+        {% endfor %}
+
+    </ul>
+
+
+
+    <div class="aviso-box">
+
+        <strong>Sobre modelos de receita para download:</strong> não geramos receituário oficial (azul, amarela, NRV etc.)
+
+        porque cada tipo segue layout e numeração definidos por Anvisa, MAPA ou CFMV. O botão
+
+        «Baixar guia» traz um checklist personalizado com seus dados e os passos legais — use como referência.
+
+        Para emitir receitas válidas, use um sistema homologado ou integrado ao SNCR (medicina humana) ou
+
+        conforme Portaria MAPA 837/2025 (veterinária).
+
+    </div>
+
+</section>
+
+
+
+<section class="public-card validacao-iti-card">
+
+    <h2>Validação no ITI</h2>
+
+    <p class="validacao-iti-lead">Etapa <strong>fundamental</strong> — faça <em>depois</em> de configurar o sistema e assinar um documento de teste (receita, contrato ou PDF qualquer). Só então confirme no validador oficial do governo que a assinatura está correta.</p>
+
+    <ol class="validacao-iti-passos">
+
+        <li>Configure o certificado no seu sistema conforme os passos acima.</li>
+
+        <li>Emita e <strong>assine</strong> um documento de teste (salve o PDF assinado no computador).</li>
+
+        <li>No <a href="{{ iti_validar }}" target="_blank" rel="noopener noreferrer">validar.iti.gov.br</a>, clique em <strong>Escolher arquivo</strong> e envie o <strong>PDF já assinado</strong> (o arquivo completo, não só a «assinatura destacada»).</li>
+
+        <li>Marque «Concordo com os termos» e clique em <strong>Validar</strong>. O resultado deve indicar assinatura válida ICP-Brasil.</li>
+
+    </ol>
+
+    <div class="validacao-iti-dica">
+
+        <strong>O que enviar?</strong>
+
+        <p>Na maioria dos casos (PDF assinado pelo sistema ou Adobe), envie o <strong>documento assinado inteiro</strong> — deixe «Assinatura destacada» <em>desmarcada</em>.</p>
+
+        <p>Só marque «Assinatura destacada» se o seu software gerar a assinatura em arquivo separado (ex.: <code>.p7s</code>); aí você envia o documento original <em>e</em> o arquivo de assinatura.</p>
+
+        <p>Também é possível validar pelo <strong>QR Code</strong> do documento ou colando a <strong>URL</strong> do arquivo, se o sistema oferecer.</p>
+
+    </div>
+
+    <a href="{{ iti_validar }}" target="_blank" rel="noopener noreferrer" class="btn-validar-iti">Abrir validar.iti.gov.br →</a>
+
+</section>
+
+{% elif not cert_escolhida %}
+
+<section class="public-card aguardando-escolha">
+
+    <h2>Próximos passos</h2>
+
+    <p>Depois de escolher a certificadora acima, você verá aqui:</p>
+
+    <ul class="instalacao-lista">
+
+        <li>Passo a passo de <strong>compra</strong> no site oficial escolhido</li>
+
+        <li>Instruções de <strong>instalação</strong> do certificado (A1 ou A3)</li>
+
+        <li>Orientações de <strong>receituário</strong> e legislação da sua profissão</li>
+
+        <li><strong>Validação ITI</strong> após assinar um documento de teste</li>
+
+    </ul>
+
+</section>
+
+{% endif %}
+
+
+
+<section class="donate-cta">
+
+    <p class="donate-eyebrow">100% gratuito · sempre será</p>
+
+    <h2>Este guia existe graças a pessoas como você</h2>
+
+    <p class="donate-lead">
+        Sabemos o quanto é difícil navegar certificado digital, receituário e burocracia sozinho.
+        O CertiGuia nasceu para <strong>tirar essa carga dos seus ombros</strong> — sem cobrar nada por isso.
+    </p>
+
+    <blockquote class="donate-quote">
+        «Se este passo a passo te poupou horas de pesquisa e incerteza, considere retribuir com uma doação simbólica.
+        Cada contribuição, por menor que seja, nos ajuda a manter o projeto no ar e a orientar o próximo profissional.»
+    </blockquote>
+
+    <ul class="donate-benefits">
+        <li>Mantém o guia gratuito para quem precisa</li>
+        <li>Financia melhorias e novas certificadoras</li>
+        <li>Valor livre — você escolhe quanto doar</li>
+    </ul>
+
+    <div class="donate-actions">
+        <a href="{{ url_for('doar', protocolo=vet.protocolo) }}" class="btn btn-donate">Doar via Pix — qualquer valor ajuda</a>
+        <p class="donate-footnote">Sem valor mínimo. Sem obrigação. Só gratidão.</p>
+    </div>
+
+</section>
+
+{% endblock %}
+

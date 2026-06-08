@@ -1,0 +1,134 @@
+{% extends "public/base.html" %}
+
+{% block title %}Doação — {{ vet.protocolo }}{% endblock %}
+
+
+
+{% block content %}
+
+<div class="public-card public-card-wide donate-page">
+
+    <p class="donate-eyebrow">Gratidão em forma de Pix</p>
+
+    <h1>Obrigado por considerar apoiar o CertiGuia</h1>
+
+    <p class="text-muted donate-lead">
+
+        Este guia é <strong>100% gratuito</strong> — e queremos manter assim. Sua doação, no valor que couber
+
+        no seu bolso, nos ajuda a continuar orientando profissionais que, como você, precisam de um caminho claro
+
+        no meio da burocracia do certificado digital.
+
+    </p>
+
+    <blockquote class="donate-quote">
+
+        «Não existe valor mínimo nem obrigação. Se este serviço te devolveu tempo, tranquilidade ou confiança,
+
+        uma contribuição simbólica já faz diferença real para manter o projeto vivo.»
+
+    </blockquote>
+
+    <p>Protocolo: <strong>{{ vet.protocolo }}</strong></p>
+
+
+
+    {% if not pix_chave %}
+
+    <div class="alert alert-warning">
+
+        Pix ainda não configurado. Entre em contato pelo
+
+        <a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener">WhatsApp</a>.
+
+    </div>
+
+    {% else %}
+
+    <form method="post" class="doar-form">
+
+        <div class="form-row">
+
+            <label for="valor">Valor da doação (opcional)</label>
+
+            <input type="text" id="valor" name="valor" placeholder="Ex.: 10,00 ou deixe em branco">
+
+            <p class="hint">Deixe em branco para Pix com valor livre — você escolhe no app do banco o quanto quer doar.</p>
+
+        </div>
+
+        <button type="submit" class="btn btn-donate">Gerar Pix para doar</button>
+
+    </form>
+
+
+
+    {% if payload %}
+
+    <div class="pix-result">
+
+        {% if qr_b64 %}
+
+        <img src="data:image/png;base64,{{ qr_b64 }}" alt="QR Code Pix" class="pix-qr">
+
+        {% endif %}
+
+        <div class="pix-copia">
+
+            <label>Código copia e cola</label>
+
+            <textarea readonly id="pix-payload" rows="4">{{ payload }}</textarea>
+
+            <button type="button" class="btn btn-outline btn-sm" onclick="copiarPix()">Copiar código</button>
+
+        </div>
+
+        {% if valor %}
+
+        <p>Valor sugerido: <strong>R$ {{ "%.2f"|format(valor)|replace(".", ",") }}</strong></p>
+
+        {% else %}
+
+        <p>No app do banco, informe o valor que desejar doar para <strong>{{ pix_nome }}</strong>.</p>
+
+        {% endif %}
+
+        <p class="donate-thanks">Cada doação nos motiva a seguir. Obrigado de coração.</p>
+
+    </div>
+
+    {% endif %}
+
+    {% endif %}
+
+
+
+    <p class="back-link"><a href="{{ url_for('jornada', protocolo=vet.protocolo) }}">← Voltar ao guia</a></p>
+
+</div>
+
+{% endblock %}
+
+
+
+{% block scripts %}
+
+<script>
+
+function copiarPix() {
+
+    const el = document.getElementById('pix-payload');
+
+    if (!el) return;
+
+    el.select();
+
+    navigator.clipboard.writeText(el.value).then(() => alert('Código Pix copiado!'));
+
+}
+
+</script>
+
+{% endblock %}
+

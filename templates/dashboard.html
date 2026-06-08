@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - VetQR{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <div class="header-actions">
+        <a href="{{ url_for('admin.guia') }}" class="btn btn-outline">📖 Como funciona</a>
+        <a href="{{ url_for('admin.cadastrar') }}" class="btn btn-primary">+ Cadastrar veterinário</a>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <span class="stat-num">{{ total }}</span>
+        <span class="stat-label">Cadastrados</span>
+    </div>
+    <div class="stat-card stat-info">
+        <span class="stat-num">{{ em_processo }}</span>
+        <span class="stat-label">Em andamento</span>
+    </div>
+    <div class="stat-card stat-success">
+        <span class="stat-num">{{ concluidos }}</span>
+        <span class="stat-label">Concluídos</span>
+    </div>
+</div>
+
+{% if pendentes_acao %}
+<section class="section">
+    <h2>Próximo passo</h2>
+    <div class="action-list">
+        {% for vet in pendentes_acao %}
+        <div class="action-item">
+            <div>
+                <strong>{{ vet.nome_completo }}</strong>
+                <span class="text-muted">{{ vet.protocolo }}</span>
+                <span class="badge badge-yellow">Cadastrado — enviar orientação</span>
+            </div>
+            <a href="{{ url_for('admin.detalhe', id=vet.id) }}" class="btn btn-sm btn-primary">Abrir</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="section">
+    <h2>Cadastros recentes</h2>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Protocolo</th>
+                    <th>Nome</th>
+                    <th>Certificado</th>
+                    <th>Status</th>
+                    <th>Data</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vet in recentes %}
+                <tr>
+                    <td><code>{{ vet.protocolo }}</code></td>
+                    <td>{{ vet.nome_completo }}</td>
+                    <td>e-CPF {{ vet.tipo_certificado }}</td>
+                    <td><span class="badge badge-{{ vet.status_certificado }}">{{ vet.status_certificado }}</span></td>
+                    <td>{{ vet.criado_em.strftime('%d/%m/%Y') }}</td>
+                    <td><a href="{{ url_for('admin.detalhe', id=vet.id) }}" class="btn btn-sm btn-outline">Ver</a></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="empty">Nenhum cadastro. <a href="{{ url_for('admin.cadastrar') }}">Cadastre sua irmã</a> ou leia o <a href="{{ url_for('admin.guia') }}">guia</a>.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

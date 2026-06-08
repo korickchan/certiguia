@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}{{ vet.nome_completo }} - VetQR{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <a href="{{ url_for('admin.lista') }}" class="link-back">← Clientes</a>
+        <h1>{{ vet.nome_completo }}</h1>
+        <p class="page-desc">Protocolo <code>{{ vet.protocolo }}</code> · CRMV {{ vet.crmv }}-{{ vet.crmv_uf }} · <strong>{{ tipo_info.nome }}</strong></p>
+    </div>
+    <div class="header-actions">
+        {% if vet.origem == 'publico' or vet.produto_recomendado %}
+        <a href="{{ url_for('jornada', protocolo=vet.protocolo) }}" class="btn btn-outline" target="_blank">Guia público</a>
+        {% endif %}
+        <a href="{{ url_for('admin.comparar_precos_vet', id=vet.id) }}" class="btn btn-outline">🔍 Comparar preços</a>
+        <a href="{{ url_for('admin.whatsapp_orientacao', id=vet.id) }}" target="_blank" class="btn btn-whatsapp">Enviar orientação</a>
+    </div>
+</div>
+
+<section class="section">
+    <h2>Progresso</h2>
+    <div class="pipeline">
+        {% for key, label, desc in etapas %}
+        {% set idx = loop.index0 %}
+        {% set atual = vet.etapa_atual_index() %}
+        <div class="pipeline-step {% if idx < atual %}done{% elif idx == atual %}current{% endif %}">
+            <div class="pipeline-dot">{{ loop.index }}</div>
+            <div class="pipeline-label">{{ label }}</div>
+        </div>
+        {% if not loop.last %}<div class="pipeline-line {% if idx < atual %}done{% endif %}"></div>{% endif %}
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section action-panel">
+    <h2>Próxima ação</h2>
+    <div class="action-buttons">
+        {% if vet.status_certificado == 'cadastrado' %}
+        <a href="{{ url_for('admin.whatsapp_orientacao', id=vet.id) }}" target="_blank" class="btn btn-whatsapp">Enviar orientação no WhatsApp</a>
+        <form method="POST" action="{{ url_for('admin.orientar', id=vet.id) }}" class="inline-form">
+            <button type="submit" class="btn btn-primary">Marcar como orientado</button>
+        </form>
+        {% endif %}
+
+        {% if vet.status_certificado in ['orientado', 'cadastrado'] %}
+        <button type="button" class="btn btn-primary" onclick="document.getElementById('modalCertificadora').showModal()">
+            Registrar compra na certificadora
+        </button>
+        <a href="{{ url_cert }}" target="_blank" class="btn btn-outline" id="linkCertificadoraAcao">Abrir {{ valores.certificadora_nome }}</a>
+        {% endif %}
+
+        {% if vet.status_certificado == 'pedido_certificadora' %}
+        <form method="POST" action="{{ url_for('admin.avancar_etapa', id=vet.id) }}" class="inline-form">
+            <button type="submit" class="btn btn-primary">Marcar: validação feita</button>
+        </form>
+        {% endif %}
+
+        {% if vet.status_certificado == 'validacao' %}
+        <form method="POST" action="{{ url_for('admin.avancar_etapa', id=vet.id) }}" class="inline-form">
+            <button type="submit" class="btn btn-primary">Marcar: certificado emitido</button>
+        </form>
+        {% endif %}
+
+        {% if vet.status_certificado == 'certificado_emitido' %}
+        <form method="POST" action="{{ url_for('admin.avancar_etapa', id=vet.id) }}" class="inline-form">
+            <button type="submit" class="btn btn-primary">Marcar: instalado no PC</button>
+        </form>
+        {% endif %}
+
+        {% if vet.status_certificado == 'instalado' %}
+        <form method="POST" action="{{ url_for('admin.avancar_etapa', id=vet.id) }}" class="inline-form">
+            <button type="submit" class="btn btn-success">Concluir — já emite receita!</button>
+        </form>
+        {% endif %}
+    </div>
+</section>
+
+<section class="section card-panel guia-recomendado">
+    <h2>Qual certificado comprar</h2>
+    <div class="alert-box alert-success">
+        <strong>✅ Comprar:</strong> {{ tipo_info.nome }} (e-CPF — pessoa física, CPF {{ vet.cpf }})<br>
+        <strong>❌ Não comprar:</strong> e-CNPJ ou e-PJ (certificado da clínica/empresa)
+    </div>
+    <dl class="info-list">
+        <dt>Produto</dt><dd><strong>{{ tipo_info.nome }}</strong></dd>
+        <dt>O que é</dt><dd>{{ tipo_info.resumo }}</dd>
+        <dt>Validade</dt><dd>{{ tipo_info.validade }}</dd>
+        <dt>No site</dt><dd>{{ valores.instrucao }}</dd>
+    </dl>
+</section>
+
+<div class="grid-2">
+    <section class="section card-panel">
+        <h2>Dados para colar na certificadora</h2>
+        <p class="hint">Ao comprar no site, use estes dados. Clique em copiar.</p>
+        <pre class="copy-box" id="textoPedido">{{ texto_pedido }}</pre>
+        <div class="btn-row">
+            <button type="button" class="btn btn-primary btn-sm" onclick="copiarTexto()">Copiar dados</button>
+            <a href="{{ url_cert }}" target="_blank" class="btn btn-outline btn-sm" id="linkCertificadora">Abrir {{ valores.certificadora_nome }}</a>
+        </div>
+    </section>
+
+    <section class="section card-panel">
+        <h2>Valor (consultar no site)</h2>
+        <dl class="info-list">
+            <dt>Produto</dt><dd><strong>{{ valores.nome_produto }}</strong></dd>
+            <dt>Certificadora</dt><dd>{{ valores.certificadora_nome }}</dd>
+            <dt>Preço</dt><dd class="money">{{ valores.preco_label }}</dd>
+            <dt>Pagamento</dt><dd>Direto no site da certificadora</dd>
+        </dl>
+        <p class="hint">{{ valores.observacao }}</p>
+        {% if playwright_ok %}
+        <a href="{{ url_for('admin.comparar_precos_vet', id=vet.id) }}" class="btn btn-primary btn-sm" style="margin-top:0.5rem">Buscar melhor preço agora</a>
+        {% else %}
+        <p class="hint">Para busca automática de preços: <code>pip install playwright</code> e <code>playwright install chromium</code></p>
+        {% endif %}
+        {% if vet.codigo_desconto %}
+        <p class="hint success">Código informado: {{ vet.codigo_desconto }} — testar no site ao comprar</p>
+        {% endif %}
+    </section>
+</div>
+
+<div class="grid-2">
+    <section class="section card-panel">
+        <h2>Dados do veterinário</h2>
+        <dl class="info-list">
+            <dt>CPF</dt><dd>{{ vet.cpf }}</dd>
+            <dt>RG</dt><dd>{{ vet.rg or '—' }}</dd>
+            <dt>E-mail</dt><dd>{{ vet.email }}</dd>
+            <dt>WhatsApp</dt><dd>{{ vet.whatsapp }}</dd>
+            <dt>Endereço</dt><dd>{{ vet.endereco_completo() }}</dd>
+        </dl>
+    </section>
+
+    <section class="section card-panel">
+        <h2>Acompanhamento</h2>
+
+        <form method="POST" action="{{ url_for('admin.alterar_certificadora', id=vet.id) }}" class="certificadora-picker">
+            <label for="certificadora">Certificadora</label>
+            <div class="certificadora-row">
+                <select id="certificadora" name="certificadora" onchange="atualizarLinkCertificadora()">
+                    {% for key, cert in certificadoras.items() %}
+                    <option value="{{ key }}"
+                        data-url-a1="{{ cert.url_a1 }}"
+                        data-url-a3="{{ cert.url_a3 }}"
+                        data-preco-a1="{{ cert.preco_a1_label }}"
+                        data-preco-a3="{{ cert.preco_a3_label }}"
+                        data-instrucao-a1="{{ cert.instrucao_a1 }}"
+                        data-instrucao-a3="{{ cert.instrucao_a3 }}"
+                        {% if (vet.certificadora or 'certisign') == key %}selected{% endif %}>
+                        {{ cert.nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">Salvar</button>
+            </div>
+            <p class="hint" id="instrucaoCert">{{ valores.instrucao }}</p>
+        </form>
+
+        <dl class="info-list" style="margin-top: 1rem;">
+            <dt>Nº pedido</dt><dd>{{ vet.numero_pedido_certificadora or '—' }}</dd>
+            <dt>Validade cert.</dt><dd>{{ vet.data_validade.strftime('%d/%m/%Y') if vet.data_validade else '—' }}</dd>
+            {% if vet.solicita_receituario %}
+            <dt>Bloco físico 3 vias</dt><dd><span class="badge">{{ vet.status_receituario }}</span> — produto separado, ver guia</dd>
+            {% endif %}
+        </dl>
+    </section>
+</div>
+
+<section class="section card-panel">
+    <h2>Atualizar manualmente</h2>
+    <form method="POST" action="{{ url_for('admin.atualizar', id=vet.id) }}" class="form-grid compact">
+        <div class="form-group">
+            <label>Status</label>
+            <select name="status_certificado">
+                {% for key, label, _ in etapas %}
+                    <option value="{{ key }}" {% if vet.status_certificado == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Nº pedido</label>
+            <input type="text" name="numero_pedido_certificadora" value="{{ vet.numero_pedido_certificadora or '' }}">
+        </div>
+        <div class="form-group">
+            <label>Código desconto (opcional)</label>
+            <input type="text" name="codigo_desconto" value="{{ vet.codigo_desconto or '' }}" placeholder="Se tiver promoção no site">
+        </div>
+        <div class="form-group span-2">
+            <label>Observações</label>
+            <textarea name="observacoes" rows="2">{{ vet.observacoes or '' }}</textarea>
+        </div>
+        <div class="form-group span-2">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+    </form>
+</section>
+
+<dialog id="modalCertificadora" class="modal">
+    <form method="POST" action="{{ url_for('admin.solicitar_certificado', id=vet.id) }}">
+        <h3>Registrar compra na certificadora</h3>
+        <p class="hint">A veterinária comprou no site? Registre aqui para acompanhar.</p>
+        <ol class="modal-steps">
+            <li>Comprou <strong>{{ tipo_info.nome }}</strong> no site (e-CPF, não e-CNPJ)</li>
+            <li>Pagou direto à certificadora</li>
+            <li>Anote o número do pedido (e-mail de confirmação)</li>
+        </ol>
+        <div class="form-group">
+            <label>Certificadora</label>
+            <select name="certificadora">
+                {% for key, cert in certificadoras.items() %}
+                    <option value="{{ key }}" {% if (vet.certificadora or 'certisign') == key %}selected{% endif %}>{{ cert.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Nº do pedido</label>
+            <input type="text" name="numero_pedido" placeholder="Do e-mail de confirmação">
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-outline" onclick="document.getElementById('modalCertificadora').close()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Registrar</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const tipoCert = "{{ vet.tipo_certificado }}";
+
+function copiarTexto() {
+    navigator.clipboard.writeText(document.getElementById('textoPedido').textContent).then(() => {
+        alert('Dados copiados!');
+    });
+}
+
+function atualizarLinkCertificadora() {
+    const sel = document.getElementById('certificadora');
+    const opt = sel.options[sel.selectedIndex];
+    const url = tipoCert === 'A3' ? opt.dataset.urlA3 : opt.dataset.urlA1;
+    const preco = tipoCert === 'A3' ? opt.dataset.precoA3 : opt.dataset.precoA1;
+    const instrucao = tipoCert === 'A3' ? opt.dataset.instrucaoA3 : opt.dataset.instrucaoA1;
+    const nome = opt.textContent.trim();
+
+    ['linkCertificadora', 'linkCertificadoraAcao'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.href = url; el.textContent = 'Abrir ' + nome; }
+    });
+
+    const precoEl = document.querySelector('.money');
+    if (precoEl) precoEl.textContent = preco;
+
+    const instEl = document.getElementById('instrucaoCert');
+    if (instEl) instEl.textContent = instrucao;
+}
+</script>
+{% endblock %}

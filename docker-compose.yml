@@ -1,0 +1,28 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      PORT: "8080"
+      GUNICORN_TIMEOUT: "120"
+      DATABASE_URL: postgresql://certiguia:certiguia@db:5432/certiguia
+    depends_on:
+      - db
+
+  # Opcional: PostgreSQL local (simula produção)
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: certiguia
+      POSTGRES_PASSWORD: certiguia
+      POSTGRES_DB: certiguia
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

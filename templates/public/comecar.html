@@ -1,0 +1,144 @@
+{% extends "public/base.html" %}
+{% block title %}Cadastro rápido{% endblock %}
+
+{% block content %}
+<div class="public-card public-card-wide">
+    <div class="wizard-steps">
+        <div class="wizard-step active"></div>
+        <div class="wizard-step active"></div>
+    </div>
+    <h1>Cadastro rápido</h1>
+    <p class="text-muted">Leva menos de 2 minutos. Você recebe um guia personalizado para sua profissão.</p>
+
+    <form method="post" class="form-cadastro">
+        <fieldset class="form-section">
+            <legend>Seus dados</legend>
+            <div class="form-row">
+                <label for="nome_completo">Nome completo *</label>
+                <input type="text" id="nome_completo" name="nome_completo" required>
+            </div>
+            <div class="form-row two-cols">
+                <div>
+                    <label for="cpf">CPF *</label>
+                    <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
+                </div>
+                <div>
+                    <label for="cnpj">CNPJ (se emitir pela empresa)</label>
+                    <input type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00">
+                </div>
+            </div>
+            <div class="form-row two-cols">
+                <div>
+                    <label for="email">E-mail *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div>
+                    <label for="whatsapp">WhatsApp *</label>
+                    <input type="tel" id="whatsapp" name="whatsapp" placeholder="(71) 99999-9999" required>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Sua atuação profissional</legend>
+            <div class="form-row">
+                <label for="profissao">Profissão *</label>
+                <select id="profissao" name="profissao" required>
+                    {% for key, info in profissoes.items() %}
+                    <option value="{{ key }}">{{ info.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-row two-cols">
+                <div>
+                    <label for="registro_profissional" id="label-registro">Registro profissional</label>
+                    <input type="text" id="registro_profissional" name="registro_profissional" placeholder="Ex.: 12345">
+                </div>
+                <div>
+                    <label for="registro_uf">UF</label>
+                    <select id="registro_uf" name="registro_uf">
+                        <option value="">—</option>
+                        {% for uf in estados %}
+                        <option value="{{ uf }}">{{ uf }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="finalidade">Para que você precisa do certificado? *</label>
+                <select id="finalidade" name="finalidade" required>
+                    {% for key, label in finalidades.items() %}
+                    <option value="{{ key }}" {% if key == 'receituario' %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-row">
+                <label for="sistema_receituario">Sistema de receituário (se já usa algum)</label>
+                <input type="text" id="sistema_receituario" name="sistema_receituario"
+                       placeholder="Ex.: VetSoft, Prescreve, Memed, iClinic… (opcional)">
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Como você emite documentos?</legend>
+            <div class="form-row">
+                <span class="label">Titularidade</span>
+                <div class="radio-group vertical">
+                    <label><input type="radio" name="emite_como" value="pf" checked> Como pessoa física (CPF)</label>
+                    <label><input type="radio" name="emite_como" value="pj"> Pela clínica/empresa (CNPJ)</label>
+                    <label><input type="radio" name="emite_como" value="ambos"> Os dois (CPF e CNPJ)</label>
+                </div>
+            </div>
+            <div class="form-row">
+                <span class="label">Usa o certificado em vários computadores?</span>
+                <div class="radio-group">
+                    <label><input type="radio" name="varios_computadores" value="nao" checked> Não, só um</label>
+                    <label><input type="radio" name="varios_computadores" value="sim"> Sim, vários</label>
+                </div>
+                <p class="hint">Vários PCs → A3 (token). Um PC → A1 costuma ser mais barato.</p>
+            </div>
+        </fieldset>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">Ver minha recomendação</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/form.js') }}"></script>
+<script>
+const profissoes = {{ profissoes|tojson }};
+const sel = document.getElementById('profissao');
+const lbl = document.getElementById('label-registro');
+function atualizarRegistro() {
+    const p = profissoes[sel.value];
+    lbl.textContent = (p ? p.registro : 'Registro') + ' (opcional agora)';
+}
+sel.addEventListener('change', atualizarRegistro);
+atualizarRegistro();
+
+function maskCNPJ(value) {
+    return value.replace(/\D/g, '')
+        .replace(/^(\d{2})(\d)/, '$1.$2')
+        .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+        .replace(/\.(\d{3})(\d)/, '.$1/$2')
+        .replace(/(\d{4})(\d)/, '$1-$2')
+        .slice(0, 18);
+}
+const cnpj = document.getElementById('cnpj');
+if (cnpj) cnpj.addEventListener('input', e => { e.target.value = maskCNPJ(e.target.value); });
+
+const form = document.querySelector('.form-cadastro');
+if (form) {
+    form.addEventListener('submit', function () {
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Gerando seu guia…';
+        }
+    });
+}
+</script>
+{% endblock %}

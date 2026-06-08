@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes - VetQR{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Clientes</h1>
+    <a href="{{ url_for('admin.cadastrar') }}" class="btn btn-primary">+ Novo</a>
+</div>
+
+<form method="GET" class="filters">
+    <input type="text" name="q" value="{{ busca }}" placeholder="Buscar nome, protocolo, CRMV, CPF">
+    <select name="status">
+        <option value="">Todos os status</option>
+        {% for key, label, _ in etapas %}
+            <option value="{{ key }}" {% if status_filtro == key %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+</form>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Protocolo</th>
+                <th>Nome</th>
+                <th>CRMV</th>
+                <th>Cert.</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vet in veterinarios %}
+            <tr>
+                <td><code>{{ vet.protocolo }}</code></td>
+                <td>{{ vet.nome_completo }}</td>
+                <td>{{ vet.crmv }}-{{ vet.crmv_uf }}</td>
+                <td>e-CPF {{ vet.tipo_certificado }}</td>
+                <td><span class="badge badge-{{ vet.status_certificado }}">{{ vet.status_certificado }}</span></td>
+                <td><a href="{{ url_for('admin.detalhe', id=vet.id) }}" class="btn btn-sm btn-outline">Abrir</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="empty">Nenhum cliente encontrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

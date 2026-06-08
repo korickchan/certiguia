@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-card">
+        <h1>🐾 VetQR</h1>
+        <p class="login-sub">Painel admin · /admin</p>
+        <form method="POST">
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" name="senha" required autofocus>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+        </form>
+        <p class="login-footer-link"><a href="{{ url_for('index') }}">← Voltar ao site público</a></p>
+    </div>
+</div>
+{% endblock %}

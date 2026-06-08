@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CertiGuia — Certificado Digital{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/public.css') }}">
+</head>
+<body class="public-body">
+    <header class="public-header">
+        <div class="public-header-inner">
+            <a href="{{ url_for('index') }}" class="public-brand">CertiGuia</a>
+            <nav class="public-nav">
+                <a href="{{ url_for('comecar') }}" class="nav-cta">Começar</a>
+                <a href="https://wa.me/{{ whatsapp|default('5571987939074') }}" target="_blank" rel="noopener">Ajuda</a>
+            </nav>
+        </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container public-flash">
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main class="public-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="public-footer">
+        <p>Orientação gratuita para certificado digital ICP-Brasil.</p>
+        <p>Doação opcional via Pix · <a href="{{ url_for('admin.login') }}">Área admin</a></p>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

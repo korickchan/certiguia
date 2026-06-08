@@ -1,0 +1,73 @@
+{% extends "public/base.html" %}
+{% block title %}Certificado digital — guia passo a passo{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <span class="hero-badge">Orientação gratuita · não vendemos certificado</span>
+        <h1>Um guia simples para obter seu certificado digital</h1>
+        <p class="hero-lead">
+            Ajudamos médicos, veterinários, dentistas, contadores, advogados e outros profissionais
+            a escolher o certificado certo, comparar preços e concluir cada etapa — da compra à instalação.
+        </p>
+        <div class="hero-actions">
+            <a href="{{ url_for('comecar') }}" class="btn btn-primary btn-lg">Começar agora</a>
+            <a href="https://wa.me/{{ whatsapp }}?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20certificado%20digital"
+               class="btn btn-whatsapp btn-lg" target="_blank" rel="noopener">WhatsApp</a>
+        </div>
+    </div>
+</section>
+
+<section class="clarify-box">
+    <h2>O que é o CertiGuia?</h2>
+    <p>
+        <strong>Não vendemos certificado digital.</strong> Somos um guia prático e gratuito para quem precisa
+        tirar o certificado por conta própria, diretamente nas certificadoras (Certisign, Valid, Safeweb e outras).
+    </p>
+    <p>
+        Indicamos qual tipo de certificado faz sentido para você (e-CPF ou e-CNPJ, A1 ou A3), mostramos
+        referências de preço, explicamos como comprar, validar a identidade, instalar no computador e
+        usar no receituário ou nos documentos do seu dia a dia.
+    </p>
+    <p>
+        O serviço é <strong>totalmente gratuito</strong> — não há taxa, mensalidade nem obrigação de pagamento.
+        Para manter e melhorar a plataforma, contamos com a <strong>colaboração voluntária</strong> de quem
+        se beneficiou da orientação: se quiser, você pode fazer uma doação simbólica via Pix, no valor que
+        achar justo, ao final do seu guia.
+    </p>
+</section>
+
+<section class="features">
+    <div class="feature-card">
+        <div class="feature-icon">📝</div>
+        <h3>Cadastro rápido</h3>
+        <p>Sua profissão, finalidade e como você emite documentos.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Certificado certo</h3>
+        <p>e-CPF ou e-CNPJ, A1 ou A3 — conforme sua necessidade.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🏢</div>
+        <h3>Guia por certificadora</h3>
+        <p>Passo a passo para 7 certificadoras ICP-Brasil: CertClick, Valid, Serpro, Soluti e mais.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>Receituário digital</h3>
+        <p>Legislação, implementação no sistema e validação ICP-Brasil.</p>
+    </div>
+</section>
+
+<section class="info-box">
+    <h2>Para quem é?</h2>
+    <p>Qualquer profissional que precise de certificado digital ICP-Brasil: receituário, assinatura de documentos,
+       nota fiscal ou contratos. A compra é feita por você, no site oficial da certificadora — aqui você só recebe orientação clara e personalizada.</p>
+    <div class="trust-row">
+        <div class="trust-item"><strong>2 min</strong><span>para cadastrar</span></div>
+        <div class="trust-item"><strong>100%</strong><span>gratuito</span></div>
+        <div class="trust-item"><strong>Pix</strong><span>doação opcional</span></div>
+    </div>
+</section>
+{% endblock %}

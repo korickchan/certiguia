@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VetQR Admin{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="admin-body">
+    {% if session.admin %}
+    <aside class="sidebar">
+        <div class="sidebar-brand">🐾 VetQR</div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{{ url_for('admin.guia') }}" class="{% if request.endpoint == 'admin.guia' %}active{% endif %}">Como funciona</a>
+            <a href="{{ url_for('admin.cadastrar') }}" class="{% if request.endpoint == 'admin.cadastrar' %}active{% endif %}">+ Novo cadastro</a>
+            <a href="{{ url_for('admin.lista') }}" class="{% if request.endpoint == 'admin.lista' %}active{% endif %}">Clientes</a>
+            <a href="{{ url_for('admin.exportar') }}">Exportar CSV</a>
+            <a href="{{ url_for('index') }}" class="sidebar-public">↗ Site público</a>
+            <a href="{{ url_for('admin.logout') }}" class="sidebar-logout">Sair</a>
+        </nav>
+    </aside>
+    {% endif %}
+
+    <div class="main-wrap">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

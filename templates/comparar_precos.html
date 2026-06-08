@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Comparar preços — {{ vet.nome_completo }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <a href="{{ url_for('admin.detalhe', id=vet.id) }}" class="link-back">← {{ vet.nome_completo }}</a>
+        <h1>Comparar preços — {{ produto.nome }}</h1>
+        <p class="page-desc">Busca automática nos sites das certificadoras.</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('admin.comparar_precos_vet', id=vet.id, produto=produto_id, atualizar=1) }}" class="btn btn-outline">Atualizar preços</a>
+    </div>
+</div>
+
+<div class="tipo-switch">
+    <span>Certificado:</span>
+    {% for pid, p in produtos.items() %}
+    <a href="{{ url_for('admin.comparar_precos_vet', id=vet.id, produto=pid, atualizar=1) }}"
+       class="btn btn-sm {% if produto_id == pid %}btn-primary{% else %}btn-outline{% endif %}">{{ p.nome }}</a>
+    {% endfor %}
+</div>
+
+<div class="icp-info-box" style="margin-bottom:1rem;padding:0.85rem 1rem;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;font-size:0.875rem;">
+    <strong>Verificação oficial:</strong>
+    Conferir cada AC na <a href="{{ iti_lista_ac }}" target="_blank" rel="noopener noreferrer">lista do ITI</a>
+    · Validar assinatura em <a href="{{ iti_validar }}" target="_blank" rel="noopener noreferrer">validar.iti.gov.br</a>
+</div>
+
+{% if melhor %}
+<section class="section card-panel guia-recomendado">
+    <h2>🏆 Melhor preço encontrado</h2>
+    <p class="guia-destaque">{{ melhor.nome }} — <strong>{{ melhor.preco_formatado }}</strong></p>
+    <p class="hint">{{ melhor.observacao }}</p>
+    <a href="{{ melhor.url }}" target="_blank" class="btn btn-primary">Comprar na {{ melhor.nome }}</a>
+</section>
+{% endif %}
+
+<section class="section">
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Certificadora</th>
+                    <th>Preço detectado</th>
+                    <th>Status</th>
+                    <th>Atualizado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in resultados %}
+                <tr class="{% if r.melhor_preco %}row-best{% endif %}">
+                    <td><strong>{{ r.nome }}</strong>{% if r.melhor_preco %} 🏆{% endif %}</td>
+                    <td>
+                        {% if r.ok %}
+                            <span class="money">{{ r.preco_formatado }}</span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if r.ok %}
+                            <span class="badge badge-concluido">OK</span>
+                        {% else %}
+                            <span class="badge badge-aguardando_pagamento">{{ r.erro }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ r.atualizado_em }}</td>
+                    <td class="acoes-cell">
+                        <a href="{{ r.url }}" target="_blank" class="btn btn-sm btn-outline">Site</a>
+                        <a href="{{ url_iti_certificadora(r.certificadora) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-iti">ITI</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<p class="hint" style="margin-top:1rem">Preços para <strong>{{ produto.nome }}</strong>. Sempre confira no checkout antes de comprar.</p>
+{% endblock %}

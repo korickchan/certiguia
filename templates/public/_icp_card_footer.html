@@ -1,0 +1,9 @@
+{% if ac_credenciada_iti(cert_key) %}
+<span class="badge-icp" title="{{ rotulo_icp_certificadora(cert_key) }}">ICP-Brasil credenciada</span>
+{% else %}
+<p class="aviso-icp">{{ aviso_icp_certificadora(cert_key) }}</p>
+{% endif %}
+<div class="card-acoes">
+    <a href="{{ site_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline" onclick="event.stopPropagation()">Site</a>
+    <a href="{{ url_iti_certificadora(cert_key) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-iti" onclick="event.stopPropagation()" title="Lista oficial de ACs no ITI">Conferir no ITI</a>
+</div>

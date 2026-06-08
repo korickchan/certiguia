@@ -1,0 +1,15 @@
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.db
+.env
+.git/
+.gitignore
+.cursor/
+*.md
+!DEPLOY.md
+probe_out.txt
+terminals/
+assets/
+instance/

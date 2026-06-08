@@ -1,0 +1,13 @@
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.db
+.env
+instance/
+.cursor/
+probe_out.txt
+assets/
+*.log
+.DS_Store
+Thumbs.db

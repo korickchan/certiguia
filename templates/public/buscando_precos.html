@@ -1,0 +1,77 @@
+{% extends "public/base.html" %}
+{% block title %}Buscando preços — {{ vet.protocolo }}{% endblock %}
+
+{% block content %}
+<div class="loading-page">
+    <div class="loading-card" id="loading-card">
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <h1>Buscando preços nas certificadoras</h1>
+        <p class="loading-lead">
+            Estamos consultando os sites oficiais para comparar valores do
+            <strong>{{ produto.nome if produto else 'certificado recomendado' }}</strong>.
+        </p>
+        <p class="loading-warn">
+            Isso pode levar <strong>de 1 a 3 minutos</strong>. Não feche nem atualize esta página.
+        </p>
+        <ul class="loading-steps">
+            <li id="step-1" class="loading-step active">Conectando às certificadoras…</li>
+            <li id="step-2" class="loading-step">Consultando preços (Playwright)…</li>
+            <li id="step-3" class="loading-step">Organizando comparativo…</li>
+        </ul>
+        <p class="loading-protocolo">Protocolo {{ vet.protocolo }}</p>
+    </div>
+
+    <div class="loading-card loading-error hidden" id="loading-error">
+        <h1>Não foi possível buscar os preços</h1>
+        <p class="loading-lead" id="error-message">Tente novamente em instantes ou escolha a certificadora manualmente.</p>
+        <a href="{{ url_for('jornada', protocolo=protocolo) }}" class="btn btn-primary">Voltar ao guia</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const steps = [
+        document.getElementById('step-1'),
+        document.getElementById('step-2'),
+        document.getElementById('step-3'),
+    ];
+    let stepIndex = 0;
+    const stepTimer = setInterval(function () {
+        if (stepIndex < steps.length) {
+            steps[stepIndex].classList.add('done');
+            stepIndex += 1;
+            if (stepIndex < steps.length) {
+                steps[stepIndex].classList.add('active');
+            }
+        }
+    }, 12000);
+
+    fetch('{{ url_for("atualizar_precos_publico", protocolo=protocolo) }}?ajax=1', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+    })
+        .then(function (resp) { return resp.json().then(function (data) { return { ok: resp.ok, data: data }; }); })
+        .then(function (result) {
+            clearInterval(stepTimer);
+            if (result.data && result.data.ok) {
+                steps.forEach(function (el) { el.classList.add('done'); });
+                window.location.href = result.data.redirect;
+                return;
+            }
+            showError((result.data && result.data.erro) || 'Erro desconhecido.');
+        })
+        .catch(function () {
+            clearInterval(stepTimer);
+            showError('Falha de conexão com o servidor.');
+        });
+
+    function showError(msg) {
+        document.getElementById('loading-card').classList.add('hidden');
+        document.getElementById('loading-error').classList.remove('hidden');
+        document.getElementById('error-message').textContent = msg;
+    }
+})();
+</script>
+{% endblock %}

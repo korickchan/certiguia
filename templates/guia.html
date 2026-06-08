@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Como funciona - VetQR{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Como funciona na prática</h1>
+    <p class="page-desc">Guia para veterinários obterem certificado digital e emitirem receita com QR Code.</p>
+</div>
+
+<div class="guia-grid">
+    <section class="card-panel guia-block guia-recomendado">
+        <h2>✅ Qual certificado comprar?</h2>
+        <p class="guia-destaque">Para receita veterinária com QR Code, o veterinário precisa de certificado <strong>e-CPF</strong> (pessoa física, ligado ao CPF dele).</p>
+        {% for tipo in tipos_certificado %}
+        <div class="tipo-card {% if tipo.recomendado %}tipo-recomendado{% endif %}">
+            <h3>{% if tipo.recomendado %}⭐ {% endif %}{{ tipo.nome }}{% if tipo.recomendado %} — recomendado{% endif %}</h3>
+            <p>{{ tipo.resumo }}</p>
+            <ul class="guia-list">
+                <li><strong>Validade:</strong> {{ tipo.validade }}</li>
+                <li><strong>Indicado para:</strong> {{ tipo.indicado_para }}</li>
+                <li><strong>No site da certificadora:</strong> {{ tipo.no_site }}</li>
+            </ul>
+        </div>
+        {% endfor %}
+    </section>
+
+    <section class="card-panel guia-block guia-alert">
+        <h2>❌ O que NÃO comprar</h2>
+        {% for tipo in tipos_nao_usar %}
+        <p><strong>{{ tipo.nome }}</strong> — {{ tipo.motivo }}</p>
+        {% endfor %}
+    </section>
+
+    <section class="card-panel guia-block">
+        <h2>Passo a passo</h2>
+        <ol class="guia-steps">
+            <li><strong>Cadastrar dados</strong> — CPF, CRMV, endereço</li>
+            <li><strong>Escolher certificadora</strong> — Certisign, Valid ou Safeweb (links abaixo)</li>
+            <li><strong>Comprar e-CPF A1</strong> (ou A3) no site — pague direto à certificadora</li>
+            <li><strong>Videoconferência</strong> — validar identidade com RG/CNH</li>
+            <li><strong>Instalar</strong> — A1 no PC; A3 no token</li>
+            <li><strong>Emitir receita</strong> — no software/sistema utilizado</li>
+        </ol>
+    </section>
+
+    <section class="card-panel guia-block">
+        <h2>Certificadoras — links corretos</h2>
+        {% for key, cert in certificadoras.items() %}
+        <div class="cert-block">
+            <h3>{{ cert.nome }}</h3>
+            <p class="hint">{{ cert.instrucao_a1 }}</p>
+            <div class="cert-links">
+                <a href="{{ cert.url_a1 }}" target="_blank" class="btn btn-outline btn-sm">Comprar e-CPF A1</a>
+                <a href="{{ cert.url_a3 }}" target="_blank" class="btn btn-outline btn-sm">Comprar e-CPF A3</a>
+            </div>
+            <p class="hint">{{ cert.preco_a1_label }} · Confira valor atualizado no site antes de comprar.</p>
+        </div>
+        {% endfor %}
+        <p class="hint guia-nota"><strong>Serasa Experian</strong> não vende novos certificados — não use.</p>
+    </section>
+
+    <section class="card-panel guia-block guia-alert">
+        <h2>Receituário físico 3 vias</h2>
+        <p>Bloco de papel é <strong>produto separado</strong> (gráfica/fornecedor). Com e-CPF + sistema correto, a receita pode ser <strong>100% digital</strong> com QR Code.</p>
+    </section>
+</div>
+{% endblock %}
