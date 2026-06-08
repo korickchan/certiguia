@@ -637,7 +637,21 @@
     letter-spacing: 0.05em;
 }
 .preco-valor { font-size: 1.625rem; font-weight: 700; font-family: 'Fraunces', serif; color: var(--pub-text); }
+.preco-obs { font-size: 0.75rem; line-height: 1.45; color: #64748b; margin: 0.35rem 0 0; }
 .preco-erro { color: #b45309; font-size: 0.875rem; margin: 0.35rem 0; line-height: 1.4; }
+
+.compra-opcoes-box {
+    background: #f0fdfa;
+    border: 1px solid #99f6e4;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.55;
+}
+.compra-opcoes-box strong { display: block; color: #0f766e; margin-bottom: 0.5rem; }
+.compra-opcoes-box ul { margin: 0; padding-left: 1.15rem; }
+.compra-opcoes-box li + li { margin-top: 0.35rem; }
 
 .passos-lista { list-style: none; margin: 0; padding: 0; counter-reset: passo; }
 .passos-lista li {

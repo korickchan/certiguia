@@ -1,6 +1,7 @@
 """Busca de preços e-CPF A1/A3 nas certificadoras (Playwright)."""
 
 import re
+import unicodedata
 from datetime import datetime, timedelta
 
 from certificado import CERTIFICADORAS, certificadoras_ativas, url_certificadora
@@ -15,6 +16,31 @@ _PRECO_MIN = {"A1": 90.0, "A3": 120.0}
 _PRECO_MAX = 800.0
 
 _CHROMIUM_ARGS = ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"]
+
+# Critérios padrão de busca de preço (checkout típico)
+SCRAPE_EMISSAO = "Videoconferência"
+SCRAPE_VALIDADE = "1 ano"
+SAFEWEB_ID_EMISSAO_VIDEO = 3
+
+
+def _texto_ascii_minusculo(valor: str) -> str:
+    if not valor:
+        return ""
+    norm = unicodedata.normalize("NFKD", valor)
+    return norm.encode("ascii", "ignore").decode().lower()
+
+
+def _emissao_videoconferencia(item: dict) -> bool:
+    if item.get("idTipoEmissao") == SAFEWEB_ID_EMISSAO_VIDEO:
+        return True
+    return "videoconfer" in _texto_ascii_minusculo(item.get("TipoEmissao") or "")
+
+
+def _observacao_preco_padrao(nome_produto: str, metodo: str) -> str:
+    return (
+        f"Preço à vista — {nome_produto}, emissão {SCRAPE_EMISSAO.lower()}, "
+        f"validade {SCRAPE_VALIDADE}. {metodo} Confira no checkout antes de pagar."
+    )
 
 
 def _launch_chromium(playwright):
@@ -251,12 +277,9 @@ def _scrape_safeweb_catalogo(categoria: str = "pf", timeout_ms: int = 45000, bro
     checkout_url = SAFEWEB_CHECKOUT_URLS.get(categoria, SAFEWEB_CHECKOUT_URLS["pf"])
 
     def _capturar(page) -> list | None:
-        captured: list | None = None
+        capturados: list = []
 
         def on_response(response):
-            nonlocal captured
-            if captured is not None:
-                return
             if "GetListCatalogoProduto" not in response.url or not response.ok:
                 return
             try:
@@ -264,12 +287,24 @@ def _scrape_safeweb_catalogo(categoria: str = "pf", timeout_ms: int = 45000, bro
             except Exception:
                 return
             if isinstance(data, list) and data:
-                captured = data
+                capturados.extend(data)
 
         page.on("response", on_response)
         page.goto(checkout_url, wait_until="domcontentloaded", timeout=timeout_ms)
-        page.wait_for_timeout(8000)
-        return captured
+        if not capturados:
+            try:
+                resp = page.wait_for_response(
+                    lambda r: "GetListCatalogoProduto" in r.url and r.ok,
+                    timeout=min(timeout_ms, 25000),
+                )
+                data = resp.json()
+                if isinstance(data, list) and data:
+                    capturados.extend(data)
+            except Exception:
+                pass
+        if not capturados:
+            page.wait_for_timeout(5000)
+        return capturados or None
 
     if browser is not None:
         page = browser.new_page()
@@ -297,9 +332,11 @@ def _scrape_safeweb_catalogo(categoria: str = "pf", timeout_ms: int = 45000, bro
 
 
 def _preco_safeweb_catalogo(produtos: list, tipo: str, categoria: str = "pf") -> float | None:
-    """Filtra e-CPF/e-CNPJ, validade 1 ano, sem mídia física/acessório."""
+    """Filtra e-CPF/e-CNPJ, videoconferência, validade 1 ano, mídia correta A1/A3."""
     produto_tipo = "e-CPF" if categoria == "pf" else "e-CNPJ"
-    candidatos: list[float] = []
+    candidatos_video: list[float] = []
+    candidatos_outros: list[float] = []
+
     for item in produtos:
         if item.get("ProdutoTipo") != produto_tipo:
             continue
@@ -314,17 +351,23 @@ def _preco_safeweb_catalogo(produtos: list, tipo: str, categoria: str = "pf") ->
         midia = item.get("MidiaTipo") or ""
         if tipo == "A1" and midia != "Arquivo":
             continue
-        if tipo == "A3" and midia != "Sem mídia":
+        if tipo == "A3" and midia not in ("Sem mídia", "Cartão"):
             continue
         valor = item.get("Valor")
         if valor is None:
             continue
         valor = float(valor)
-        if _valor_valido(valor, tipo, categoria):
-            candidatos.append(valor)
-    if not candidatos:
+        if not _valor_valido(valor, tipo, categoria):
+            continue
+        if _emissao_videoconferencia(item):
+            candidatos_video.append(valor)
+        else:
+            candidatos_outros.append(valor)
+
+    pool = candidatos_video or candidatos_outros
+    if not pool:
         return None
-    return min(candidatos)
+    return min(pool)
 
 
 def _extrair_preco_safeweb_catalogo(tipo: str, categoria: str = "pf", browser=None) -> float | None:
@@ -590,9 +633,9 @@ def _scrape_pagina(
             "ok": True,
             "preco": preco,
             "preco_formatado": f"R$ {preco:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
-            "observacao": (
-                f"Preço à vista do {nome_produto} (checkout Safeweb: {rotulo}, validade 1 ano, "
-                f"{'arquivo' if tipo == 'A1' else 'sem mídia'}). Confira emissão no site antes de pagar."
+            "observacao": _observacao_preco_padrao(
+                nome_produto,
+                f"Safeweb checkout ({rotulo}, mídia {'arquivo' if tipo == 'A1' else 'sem mídia/cartão'}).",
             ),
         }
 
@@ -694,7 +737,7 @@ def _scrape_pagina(
         "ok": True,
         "preco": preco,
         "preco_formatado": f"R$ {preco:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
-        "observacao": f"Preço à vista do {nome_produto} ({metodo}). Confira no checkout antes de pagar.",
+        "observacao": _observacao_preco_padrao(nome_produto, f"({metodo})."),
     }
 
 

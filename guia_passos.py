@@ -20,7 +20,11 @@ def _passos_compra(cert_nome, url, instrucao, tipo):
         },
         {
             "titulo": "Escolher o produto certo",
-            "descricao": instrucao + " Não confunda com SafeID Nuvem, e-CNPJ (se precisa e-CPF) ou outros produtos.",
+            "descricao": (
+                instrucao
+                + " No checkout, prefira Emissão: Videoconferência e Validade: 1 ano."
+                + " Não confunda com SafeID Nuvem, e-CNPJ (se precisa e-CPF) ou outros produtos."
+            ),
         },
         {
             "titulo": "Preencher dados pessoais",
@@ -135,14 +139,14 @@ GUIAS_CERTIFICADORA = {
     "safeweb": {
         "compra_a1": _passos_compra(
             "Safeweb",
-            "https://www.safeweb.com.br/",
-            "Na página inicial, card «e-CPF A1» → Comprar agora. NÃO escolha SafeID Nuvem.",
+            "https://www.safeweb.com.br/produtos/checkout/ecpf",
+            "Produto: e-CPF → Emissão: Videoconferência → Validade: 1 ano → Modelo A1 (mídia Arquivo).",
             "e-CPF A1",
         ),
         "compra_a3": _passos_compra(
             "Safeweb",
-            "https://www.safeweb.com.br/produtos/ecpf",
-            "Escolha «e-CPF A3 Cartão» ou token.",
+            "https://www.safeweb.com.br/produtos/checkout/ecpf",
+            "Produto: e-CPF → Emissão: Videoconferência → Validade: 1 ano → Modelo A3 (sem mídia ou cartão).",
             "e-CPF A3",
         ),
         "instalacao_a1": [
@@ -313,7 +317,71 @@ GUIAS_CERTIFICADORA = {
 }
 
 
-def guia_certificadora(cert_key: str, tipo: str) -> dict:
+DETALHES_COMPRA_CERTIFICADORA = {
+    "safeweb": [
+        "Produto: e-CPF (pessoa física) ou e-CNPJ (empresa) — ignore e-PF/e-PJ se aparecer.",
+        "Emissão: Videoconferência (validação por vídeo, sem ir à loja).",
+        "Validade: 1 ano.",
+        "A1: mídia «Arquivo» (.pfx) · A3: «Sem mídia» ou cartão, conforme seu token.",
+        "Não marque renovação se é a primeira emissão.",
+    ],
+    "certisign": [
+        "Escolha e-CPF ou e-CNPJ conforme seu cadastro.",
+        "Validade: 1 ano.",
+        "Preferência: emissão por videoconferência quando disponível.",
+        "A1: certificado em arquivo · A3: token USB/cartão.",
+    ],
+    "valid": [
+        "Produto e-CPF/e-CNPJ A1 ou A3, validade 1 ano.",
+        "Agende videoconferência após o pagamento.",
+    ],
+    "certclick": [
+        "Selecione e-CPF A1 «Arquivo 1 ano» ou A3 conforme recomendação.",
+        "Validação por videoconferência após pagamento.",
+    ],
+    "serpro": [
+        "Loja Serpro: certificado e-CPF/e-CNPJ, validade 1 ano.",
+        "Emissão: videoconferência ou presencial — prefira videoconferência.",
+    ],
+    "soluti": [
+        "Certificado PF (e-CPF), validade 1 ano, emissão por videoconferência.",
+    ],
+    "acdigital": [
+        "Checkout eipar: e-PF/e-PJ, emissão presencial ou videoconferência — prefira videoconferência.",
+        "Validade: 1 ano.",
+    ],
+    "digitalsign": [
+        "e-CPF A1/A3, validade 1 ano, videoconferência após pagamento.",
+    ],
+    "link": [
+        "Loja Link: e-CPF/e-CNPJ, validade 1 ano.",
+        "Agende videoconferência quando disponível.",
+    ],
+    "online": [
+        "Certificado ICP-Brasil, validade 1 ano, videoconferência.",
+    ],
+}
+
+
+def detalhes_compra_certificadora(cert_key: str, tipo: str, categoria: str = "pf") -> dict:
+    """Opções recomendadas no checkout após escolher a certificadora."""
+    tipo = (tipo or "A1").upper()
+    produto = "e-CNPJ" if categoria == "pj" else "e-CPF"
+    midia = "Arquivo (.pfx no e-mail)" if tipo == "A1" else "Token USB ou cartão A3"
+    itens = [
+        f"Produto: {produto} {tipo}",
+        f"Emissão: Videoconferência (preferencial)",
+        f"Validade: 1 ano",
+        f"Formato: {midia}",
+    ]
+    extras = DETALHES_COMPRA_CERTIFICADORA.get(cert_key, [])
+    return {
+        "titulo": "Opções no checkout — use exatamente isto",
+        "itens": itens + list(extras),
+    }
+
+
+def guia_certificadora(cert_key: str, tipo: str, categoria: str = "pf") -> dict:
     """Retorna passos de compra, instalação e receituário para a certificadora."""
     cert = GUIAS_CERTIFICADORA.get(cert_key, GUIAS_CERTIFICADORA["certisign"])
     tipo = tipo.upper() if tipo else "A1"
@@ -326,6 +394,7 @@ def guia_certificadora(cert_key: str, tipo: str) -> dict:
             INSTALACAO_A1_GENERICO if tipo == "A1" else INSTALACAO_A3_GENERICO,
         ),
         "receituario": cert.get(f"receituario_{chave_tipo}", receituario_padrao),
+        "detalhes_compra": detalhes_compra_certificadora(cert_key, tipo, categoria),
         "tipo": tipo,
     }
 

@@ -180,7 +180,8 @@
 
     {% if precos %}
 
-    <p class="hint icp-nota">Preços para <strong>{{ produto.nome if produto else produtos[produto_atual].nome }}</strong>. Confira o valor final no site antes de comprar.</p>
+    <p class="hint icp-nota">Preços para <strong>{{ produto.nome if produto else produtos[produto_atual].nome }}</strong>.
+        Busca assume <strong>videoconferência</strong> e <strong>validade 1 ano</strong>. Confira o valor final no site antes de comprar.</p>
 
     <form method="post" action="{{ url_for('escolher_certificadora', protocolo=vet.protocolo) }}" class="cert-picker">
 
@@ -200,7 +201,9 @@
 
                 {% if p.melhor_preco and not cert_escolhida %}<span class="badge-melhor">Menor preço</span>{% endif %}
 
-                {% if p.ok %}<p class="preco-valor">{{ p.preco_formatado }}</p>{% else %}<p class="preco-erro">{{ p.erro }}</p>{% endif %}
+                {% if p.ok %}<p class="preco-valor">{{ p.preco_formatado }}</p>
+                {% if p.observacao %}<p class="preco-obs">{{ p.observacao }}</p>{% endif %}
+                {% else %}<p class="preco-erro">{{ p.erro }}</p>{% endif %}
 
                 {% with cert_key=p.certificadora, site_url=p.url %}
                 {% include "public/_icp_card_footer.html" %}
@@ -260,6 +263,17 @@
 <section class="public-card">
 
     <h2>Compra — {{ cert_info.nome }}</h2>
+
+    {% if guia.detalhes_compra %}
+    <div class="compra-opcoes-box">
+        <strong>{{ guia.detalhes_compra.titulo }}</strong>
+        <ul>
+            {% for item in guia.detalhes_compra.itens %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 
     <ol class="passos-lista">
 

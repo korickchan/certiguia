@@ -430,7 +430,7 @@ def jornada(protocolo):
     cert_info = {}
     impl_passos = []
     if cert_escolhida:
-        guia = guia_certificadora(cert_key, tipo_arm)
+        guia = guia_certificadora(cert_key, tipo_arm, produto.categoria if produto else "pf")
         cert_info = CERTIFICADORAS.get(cert_key, {})
         impl_passos = guia_implementar_certificado(
             profissao, tipo_arm, vet.sistema_receituario or ""
