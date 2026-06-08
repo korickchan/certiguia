@@ -241,24 +241,21 @@ SAFEWEB_CHECKOUT_URLS = {
 _safeweb_catalogo_cache: dict[str, list] = {}
 
 
-def _scrape_safeweb_catalogo(categoria: str = "pf", timeout_ms: int = 60000) -> list | None:
+def _scrape_safeweb_catalogo(categoria: str = "pf", timeout_ms: int = 45000, browser=None) -> list | None:
     """Carrega o checkout Safeweb e captura o catálogo JSON da API interna."""
     global _safeweb_catalogo_cache
     if categoria in _safeweb_catalogo_cache:
         return _safeweb_catalogo_cache[categoria]
 
-    from playwright.sync_api import sync_playwright
-
     produtos: list | None = None
     checkout_url = SAFEWEB_CHECKOUT_URLS.get(categoria, SAFEWEB_CHECKOUT_URLS["pf"])
 
-    with sync_playwright() as p:
-        browser = _launch_chromium(p)
-        page = browser.new_page()
+    def _capturar(page) -> list | None:
+        captured: list | None = None
 
         def on_response(response):
-            nonlocal produtos
-            if produtos is not None:
+            nonlocal captured
+            if captured is not None:
                 return
             if "GetListCatalogoProduto" not in response.url or not response.ok:
                 return
@@ -267,14 +264,32 @@ def _scrape_safeweb_catalogo(categoria: str = "pf", timeout_ms: int = 60000) -> 
             except Exception:
                 return
             if isinstance(data, list) and data:
-                produtos = data
+                captured = data
 
         page.on("response", on_response)
+        page.goto(checkout_url, wait_until="domcontentloaded", timeout=timeout_ms)
+        page.wait_for_timeout(8000)
+        return captured
+
+    if browser is not None:
+        page = browser.new_page()
         try:
-            page.goto(checkout_url, wait_until="domcontentloaded", timeout=timeout_ms)
-            page.wait_for_timeout(12000)
+            produtos = _capturar(page)
         finally:
-            browser.close()
+            page.close()
+    else:
+        from playwright.sync_api import sync_playwright
+
+        with sync_playwright() as p:
+            own_browser = _launch_chromium(p)
+            try:
+                page = own_browser.new_page()
+                try:
+                    produtos = _capturar(page)
+                finally:
+                    page.close()
+            finally:
+                own_browser.close()
 
     if produtos:
         _safeweb_catalogo_cache[categoria] = produtos
@@ -312,8 +327,8 @@ def _preco_safeweb_catalogo(produtos: list, tipo: str, categoria: str = "pf") ->
     return min(candidatos)
 
 
-def _extrair_preco_safeweb_catalogo(tipo: str, categoria: str = "pf") -> float | None:
-    produtos = _scrape_safeweb_catalogo(categoria)
+def _extrair_preco_safeweb_catalogo(tipo: str, categoria: str = "pf", browser=None) -> float | None:
+    produtos = _scrape_safeweb_catalogo(categoria, browser=browser)
     if not produtos:
         return None
     return _preco_safeweb_catalogo(produtos, tipo, categoria)
@@ -557,12 +572,13 @@ def _scrape_pagina(
     chave_produto: str,
     tipo: str,
     categoria: str = "pf",
-    timeout_ms: int = 60000,
+    timeout_ms: int = 45000,
+    browser=None,
 ) -> dict:
     nome_produto = chave_produto.upper()
 
     if certificadora_key == "safeweb":
-        preco = _extrair_preco_safeweb_catalogo(tipo, categoria)
+        preco = _extrair_preco_safeweb_catalogo(tipo, categoria, browser=browser)
         if not preco:
             rotulo = "e-CPF" if categoria == "pf" else "e-CNPJ"
             return {
@@ -580,77 +596,93 @@ def _scrape_pagina(
             ),
         }
 
-    from playwright.sync_api import sync_playwright
-
     wait_until = "domcontentloaded" if certificadora_key in (
         "valid", "certclick", "serpro", "soluti", "digitalsign", "link", "online", "acdigital",
     ) else "networkidle"
-    wait_ms = 12000 if certificadora_key == "certisign" else 10000
+    wait_ms = 8000 if certificadora_key == "certisign" else 6000
 
-    with sync_playwright() as p:
-        browser = _launch_chromium(p)
-        page = browser.new_page()
+    def _executar(page) -> tuple[float | None, str]:
         preco = None
         metodo = ""
-        try:
-            page.goto(url, wait_until=wait_until, timeout=timeout_ms)
-            page.wait_for_timeout(wait_ms)
-            if certificadora_key == "certclick":
-                for _ in range(4):
-                    page.mouse.wheel(0, 1500)
-                    page.wait_for_timeout(800)
-            html = page.content()
-            texto = page.inner_text("body")
+        page.goto(url, wait_until=wait_until, timeout=timeout_ms)
+        page.wait_for_timeout(wait_ms)
+        if certificadora_key == "certclick":
+            for _ in range(3):
+                page.mouse.wheel(0, 1500)
+                page.wait_for_timeout(500)
+        html = page.content()
+        texto = page.inner_text("body")
 
-            if certificadora_key == "certisign":
-                preco = _extrair_preco_certisign(html, tipo, categoria)
-                if not preco:
-                    preco = _extrair_preco_produto(texto, chave_produto, tipo, categoria)
-                metodo = f"preço à vista e-CPF {tipo} Certisign"
-
-            elif certificadora_key == "certclick":
-                preco = _extrair_preco_certclick(texto, html, tipo, categoria)
-                metodo = "card e-CPF A1/A3 CertClick"
-
-            elif certificadora_key == "serpro":
-                preco = _extrair_preco_serpro(texto, tipo, categoria)
-                metodo = "tabela Loja Serpro"
-
-            elif certificadora_key == "soluti":
-                preco = _extrair_preco_soluti_ecpf(texto, html, tipo, categoria)
-                metodo = "página e-CPF Soluti (Certificado PF)"
-
-            elif certificadora_key == "digitalsign":
-                preco = _extrair_preco_card_ecpf(texto, tipo, categoria, html)
-                metodo = "card e-CPF DigitalSign"
-
-            elif certificadora_key == "link":
-                preco = _extrair_preco_link_html(html, tipo, categoria)
-                if not preco:
-                    preco = _extrair_preco_link(texto, tipo, categoria)
-                metodo = "loja oficial Link (e-CPF PF)"
-
-            elif certificadora_key == "online":
-                preco = _extrair_preco_online(texto, tipo, categoria)
-                if not preco:
-                    preco = _extrair_preco_card_ecpf(texto, tipo, categoria, html)
-                metodo = "loja Online Certificadora"
-
-            elif certificadora_key == "acdigital":
-                preco = _extrair_preco_acdigital(page, tipo, categoria)
-                rotulo = "e-PF" if categoria == "pf" else "e-PJ"
-                metodo = f"checkout AC Digital ({rotulo} {tipo}, emissão presencial)"
-
-            elif certificadora_key == "valid":
-                preco = _extrair_preco_produto(texto, chave_produto, tipo, categoria)
-                metodo = f"card {nome_produto} no site"
-
+        if certificadora_key == "certisign":
+            preco = _extrair_preco_certisign(html, tipo, categoria)
             if not preco:
                 preco = _extrair_preco_produto(texto, chave_produto, tipo, categoria)
-                if preco and certificadora_key == "serpro" and tipo == "A3" and preco < 200:
-                    preco = None
+            metodo = f"preço à vista e-CPF {tipo} Certisign"
+
+        elif certificadora_key == "certclick":
+            preco = _extrair_preco_certclick(texto, html, tipo, categoria)
+            metodo = "card e-CPF A1/A3 CertClick"
+
+        elif certificadora_key == "serpro":
+            preco = _extrair_preco_serpro(texto, tipo, categoria)
+            metodo = "tabela Loja Serpro"
+
+        elif certificadora_key == "soluti":
+            preco = _extrair_preco_soluti_ecpf(texto, html, tipo, categoria)
+            metodo = "página e-CPF Soluti (Certificado PF)"
+
+        elif certificadora_key == "digitalsign":
+            preco = _extrair_preco_card_ecpf(texto, tipo, categoria, html)
+            metodo = "card e-CPF DigitalSign"
+
+        elif certificadora_key == "link":
+            preco = _extrair_preco_link_html(html, tipo, categoria)
+            if not preco:
+                preco = _extrair_preco_link(texto, tipo, categoria)
+            metodo = "loja oficial Link (e-CPF PF)"
+
+        elif certificadora_key == "online":
+            preco = _extrair_preco_online(texto, tipo, categoria)
+            if not preco:
+                preco = _extrair_preco_card_ecpf(texto, tipo, categoria, html)
+            metodo = "loja Online Certificadora"
+
+        elif certificadora_key == "acdigital":
+            preco = _extrair_preco_acdigital(page, tipo, categoria)
+            rotulo = "e-PF" if categoria == "pf" else "e-PJ"
+            metodo = f"checkout AC Digital ({rotulo} {tipo}, emissão presencial)"
+
+        elif certificadora_key == "valid":
+            preco = _extrair_preco_produto(texto, chave_produto, tipo, categoria)
+            metodo = f"card {nome_produto} no site"
+
+        if not preco:
+            preco = _extrair_preco_produto(texto, chave_produto, tipo, categoria)
+            if preco and certificadora_key == "serpro" and tipo == "A3" and preco < 200:
+                preco = None
+        return preco, metodo
+
+    preco = None
+    metodo = ""
+    if browser is not None:
+        page = browser.new_page()
+        try:
+            preco, metodo = _executar(page)
         finally:
-            browser.close()
+            page.close()
+    else:
+        from playwright.sync_api import sync_playwright
+
+        with sync_playwright() as p:
+            own_browser = _launch_chromium(p)
+            try:
+                page = own_browser.new_page()
+                try:
+                    preco, metodo = _executar(page)
+                finally:
+                    page.close()
+            finally:
+                own_browser.close()
 
     if not preco:
         return {
@@ -706,7 +738,12 @@ def _extrair_preco_certisign(html: str, tipo: str, categoria: str = "pf") -> flo
     return faixa[0] if faixa else min(v for v in unicos if v >= 200)
 
 
-def buscar_preco_produto(certificadora_key: str, produto_id: str, usar_cache: bool = True) -> dict:
+def buscar_preco_produto(
+    certificadora_key: str,
+    produto_id: str,
+    usar_cache: bool = True,
+    browser=None,
+) -> dict:
     from recomendacao import PRODUTOS
 
     produto = PRODUTOS.get(produto_id)
@@ -739,7 +776,7 @@ def buscar_preco_produto(certificadora_key: str, produto_id: str, usar_cache: bo
     }
 
     try:
-        scrape = _scrape_pagina(certificadora_key, url, chave, tipo, categoria)
+        scrape = _scrape_pagina(certificadora_key, url, chave, tipo, categoria, browser=browser)
         resultado.update(scrape)
     except Exception as e:
         resultado.update({"ok": False, "erro": f"Falha ao acessar site: {str(e)[:120]}"})
@@ -765,9 +802,44 @@ def buscar_preco_por_tipo(certificadora_key: str, tipo: str, categoria: str = "p
 
 
 def comparar_precos_produto(produto_id: str, usar_cache: bool = True) -> list[dict]:
-    resultados = []
-    for key in certificadoras_ativas():
-        resultados.append(buscar_preco_produto(key, produto_id, usar_cache=usar_cache))
+    keys = list(certificadoras_ativas())
+    resultados: list[dict] = []
+    keys_scrape: list[str] = []
+
+    for key in keys:
+        if usar_cache:
+            cache_key = _chave_cache(key, produto_id)
+            if cache_key in _cache:
+                cached = _cache[cache_key]
+                if datetime.utcnow() - cached["atualizado_em"] < timedelta(hours=CACHE_HORAS):
+                    resultados.append(cached["dados"])
+                    continue
+        keys_scrape.append(key)
+
+    if keys_scrape:
+        try:
+            from playwright.sync_api import sync_playwright
+
+            with sync_playwright() as p:
+                browser = _launch_chromium(p)
+                try:
+                    for key in keys_scrape:
+                        resultados.append(
+                            buscar_preco_produto(key, produto_id, usar_cache=False, browser=browser)
+                        )
+                finally:
+                    browser.close()
+        except Exception as exc:
+            msg = str(exc)[:120]
+            for key in keys_scrape:
+                cert = CERTIFICADORAS.get(key, {})
+                resultados.append({
+                    "certificadora": key,
+                    "nome": cert.get("nome", key),
+                    "produto_id": produto_id,
+                    "ok": False,
+                    "erro": f"Falha ao acessar site: {msg}",
+                })
 
     com_preco = [r for r in resultados if r.get("ok")]
     if com_preco:
@@ -787,13 +859,20 @@ def comparar_precos(produto_id: str, usar_cache: bool = True) -> list[dict]:
     return comparar_precos_produto(produto_id, usar_cache=usar_cache)
 
 
+_playwright_ok: bool | None = None
+
+
 def playwright_disponivel() -> bool:
+    global _playwright_ok
+    if _playwright_ok is not None:
+        return _playwright_ok
     try:
         from playwright.sync_api import sync_playwright
 
         with sync_playwright() as p:
             browser = _launch_chromium(p)
             browser.close()
-        return True
+        _playwright_ok = True
     except Exception:
-        return False
+        _playwright_ok = False
+    return _playwright_ok

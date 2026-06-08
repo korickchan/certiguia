@@ -3,7 +3,7 @@ set -euo pipefail
 
 PORT="${PORT:-8080}"
 WORKERS="${WEB_CONCURRENCY:-1}"
-TIMEOUT="${GUNICORN_TIMEOUT:-120}"
+TIMEOUT="${GUNICORN_TIMEOUT:-300}"
 
 echo "Iniciando CertiGuia na porta ${PORT}..."
 exec gunicorn \

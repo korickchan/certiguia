@@ -22,5 +22,5 @@ services:
       - key: CERTIFICADORA_PADRAO
         value: certisign
       - key: GUNICORN_TIMEOUT
-        value: "120"
+        value: "300"
       # Sem DATABASE_URL → SQLite (cadastros podem resetar se o Render reiniciar o container)
