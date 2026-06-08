@@ -264,20 +264,34 @@ SAFEWEB_CHECKOUT_URLS = {
     "pf": "https://www.safeweb.com.br/produtos/checkout/ecpf",
     "pj": "https://www.safeweb.com.br/produtos/checkout/ecnpj",
 }
+SAFEWEB_CATALOGO_MIN_ITENS = 15
 _safeweb_catalogo_cache: dict[str, list] = {}
 
 
-def _scrape_safeweb_catalogo(categoria: str = "pf", timeout_ms: int = 45000, browser=None) -> list | None:
-    """Carrega o checkout Safeweb e captura o catálogo JSON da API interna."""
-    global _safeweb_catalogo_cache
-    if categoria in _safeweb_catalogo_cache:
-        return _safeweb_catalogo_cache[categoria]
+def _safeweb_melhor_catalogo(capturados: list[list]) -> list | None:
+    if not capturados:
+        return None
+    return max(capturados, key=len)
 
-    produtos: list | None = None
+
+def _safeweb_bloquear_peso(route) -> None:
+    if route.request.resource_type in ("image", "font", "media"):
+        route.abort()
+    else:
+        route.continue_()
+
+
+def _scrape_safeweb_catalogo(categoria: str = "pf", timeout_ms: int = 55000, browser=None) -> list | None:
+    """Carrega checkout Safeweb e captura catálogo JSON (API interna)."""
+    global _safeweb_catalogo_cache
+    cached = _safeweb_catalogo_cache.get(categoria)
+    if cached and len(cached) >= SAFEWEB_CATALOGO_MIN_ITENS:
+        return cached
+
     checkout_url = SAFEWEB_CHECKOUT_URLS.get(categoria, SAFEWEB_CHECKOUT_URLS["pf"])
 
     def _capturar(page) -> list | None:
-        capturados: list = []
+        lotes: list[list] = []
 
         def on_response(response):
             if "GetListCatalogoProduto" not in response.url or not response.ok:
@@ -287,25 +301,34 @@ def _scrape_safeweb_catalogo(categoria: str = "pf", timeout_ms: int = 45000, bro
             except Exception:
                 return
             if isinstance(data, list) and data:
-                capturados.extend(data)
+                lotes.append(data)
 
+        page.route("**/*", _safeweb_bloquear_peso)
         page.on("response", on_response)
-        page.goto(checkout_url, wait_until="domcontentloaded", timeout=timeout_ms)
-        if not capturados:
-            try:
-                resp = page.wait_for_response(
-                    lambda r: "GetListCatalogoProduto" in r.url and r.ok,
-                    timeout=min(timeout_ms, 25000),
-                )
-                data = resp.json()
-                if isinstance(data, list) and data:
-                    capturados.extend(data)
-            except Exception:
-                pass
-        if not capturados:
-            page.wait_for_timeout(5000)
-        return capturados or None
 
+        for tentativa in range(2):
+            lotes.clear()
+            try:
+                with page.expect_response(
+                    lambda r: "GetListCatalogoProduto" in r.url and r.ok,
+                    timeout=timeout_ms,
+                ):
+                    page.goto(checkout_url, wait_until="domcontentloaded", timeout=timeout_ms)
+            except Exception:
+                page.goto(checkout_url, wait_until="domcontentloaded", timeout=timeout_ms)
+
+            for _ in range(24):
+                melhor = _safeweb_melhor_catalogo(lotes)
+                if melhor and len(melhor) >= SAFEWEB_CATALOGO_MIN_ITENS:
+                    return melhor
+                page.wait_for_timeout(500)
+
+            if tentativa == 0:
+                page.wait_for_timeout(1500)
+
+        return None
+
+    produtos: list | None = None
     if browser is not None:
         page = browser.new_page()
         try:
@@ -326,9 +349,10 @@ def _scrape_safeweb_catalogo(categoria: str = "pf", timeout_ms: int = 45000, bro
             finally:
                 own_browser.close()
 
-    if produtos:
+    if produtos and len(produtos) >= SAFEWEB_CATALOGO_MIN_ITENS:
         _safeweb_catalogo_cache[categoria] = produtos
-    return produtos
+        return produtos
+    return None
 
 
 def _preco_safeweb_catalogo(produtos: list, tipo: str, categoria: str = "pf") -> float | None:
@@ -351,7 +375,7 @@ def _preco_safeweb_catalogo(produtos: list, tipo: str, categoria: str = "pf") ->
         midia = item.get("MidiaTipo") or ""
         if tipo == "A1" and midia != "Arquivo":
             continue
-        if tipo == "A3" and midia not in ("Sem mídia", "Cartão"):
+        if tipo == "A3" and midia not in ("Sem mídia", "Cartão", "Token"):
             continue
         valor = item.get("Valor")
         if valor is None:
@@ -375,6 +399,35 @@ def _extrair_preco_safeweb_catalogo(tipo: str, categoria: str = "pf", browser=No
     if not produtos:
         return None
     return _preco_safeweb_catalogo(produtos, tipo, categoria)
+
+
+def _scrape_safeweb_pagina(
+    tipo: str,
+    categoria: str,
+    browser=None,
+    nome_produto: str = "",
+) -> dict:
+    """Busca Safeweb com catálogo API — roda em página dedicada (mais estável no Render)."""
+    rotulo = nome_produto or f"E-{'CPF' if categoria == 'pf' else 'CNPJ'} {tipo}"
+    preco = _extrair_preco_safeweb_catalogo(tipo, categoria, browser=browser)
+    if preco is None:
+        return {
+            "ok": False,
+            "erro": (
+                f"Preço do {rotulo} não detectado no Safeweb "
+                f"(videoconferência + 1 ano). Catálogo incompleto ou indisponível."
+            ),
+        }
+    rotulo_prod = "e-CPF" if categoria == "pf" else "e-CNPJ"
+    return {
+        "ok": True,
+        "preco": preco,
+        "preco_formatado": f"R$ {preco:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+        "observacao": _observacao_preco_padrao(
+            rotulo,
+            f"Safeweb checkout ({rotulo_prod}, mídia {'arquivo' if tipo == 'A1' else 'sem mídia/token'}).",
+        ),
+    }
 
 
 SERPRO_LOJA_URL = "https://servicos.serpro.gov.br/loja/certificacao-digital/"
@@ -744,23 +797,7 @@ def _scrape_pagina(
     nome_produto = chave_produto.upper()
 
     if certificadora_key == "safeweb":
-        preco = _extrair_preco_safeweb_catalogo(tipo, categoria, browser=browser)
-        if not preco:
-            rotulo = "e-CPF" if categoria == "pf" else "e-CNPJ"
-            return {
-                "ok": False,
-                "erro": f"Preço do {nome_produto} não detectado — confira manualmente no checkout Safeweb.",
-            }
-        rotulo = "e-CPF" if categoria == "pf" else "e-CNPJ"
-        return {
-            "ok": True,
-            "preco": preco,
-            "preco_formatado": f"R$ {preco:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
-            "observacao": _observacao_preco_padrao(
-                nome_produto,
-                f"Safeweb checkout ({rotulo}, mídia {'arquivo' if tipo == 'A1' else 'sem mídia/cartão'}).",
-            ),
-        }
+        return _scrape_safeweb_pagina(tipo, categoria, browser=browser, nome_produto=nome_produto)
 
     if certificadora_key == "serpro":
         return _scrape_serpro_pagina(tipo, categoria, browser=browser, nome_produto=nome_produto)
@@ -944,7 +981,8 @@ def buscar_preco_produto(
     except Exception as e:
         resultado.update({"ok": False, "erro": f"Falha ao acessar site: {str(e)[:120]}"})
 
-    _cache[cache_key] = {"dados": resultado, "atualizado_em": datetime.utcnow()}
+    if resultado.get("ok"):
+        _cache[cache_key] = {"dados": resultado, "atualizado_em": datetime.utcnow()}
     return resultado
 
 
@@ -964,6 +1002,12 @@ def buscar_preco_por_tipo(certificadora_key: str, tipo: str, categoria: str = "p
     return resultado
 
 
+def _ordem_scrape_certificadoras(keys: list[str]) -> list[str]:
+    """Safeweb/Serpro primeiro — dependem de API/filtros e falham se o browser estiver sob carga."""
+    prioridade = ("safeweb", "serpro")
+    return [k for k in prioridade if k in keys] + [k for k in keys if k not in prioridade]
+
+
 def comparar_precos_produto(produto_id: str, usar_cache: bool = True) -> list[dict]:
     keys = list(certificadoras_ativas())
     resultados: list[dict] = []
@@ -978,6 +1022,24 @@ def comparar_precos_produto(produto_id: str, usar_cache: bool = True) -> list[di
                     resultados.append(cached["dados"])
                     continue
         keys_scrape.append(key)
+
+    keys_scrape = _ordem_scrape_certificadoras(keys_scrape)
+
+    if "safeweb" in keys_scrape:
+        try:
+            resultados.append(
+                buscar_preco_produto("safeweb", produto_id, usar_cache=False, browser=None)
+            )
+        except Exception as exc:
+            cert = CERTIFICADORAS.get("safeweb", {})
+            resultados.append({
+                "certificadora": "safeweb",
+                "nome": cert.get("nome", "Safeweb"),
+                "produto_id": produto_id,
+                "ok": False,
+                "erro": f"Falha ao acessar site: {str(exc)[:120]}",
+            })
+        keys_scrape = [k for k in keys_scrape if k != "safeweb"]
 
     if keys_scrape:
         try:
