@@ -194,13 +194,13 @@ GUIAS_CERTIFICADORA = {
         "compra_a1": _passos_compra(
             "Serpro",
             "https://servicos.serpro.gov.br/loja/certificacao-digital/",
-            "Escolha «e-CPF A1» (1 ano, arquivo no computador). Crie conta na Área do Cliente Serpro.",
+            "Na loja, marque os filtros: Pessoa Física (ou Jurídica) + Arquivo + 1 ano → card «e-CPF | A1 - 1 ano».",
             "e-CPF A1",
         ),
         "compra_a3": _passos_compra(
             "Serpro",
             "https://servicos.serpro.gov.br/loja/certificacao-digital/",
-            "Escolha «e-CPF A3» (token/cartão).",
+            "Filtros: Pessoa Física + Somente o Certificado + 1 ano (se não aparecer, tente 2 anos — Serpro pode não listar A3 1 ano).",
             "e-CPF A3",
         ),
         "instalacao_a1": [
@@ -340,8 +340,12 @@ DETALHES_COMPRA_CERTIFICADORA = {
         "Validação por videoconferência após pagamento.",
     ],
     "serpro": [
-        "Loja Serpro: certificado e-CPF/e-CNPJ, validade 1 ano.",
-        "Emissão: videoconferência ou presencial — prefira videoconferência.",
+        "Na loja Serpro use os filtros à esquerda (não basta rolar a página).",
+        "Tipo de cliente: Pessoa Física (e-CPF) ou Pessoa Jurídica (e-CNPJ).",
+        "Tipo de certificado: Arquivo (A1) ou Somente o Certificado (A3).",
+        "Tipo de produto: 1 ano (A3 pode aparecer só em 2 anos).",
+        "Clique em «Iniciar» no card correto (ex.: e-CPF | A1 - 1 ano).",
+        "Validação por videoconferência após contratação.",
     ],
     "soluti": [
         "Certificado PF (e-CPF), validade 1 ano, emissão por videoconferência.",

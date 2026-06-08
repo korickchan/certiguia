@@ -377,6 +377,129 @@ def _extrair_preco_safeweb_catalogo(tipo: str, categoria: str = "pf", browser=No
     return _preco_safeweb_catalogo(produtos, tipo, categoria)
 
 
+SERPRO_LOJA_URL = "https://servicos.serpro.gov.br/loja/certificacao-digital/"
+
+SERPRO_FILTROS = {"pf": "Pessoa Física", "pj": "Pessoa Jurídica"}
+SERPRO_MIDIA = {"A1": "Arquivo", "A3": "Somente o Certificado"}
+
+
+def _serpro_desmarcar_filtros(page) -> None:
+    for label in (
+        "Bancos",
+        "Pessoa Física",
+        "Pessoa Jurídica",
+        "Adm Pública Direta",
+        "Adm Pública Indireta",
+        "Arquivo",
+        "Nuvem",
+        "Somente o Certificado",
+        "1 ano",
+        "2 anos",
+    ):
+        try:
+            loc = page.get_by_label(label, exact=True)
+            if loc.count() and loc.first.is_checked():
+                loc.first.uncheck()
+        except Exception:
+            pass
+    page.wait_for_timeout(400)
+
+
+def _serpro_aplicar_filtros(page, categoria: str, tipo: str, validade: str) -> None:
+    _serpro_desmarcar_filtros(page)
+    for label in (SERPRO_FILTROS[categoria], SERPRO_MIDIA[tipo.upper()], validade):
+        page.get_by_label(label, exact=True).check()
+    page.wait_for_timeout(1200)
+
+
+def _serpro_ler_preco_card(page, categoria: str, tipo: str) -> float | None:
+    familia = "e-CPF" if categoria == "pf" else "e-CNPJ"
+    texto = _normalizar_texto(page.inner_text("body"))
+    padrao = (
+        rf"{familia}\s*\|\s*{tipo}\s*-\s*\d+\s*ano[s]?"
+        rf"[\s\S]{{0,220}}?"
+        rf"R\$\s*([\d.,]+)"
+    )
+    m = re.search(padrao, texto, re.I)
+    if not m:
+        return None
+    valor = _parse_valor_br(m.group(1))
+    if _valor_valido(valor, tipo, categoria):
+        return valor
+    return None
+
+
+def _extrair_preco_serpro_loja(page, tipo: str, categoria: str = "pf") -> tuple[float | None, str]:
+    """Marca filtros na loja Serpro e lê o card e-CPF/e-CNPJ."""
+    tipo = tipo.upper()
+    page.goto(SERPRO_LOJA_URL, wait_until="domcontentloaded", timeout=45000)
+    page.wait_for_timeout(2000)
+
+    _serpro_aplicar_filtros(page, categoria, tipo, "1 ano")
+    preco = _serpro_ler_preco_card(page, categoria, tipo)
+    if preco is not None:
+        return preco, "1 ano"
+
+    if tipo == "A3":
+        _serpro_aplicar_filtros(page, categoria, tipo, "2 anos")
+        preco = _serpro_ler_preco_card(page, categoria, tipo)
+        if preco is not None:
+            return preco, "2 anos (Serpro não lista A3 com 1 ano)"
+
+    return None, "1 ano"
+
+
+def _scrape_serpro_pagina(
+    tipo: str,
+    categoria: str,
+    browser=None,
+    nome_produto: str = "",
+) -> dict:
+    rotulo = nome_produto or f"E-{'CPF' if categoria == 'pf' else 'CNPJ'} {tipo}"
+
+    def _run(page) -> dict:
+        preco, validade_label = _extrair_preco_serpro_loja(page, tipo, categoria)
+        if preco is None:
+            return {
+                "ok": False,
+                "erro": (
+                    f"Preço do {rotulo} não encontrado na loja Serpro "
+                    f"(marque: {SERPRO_FILTROS[categoria]}, {SERPRO_MIDIA[tipo.upper()]}, 1 ano)."
+                ),
+            }
+        obs_extra = f" Validade na loja: {validade_label}." if "2 anos" in validade_label else ""
+        return {
+            "ok": True,
+            "preco": preco,
+            "preco_formatado": f"R$ {preco:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+            "observacao": _observacao_preco_padrao(
+                rotulo,
+                f"Loja Serpro ({SERPRO_FILTROS[categoria]} + {SERPRO_MIDIA[tipo.upper()]} + {validade_label}).",
+            )
+            + obs_extra,
+        }
+
+    if browser is not None:
+        page = browser.new_page()
+        try:
+            return _run(page)
+        finally:
+            page.close()
+
+    from playwright.sync_api import sync_playwright
+
+    with sync_playwright() as p:
+        own = _launch_chromium(p)
+        try:
+            page = own.new_page()
+            try:
+                return _run(page)
+            finally:
+                page.close()
+        finally:
+            own.close()
+
+
 def _extrair_preco_serpro(texto: str, tipo: str, categoria: str = "pf") -> float | None:
     texto = _normalizar_texto(texto)
     familia = _familia_certificado(categoria)
@@ -639,8 +762,11 @@ def _scrape_pagina(
             ),
         }
 
+    if certificadora_key == "serpro":
+        return _scrape_serpro_pagina(tipo, categoria, browser=browser, nome_produto=nome_produto)
+
     wait_until = "domcontentloaded" if certificadora_key in (
-        "valid", "certclick", "serpro", "soluti", "digitalsign", "link", "online", "acdigital",
+        "valid", "certclick", "soluti", "digitalsign", "link", "online", "acdigital",
     ) else "networkidle"
     wait_ms = 8000 if certificadora_key == "certisign" else 6000
 
@@ -665,10 +791,6 @@ def _scrape_pagina(
         elif certificadora_key == "certclick":
             preco = _extrair_preco_certclick(texto, html, tipo, categoria)
             metodo = "card e-CPF A1/A3 CertClick"
-
-        elif certificadora_key == "serpro":
-            preco = _extrair_preco_serpro(texto, tipo, categoria)
-            metodo = "tabela Loja Serpro"
 
         elif certificadora_key == "soluti":
             preco = _extrair_preco_soluti_ecpf(texto, html, tipo, categoria)
@@ -701,8 +823,6 @@ def _scrape_pagina(
 
         if not preco:
             preco = _extrair_preco_produto(texto, chave_produto, tipo, categoria)
-            if preco and certificadora_key == "serpro" and tipo == "A3" and preco < 200:
-                preco = None
         return preco, metodo
 
     preco = None
