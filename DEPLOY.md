@@ -63,44 +63,76 @@ docker compose up --build
 
 ---
 
-## Opção A — Render (recomendado para começar)
+## Opção A — Render FREE (R$ 0, sem cartão)
 
-Mais rápido de configurar; plano gratuito disponível (com limitações).
+O CertiGuia é gratuito — dá para hospedar **sem pagar nada**.
 
-### 1. Enviar código para o GitHub
+### ⚠️ Limitações do plano free
 
-```powershell
-git init
-git add .
-git commit -m "CertiGuia pronto para deploy"
-git remote add origin https://github.com/SEU_USUARIO/certiguia.git
-git push -u origin main
-```
+| Item | O que acontece |
+|------|----------------|
+| **Custo** | R$ 0 |
+| **Cartão** | Não precisa (use deploy **manual**, não Blueprint pago) |
+| **Site “dorme”** | Após ~15 min sem acesso, a 1ª visita demora ~30–60 s |
+| **RAM (512 MB)** | Busca automática de preços pode falhar; o **guia completo funciona** |
+| **Banco** | SQLite — cadastros podem **resetar** se o Render reiniciar o serviço |
+| **Domínio** | `certiguia.com.br` funciona no plano free |
 
-### 2. Criar conta no Render
+### Passo a passo (sem cartão)
 
-1. Acesse [render.com](https://render.com) e conecte o GitHub.
-2. **New → Blueprint** e selecione o repositório (usa o `render.yaml`), **ou** configure manualmente:
+1. Acesse [render.com](https://render.com) → login com GitHub  
+2. **New → Web Service** (⚠️ **não** use Blueprint se pedir cartão)  
+3. Conecte o repositório **`korickchan/certiguia`**  
+4. Configurações:
 
-### 3. Deploy manual no Render
+   | Campo | Valor |
+   |-------|-------|
+   | Name | `certiguia` |
+   | Region | Oregon (US West) ou mais próximo |
+   | Branch | `main` |
+   | Runtime | **Docker** |
+   | Instance type | **Free** |
+   | Health Check Path | `/health` |
 
-1. **New → Web Service** → repositório → **Runtime: Docker**.
-2. **New → PostgreSQL** → copie a **Internal Database URL**.
-3. No Web Service, **Environment**:
+5. **Environment Variables** (Environment):
 
-   - `DATABASE_URL` = URL do Postgres (Render converte `postgres://` automaticamente)
-   - `SECRET_KEY`, `ADMIN_PASSWORD`, `PIX_*`, `WHATSAPP_SUPORTE`
+   | Variável | Valor |
+   |----------|-------|
+   | `SECRET_KEY` | gere uma chave aleatória longa |
+   | `ADMIN_PASSWORD` | senha forte (não use `admin123`) |
+   | `WHATSAPP_SUPORTE` | `5571987939074` (seu número) |
+   | `PIX_CHAVE` | sua chave Pix |
+   | `PIX_NOME` | seu nome |
+   | `PIX_CIDADE` | `SALVADOR` |
 
-4. **Advanced**:
-   - Health Check Path: `/health`
-   - Instance type: pelo menos **Starter** (Playwright precisa de RAM)
+   **Não** configure `DATABASE_URL` — o app usa SQLite automaticamente.
 
-5. **Create Web Service** — o primeiro build leva ~5–10 min (imagem com Chromium).
+6. **Create Web Service** — aguarde o build (~5–10 min)  
+7. Teste a URL: `https://certiguia.onrender.com` (ou nome que o Render gerar)
 
-### 4. Domínio no Render
+### Ligar certiguia.com.br (Registro.br)
 
-- **Settings → Custom Domains** → adicione `certiguia.com.br`.
-- No Registro.br (ou onde comprou o domínio), crie um **CNAME** apontando para o endereço que o Render informar.
+1. Render → **Settings → Custom Domains**  
+2. Adicione `certiguia.com.br` e `www.certiguia.com.br`  
+3. No [Registro.br](https://registro.br) → DNS do domínio:
+
+   - **CNAME** `www` → endereço que o Render informar (ex.: `certiguia.onrender.com`)  
+   - **A** `@` → IP(s) que o Render informar (para raiz sem www)
+
+4. Aguarde 1–2 h → acesse **https://certiguia.com.br**
+
+### Se pedir cartão de crédito
+
+- **Cancele** a tela de pagamento  
+- Use **Web Service → Free** manualmente (passos acima)  
+- **Não** crie PostgreSQL pago — no free usamos SQLite  
+- Blueprint com plano `starter` pede cartão — o `render.yaml` do repo já está em **plan: free**
+
+---
+
+## Opção A2 — Render pago (opcional, ~US$ 7/mês)
+
+Só se no futuro quiser: site sempre ligado, mais RAM, Postgres persistente e busca de preços estável.
 
 ---
 

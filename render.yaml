@@ -1,11 +1,12 @@
-# Deploy no Render: conecte o repositório Git e use "Blueprint" ou configure manualmente.
-# https://render.com/docs/blueprint-spec
+# Deploy 100% gratuito no Render (sem cartão de crédito).
+# Use: New → Blueprint → repo certiguia
+# Se pedir cartão, use o deploy MANUAL descrito em DEPLOY.md (Web Service → Free).
 
 services:
   - type: web
     name: certiguia
     runtime: docker
-    plan: starter
+    plan: free
     healthCheckPath: /health
     envVars:
       - key: SECRET_KEY
@@ -24,13 +25,4 @@ services:
         value: certisign
       - key: GUNICORN_TIMEOUT
         value: "120"
-      - key: DATABASE_URL
-        fromDatabase:
-          name: certiguia-db
-          property: connectionString
-
-databases:
-  - name: certiguia-db
-    plan: free
-    databaseName: certiguia
-    user: certiguia
+      # Sem DATABASE_URL → SQLite (cadastros podem resetar se o Render reiniciar o container)
