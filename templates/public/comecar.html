@@ -22,9 +22,10 @@
                     <label for="cpf">CPF *</label>
                     <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
                 </div>
-                <div>
-                    <label for="cnpj">CNPJ (se emitir pela empresa)</label>
+                <div id="cnpj-wrap">
+                    <label for="cnpj">CNPJ da clínica/empresa</label>
                     <input type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00">
+                    <p class="hint" id="cnpj-hint">Obrigatório se você emite pela clínica ou empresa.</p>
                 </div>
             </div>
             <div class="form-row two-cols">
@@ -84,10 +85,11 @@
             <div class="form-row">
                 <span class="label">Titularidade</span>
                 <div class="radio-group vertical">
-                    <label><input type="radio" name="emite_como" value="pf" checked> Como pessoa física (CPF)</label>
+                    <label><input type="radio" name="emite_como" value="pf" checked> Como pessoa física (CPF) — sem clínica/empresa</label>
                     <label><input type="radio" name="emite_como" value="pj"> Pela clínica/empresa (CNPJ)</label>
                     <label><input type="radio" name="emite_como" value="ambos"> Os dois (CPF e CNPJ)</label>
                 </div>
+                <p class="hint" id="emite-hint">Receituário e laudos em seu nome usam e-CPF (CPF). e-CNPJ é para documentos da empresa.</p>
             </div>
             <div class="form-row">
                 <span class="label">Usa o certificado em vários computadores?</span>
@@ -128,7 +130,30 @@ function maskCNPJ(value) {
         .slice(0, 18);
 }
 const cnpj = document.getElementById('cnpj');
+const cnpjWrap = document.getElementById('cnpj-wrap');
+const cnpjHint = document.getElementById('cnpj-hint');
+const emiteRadios = document.querySelectorAll('input[name="emite_como"]');
+
+function emiteComoSelecionado() {
+    const r = document.querySelector('input[name="emite_como"]:checked');
+    return r ? r.value : 'pf';
+}
+
+function atualizarCampoCnpj() {
+    const modo = emiteComoSelecionado();
+    const precisa = modo === 'pj' || modo === 'ambos';
+    if (cnpjWrap) cnpjWrap.style.display = precisa ? '' : 'none';
+    if (cnpj) cnpj.required = precisa;
+    if (cnpjHint) {
+        cnpjHint.textContent = precisa
+            ? 'Informe o CNPJ da clínica ou empresa.'
+            : 'Não necessário — você emite só como pessoa física (CPF).';
+    }
+}
+
 if (cnpj) cnpj.addEventListener('input', e => { e.target.value = maskCNPJ(e.target.value); });
+emiteRadios.forEach(r => r.addEventListener('change', atualizarCampoCnpj));
+atualizarCampoCnpj();
 
 const form = document.querySelector('.form-cadastro');
 if (form) {

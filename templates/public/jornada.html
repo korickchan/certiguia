@@ -104,6 +104,14 @@
 
         {% if vet.motivo_recomendacao %}<p class="motivo">{{ vet.motivo_recomendacao }}</p>{% endif %}
 
+        {% if rec_observacoes %}
+        <ul class="obs-list">
+            {% for obs in rec_observacoes %}
+            <li>{{ obs }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
         {% if rec_secundario %}
 
         <div class="secundario"><strong>Complementar:</strong> {{ rec_secundario.nome }}</div>
@@ -291,7 +299,7 @@
 
 <section class="public-card">
 
-    <h2>Instalação — e-CPF {{ tipo_arm }} ({{ cert_info.nome }})</h2>
+    <h2>Instalação — {{ produto.nome if produto else 'certificado' }} ({{ cert_info.nome }})</h2>
 
     <ul class="instalacao-lista">
 
@@ -353,7 +361,7 @@
 
 
 
-    <h3 class="subsection">Na certificadora {{ cert_info.nome }} (e-CPF {{ tipo_arm }})</h3>
+    <h3 class="subsection">Na certificadora {{ cert_info.nome }} ({{ produto.nome if produto else tipo_arm }})</h3>
 
     <ul class="instalacao-lista">
 

@@ -57,12 +57,20 @@ FINALIDADES = {
 }
 
 
+def _cnpj_informado(cnpj) -> bool:
+    if not cnpj:
+        return False
+    digitos = "".join(c for c in str(cnpj) if c.isdigit())
+    return len(digitos) == 14
+
+
 def recomendar(
     *,
     profissao="outro",
     emite_como="pf",
     varios_computadores=False,
     finalidade="documentos",
+    cnpj=None,
     eh_veterinario=None,
 ):
     """
@@ -77,35 +85,52 @@ def recomendar(
 
     armazenamento = "A3" if varios_computadores else "A1"
     observacoes = []
+    tem_cnpj = _cnpj_informado(cnpj)
     precisa_pf_assinatura = finalidade in ("receituario", "documentos", "geral") or profissao in (
         "veterinario", "medico", "dentista", "farmaceutico", "advogado"
     )
 
-    if precisa_pf_assinatura and emite_como == "pj":
+    if emite_como in ("pj", "ambos") and not tem_cnpj:
         observacoes.append(
-            "Para assinar receitas, laudos ou documentos em seu nome profissional, "
-            "o e-CPF (pessoa física) é necessário. O e-CNPJ representa a empresa."
+            "Para emitir pela clínica ou empresa, informe o CNPJ no cadastro. "
+            "Se você trabalha só como pessoa física (sem CNPJ), marque «Como pessoa física (CPF)»."
         )
+
+    if emite_como == "pf" or (emite_como in ("pj", "ambos") and not tem_cnpj and precisa_pf_assinatura):
         produto_id = f"e-cpf-{armazenamento.lower()}"
-        secundario = f"e-cnpj-{armazenamento.lower()}" if emite_como == "ambos" else None
-    elif emite_como == "ambos":
+        secundario = f"e-cnpj-{armazenamento.lower()}" if emite_como == "ambos" and tem_cnpj else None
+        if emite_como in ("pj", "ambos") and precisa_pf_assinatura:
+            observacoes.append(
+                "Receitas e documentos em seu nome profissional exigem e-CPF (CPF). "
+                "O e-CNPJ serve para documentos em nome da empresa."
+            )
+    elif emite_como == "ambos" and tem_cnpj:
         produto_id = f"e-cpf-{armazenamento.lower()}"
         secundario = f"e-cnpj-{armazenamento.lower()}"
-        observacoes.append("Comece pelo e-CPF para documentos profissionais; e-CNPJ complementa documentos da empresa.")
-    elif emite_como == "pj":
+        observacoes.append(
+            "Comece pelo e-CPF para documentos profissionais; e-CNPJ complementa documentos da empresa."
+        )
+    elif emite_como == "pj" and tem_cnpj:
         produto_id = f"e-cnpj-{armazenamento.lower()}"
         secundario = None
+        if precisa_pf_assinatura:
+            observacoes.append(
+                "Para receituário ou assinatura em seu nome, você também precisará de e-CPF — "
+                "considere marcar «Os dois (CPF e CNPJ)»."
+            )
     else:
         produto_id = f"e-cpf-{armazenamento.lower()}"
         secundario = None
 
     if finalidade == "receituario" and profissao in ("veterinario", "medico", "dentista"):
         observacoes.append(
-            "Receitas de controle especial exigem assinatura qualificada ICP-Brasil (e-CPF ou e-CNPJ conforme quem assina)."
+            "Receitas de controle especial exigem assinatura qualificada ICP-Brasil no CPF do profissional (e-CPF)."
         )
 
     produto = PRODUTOS[produto_id]
-    motivo = _texto_motivo(produto, armazenamento, profissao, emite_como, varios_computadores, finalidade)
+    motivo = _texto_motivo(
+        produto, armazenamento, profissao, emite_como, varios_computadores, finalidade, tem_cnpj
+    )
 
     return {
         "produto_id": produto_id,
@@ -134,19 +159,54 @@ def tipo_certificado_efetivo(vet) -> str:
     return (getattr(vet, "tipo_certificado", None) or "A1").upper()
 
 
-def _texto_motivo(produto, armazenamento, profissao, emite_como, varios_computadores, finalidade):
+def produtos_comparacao(
+    produto_id: str,
+    *,
+    emite_como: str = "pf",
+    secundario_id: str | None = None,
+    tem_cnpj: bool = False,
+) -> dict:
+    """Lista de produtos relevantes para comparar preços conforme o perfil."""
+    if secundario_id:
+        ids = [produto_id, secundario_id]
+    elif emite_como == "pj" and tem_cnpj:
+        ids = ["e-cnpj-a1", "e-cnpj-a3"]
+    elif emite_como == "ambos" and tem_cnpj:
+        ids = list(PRODUTOS.keys())
+    else:
+        ids = ["e-cpf-a1", "e-cpf-a3"]
+    if produto_id not in ids:
+        ids.insert(0, produto_id)
+    vistos: list[str] = []
+    for pid in ids:
+        if pid in PRODUTOS and pid not in vistos:
+            vistos.append(pid)
+    return {pid: PRODUTOS[pid] for pid in vistos}
+
+
+def _texto_motivo(
+    produto,
+    armazenamento,
+    profissao,
+    emite_como,
+    varios_computadores,
+    finalidade,
+    tem_cnpj,
+):
     prof = PROFISSOES.get(profissao, PROFISSOES["outro"])
     partes = [f"Indicamos {produto['nome']} porque você atua como {prof['nome'].lower()}."]
     if finalidade == "receituario":
         partes.append("Você precisa emitir receituário ou prescrições digitais.")
     elif finalidade == "fiscal":
         partes.append("Você precisa do certificado para obrigações fiscais ou NF-e.")
-    if emite_como == "pf":
-        partes.append("Você emite como pessoa física (CPF).")
-    elif emite_como == "pj":
-        partes.append("Você emite pela empresa/clínica (CNPJ).")
+    if produto["categoria"] == "pf":
+        partes.append("Você emite como pessoa física (CPF), sem certificado da clínica/empresa.")
     else:
-        partes.append("Você emite como PF e também pela empresa.")
+        partes.append("Você emite pela empresa/clínica (CNPJ).")
+    if emite_como in ("pj", "ambos") and produto["categoria"] == "pf" and tem_cnpj:
+        partes.append(
+            "Você indicou clínica/empresa, mas receitas e laudos em seu nome usam o e-CPF (CPF)."
+        )
     if armazenamento == "A1":
         partes.append("Um computador principal — A1 costuma ser mais barato e prático.")
     else:

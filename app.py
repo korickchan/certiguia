@@ -52,7 +52,7 @@ from guia_passos import (
 )
 from modelo_guia import gerar_html_guia
 from pix import gerar_pix_copia_cola, qr_code_base64
-from recomendacao import FINALIDADES, PRODUTOS, PROFISSOES, recomendar, produto_id_efetivo, tipo_certificado_efetivo
+from recomendacao import FINALIDADES, PRODUTOS, PROFISSOES, produtos_comparacao, recomendar, _cnpj_informado, produto_id_efetivo, tipo_certificado_efetivo
 
 load_dotenv()
 
@@ -353,6 +353,19 @@ def comecar():
         emite_como = request.form.get("emite_como", "pf")
         if emite_como not in ("pf", "pj", "ambos"):
             emite_como = "pf"
+        cnpj = request.form.get("cnpj", "").strip() or None
+        if emite_como in ("pj", "ambos") and not _cnpj_informado(cnpj):
+            flash(
+                "Informe o CNPJ da clínica/empresa ou marque «Como pessoa física (CPF)» "
+                "se você não emite pelo CNPJ.",
+                "error",
+            )
+            return render_template(
+                "public/comecar.html",
+                estados=ESTADOS_BR,
+                profissoes=PROFISSOES,
+                finalidades=FINALIDADES,
+            )
         varios_pc = request.form.get("varios_computadores") == "sim"
         registro = request.form.get("registro_profissional", "").strip() or request.form.get("crmv", "").strip() or "—"
         registro_uf = request.form.get("registro_uf", "").strip().upper() or request.form.get("crmv_uf", "").strip().upper() or "NA"
@@ -363,6 +376,7 @@ def comecar():
             emite_como=emite_como,
             varios_computadores=varios_pc,
             finalidade=finalidade,
+            cnpj=cnpj,
         )
 
         vet = Veterinario(
@@ -380,7 +394,7 @@ def comecar():
             bairro="—",
             cidade="—",
             uf=registro_uf if registro_uf != "NA" else "BA",
-            cnpj=request.form.get("cnpj", "").strip() or None,
+            cnpj=cnpj,
             eh_veterinario=(profissao == "veterinario"),
             profissao=profissao,
             finalidade=finalidade,
@@ -411,14 +425,25 @@ def jornada(protocolo):
     produto = vet.produto_info()
     profissao = vet.profissao or ("veterinario" if vet.eh_veterinario else "outro")
     rec_secundario = None
+    rec_observacoes = []
+    produtos_cmp = PRODUTOS
     if vet.produto_recomendado:
         rec = recomendar(
             profissao=profissao,
             emite_como=vet.emite_como or "pf",
             varios_computadores=bool(vet.varios_computadores),
             finalidade=vet.finalidade or "documentos",
+            cnpj=vet.cnpj,
         )
         rec_secundario = rec.get("secundario")
+        rec_observacoes = rec.get("observacoes") or []
+        sec_id = rec["secundario"]["id"] if rec.get("secundario") else None
+        produtos_cmp = produtos_comparacao(
+            rec["produto_id"],
+            emite_como=vet.emite_como or "pf",
+            secundario_id=sec_id,
+            tem_cnpj=_cnpj_informado(vet.cnpj),
+        )
 
     cert_escolhida = bool(vet.certificadora_escolhida)
     cert_key = vet.certificadora_escolhida if cert_escolhida else None
@@ -448,8 +473,9 @@ def jornada(protocolo):
         "public/jornada.html",
         vet=vet,
         produto=produto,
-        produtos=PRODUTOS,
+        produtos=produtos_cmp,
         produto_atual=produto_atual,
+        rec_observacoes=rec_observacoes,
         precos_desatualizados=precos_desatualizados,
         profissao=profissao,
         profissao_info=PROFISSOES.get(profissao, PROFISSOES["outro"]),
