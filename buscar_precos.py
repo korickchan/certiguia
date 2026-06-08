@@ -789,7 +789,11 @@ def comparar_precos(produto_id: str, usar_cache: bool = True) -> list[dict]:
 
 def playwright_disponivel() -> bool:
     try:
-        import playwright  # noqa: F401
+        from playwright.sync_api import sync_playwright
+
+        with sync_playwright() as p:
+            browser = _launch_chromium(p)
+            browser.close()
         return True
-    except ImportError:
+    except Exception:
         return False
