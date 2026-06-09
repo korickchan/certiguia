@@ -2,6 +2,7 @@ import csv
 import io
 import json
 import os
+import threading
 from datetime import datetime
 from functools import wraps
 
@@ -295,6 +296,72 @@ def _buscar_e_salvar_precos(vet, produto_id, usar_cache=True):
     return resultados
 
 
+_scrape_lock = threading.Lock()
+_scrape_jobs: dict[str, dict] = {}
+
+
+def _run_scrape_precos_async(protocolo: str, produto_id: str) -> None:
+    """Busca preços em thread — evita timeout de proxy/Safari em requisição longa."""
+    key = protocolo.upper()
+    with app.app_context():
+        try:
+            vet = Veterinario.query.filter_by(protocolo=key).first()
+            if not vet:
+                raise ValueError("Protocolo não encontrado.")
+            _buscar_e_salvar_precos(vet, produto_id, usar_cache=False)
+            db.session.commit()
+            redirect = url_for("jornada", protocolo=protocolo, precos_ok=1)
+            with _scrape_lock:
+                _scrape_jobs[key] = {"status": "done", "ok": True, "redirect": redirect}
+        except Exception as exc:
+            db.session.rollback()
+            with _scrape_lock:
+                _scrape_jobs[key] = {
+                    "status": "error",
+                    "ok": False,
+                    "erro": str(exc)[:200],
+                }
+
+
+def _iniciar_scrape_precos(protocolo: str, produto_id: str) -> dict:
+    key = protocolo.upper()
+    vet = Veterinario.query.filter_by(protocolo=key).first()
+    if vet:
+        vet.precos_json = None
+        db.session.commit()
+    with _scrape_lock:
+        job = _scrape_jobs.get(key)
+        if job and job.get("status") == "running":
+            return {"ok": False, "pending": True, "started": False}
+        _scrape_jobs[key] = {"status": "running"}
+    thread = threading.Thread(
+        target=_run_scrape_precos_async,
+        args=(protocolo, produto_id),
+        daemon=True,
+    )
+    thread.start()
+    return {"ok": False, "pending": True, "started": True}
+
+
+def _status_scrape_precos(protocolo: str) -> dict:
+    key = protocolo.upper()
+    with _scrape_lock:
+        job = _scrape_jobs.get(key)
+    if job:
+        if job.get("status") == "done":
+            return {"ok": True, "redirect": job["redirect"]}
+        if job.get("status") == "error":
+            return {"ok": False, "erro": job.get("erro", "Erro ao buscar preços.")}
+        return {"ok": False, "pending": True}
+    vet = Veterinario.query.filter_by(protocolo=key).first()
+    if vet and vet.precos_json:
+        return {
+            "ok": True,
+            "redirect": url_for("jornada", protocolo=protocolo, precos_ok=1),
+        }
+    return {"ok": False, "pending": True}
+
+
 with app.app_context():
     db.create_all()
     _migrate_db()
@@ -555,21 +622,15 @@ def atualizar_precos_publico(protocolo):
         return redirect(url_for("jornada", protocolo=protocolo))
 
     produto_id = produto_id_efetivo(vet)
-    if request.args.get("ajax") == "1":
-        try:
-            _buscar_e_salvar_precos(vet, produto_id, usar_cache=False)
-            db.session.commit()
-            return jsonify(
-                ok=True,
-                redirect=url_for("jornada", protocolo=protocolo, precos_ok=1),
-            )
-        except Exception as exc:
-            db.session.rollback()
-            return jsonify(
-                ok=False,
-                erro=str(exc)[:200],
-                redirect=url_for("jornada", protocolo=protocolo),
-            ), 500
+    ajax = request.args.get("ajax")
+
+    if ajax == "status":
+        return jsonify(_status_scrape_precos(protocolo))
+
+    if ajax == "1":
+        if not playwright_disponivel():
+            return jsonify(ok=False, erro="Playwright indisponível no servidor."), 503
+        return jsonify(_iniciar_scrape_precos(protocolo, produto_id))
 
     if not playwright_disponivel():
         flash("Busca automática indisponível. Instale Playwright no servidor.", "error")

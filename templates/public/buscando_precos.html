@@ -22,12 +22,17 @@
             Isso pode levar <strong>de 1 a 3 minutos</strong>. Não feche nem atualize esta página.
             No iPhone, mantenha a tela ligada até concluir.
         </p>
+        <p class="loading-elapsed" id="loading-elapsed">Tempo: 0s</p>
         <ul class="loading-steps">
-            <li id="step-1" class="loading-step active">Conectando às certificadoras…</li>
-            <li id="step-2" class="loading-step">Consultando preços (Playwright)…</li>
+            <li id="step-1" class="loading-step active">Iniciando busca…</li>
+            <li id="step-2" class="loading-step">Consultando preços nas certificadoras…</li>
             <li id="step-3" class="loading-step">Organizando comparativo…</li>
         </ul>
         <p class="loading-protocolo">Protocolo {{ vet.protocolo }}</p>
+        <p class="loading-skip hidden" id="loading-skip">
+            A busca continua no servidor.
+            <a href="{{ url_for('jornada', protocolo=protocolo) }}">Ir ao guia e escolher certificadora manualmente</a>
+        </p>
     </div>
 
     <div class="loading-card loading-error hidden" id="loading-error">
@@ -41,46 +46,112 @@
 {% block scripts %}
 <script>
 (function () {
+    const startUrl = '{{ url_for("atualizar_precos_publico", protocolo=protocolo) }}?ajax=1';
+    const statusUrl = '{{ url_for("atualizar_precos_publico", protocolo=protocolo) }}?ajax=status';
     const steps = [
         document.getElementById('step-1'),
         document.getElementById('step-2'),
         document.getElementById('step-3'),
     ];
-    let stepIndex = 0;
-    const stepTimer = setInterval(function () {
-        if (stepIndex < steps.length) {
-            steps[stepIndex].classList.add('done');
-            stepIndex += 1;
-            if (stepIndex < steps.length) {
-                steps[stepIndex].classList.add('active');
-            }
-        }
-    }, 12000);
+    const elapsedEl = document.getElementById('loading-elapsed');
+    const skipEl = document.getElementById('loading-skip');
+    const startedAt = Date.now();
+    let pollErrors = 0;
+    const MAX_POLL_ERRORS = 40;
+    const POLL_MS = 2500;
+    const SKIP_AFTER_MS = 90000;
 
-    fetch('{{ url_for("atualizar_precos_publico", protocolo=protocolo) }}?ajax=1', {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-    })
-        .then(function (resp) { return resp.json().then(function (data) { return { ok: resp.ok, data: data }; }); })
-        .then(function (result) {
-            clearInterval(stepTimer);
-            if (result.data && result.data.ok) {
-                steps.forEach(function (el) { el.classList.add('done'); });
-                window.location.href = result.data.redirect;
-                return;
-            }
-            showError((result.data && result.data.erro) || 'Erro desconhecido.');
-        })
-        .catch(function () {
-            clearInterval(stepTimer);
-            showError('Falha de conexão com o servidor.');
-        });
+    function updateElapsed() {
+        const sec = Math.floor((Date.now() - startedAt) / 1000);
+        if (elapsedEl) elapsedEl.textContent = 'Tempo: ' + sec + 's';
+        if (sec >= 12 && steps[0]) steps[0].classList.add('done');
+        if (sec >= 12 && steps[1]) steps[1].classList.add('active');
+        if (sec >= 45 && steps[1]) steps[1].classList.add('done');
+        if (sec >= 45 && steps[2]) steps[2].classList.add('active');
+        if (sec * 1000 >= SKIP_AFTER_MS && skipEl) skipEl.classList.remove('hidden');
+    }
+
+    setInterval(updateElapsed, 1000);
+    updateElapsed();
 
     function showError(msg) {
         document.getElementById('loading-card').classList.add('hidden');
         document.getElementById('loading-error').classList.remove('hidden');
         document.getElementById('error-message').textContent = msg;
     }
+
+    function finishSuccess(redirect) {
+        steps.forEach(function (el) {
+            if (el) {
+                el.classList.add('done');
+                el.classList.add('active');
+            }
+        });
+        window.location.href = redirect;
+    }
+
+    function pollStatus() {
+        fetch(statusUrl, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store',
+        })
+            .then(function (resp) {
+                return resp.json().then(function (data) {
+                    return { httpOk: resp.ok, data: data };
+                });
+            })
+            .then(function (result) {
+                pollErrors = 0;
+                const data = result.data || {};
+                if (data.ok && data.redirect) {
+                    finishSuccess(data.redirect);
+                    return;
+                }
+                if (data.erro) {
+                    showError(data.erro);
+                    return;
+                }
+                setTimeout(pollStatus, POLL_MS);
+            })
+            .catch(function () {
+                pollErrors += 1;
+                if (pollErrors >= MAX_POLL_ERRORS) {
+                    showError(
+                        'A conexão caiu, mas a busca pode ter terminado no servidor. ' +
+                        'Volte ao guia e clique em «Atualizar preços» ou escolha a certificadora manualmente.'
+                    );
+                    return;
+                }
+                setTimeout(pollStatus, POLL_MS);
+            });
+    }
+
+    fetch(startUrl, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store',
+    })
+        .then(function (resp) {
+            return resp.json().then(function (data) {
+                return { httpOk: resp.ok, data: data };
+            });
+        })
+        .then(function (result) {
+            const data = result.data || {};
+            if (data.ok && data.redirect) {
+                finishSuccess(data.redirect);
+                return;
+            }
+            if (data.erro) {
+                showError(data.erro);
+                return;
+            }
+            pollStatus();
+        })
+        .catch(function () {
+            pollStatus();
+        });
 })();
 </script>
 {% endblock %}

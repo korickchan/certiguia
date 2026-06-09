@@ -573,6 +573,27 @@
     margin: 0;
 }
 
+.loading-elapsed {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--pub-primary-dark);
+    margin: 0 0 1rem;
+}
+
+.loading-skip {
+    margin: 1.25rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--pub-muted);
+}
+
+.loading-skip.hidden { display: none; }
+
+.loading-skip a {
+    color: var(--pub-primary-dark);
+    font-weight: 600;
+}
+
 .loading-error .btn { margin-top: 1rem; }
 
 .loading-hero-img {
