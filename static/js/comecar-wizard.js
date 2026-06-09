@@ -33,7 +33,13 @@
             const skip = p.dataset.skipUnless;
             if (!skip) return true;
             const [campo, valor] = skip.split(":");
-            if (campo === "onde") return ondeUsar() === valor;
+            if (campo === "onde") {
+                const onde = ondeUsar();
+                if (valor === "pc_e_celular") {
+                    return onde === "pc_e_celular" || onde === "celular";
+                }
+                return onde === valor;
+            }
             return true;
         });
     }
@@ -44,7 +50,7 @@
         if (variosHidden) variosHidden.value = varios ? "sim" : "nao";
 
         let midia = form.querySelector('input[name="preferencia_midia"]:checked')?.value;
-        if (onde === "celular") {
+        if (onde === "pc_e_celular" || onde === "celular") {
             midia = midia || "nuvem";
         } else if (onde === "pc_unico") {
             midia = "arquivo";
@@ -55,7 +61,7 @@
         let hidden = form.querySelector('input[type="hidden"][name="preferencia_midia"]');
         if (hidden) hidden.remove();
 
-        if (onde !== "celular") {
+        if (onde !== "pc_e_celular" && onde !== "celular") {
             hidden = document.createElement("input");
             hidden.type = "hidden";
             hidden.name = "preferencia_midia";
@@ -180,7 +186,7 @@
             const visiveisAntes = paineisVisiveis().length;
             atualizarUI();
             const visiveisDepois = paineisVisiveis().length;
-            if (visiveisAntes !== visiveisDepois && ondeUsar() !== "celular") {
+            if (visiveisAntes !== visiveisDepois && ondeUsar() !== "pc_e_celular" && ondeUsar() !== "celular") {
                 /* permanece no passo atual */
             }
         });

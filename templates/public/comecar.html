@@ -52,15 +52,19 @@
         <section class="wizard-panel" data-step="onde" data-required="input[name=onde_usar]">
             <h2 class="wizard-question">{{ pergunta_wizard.onde }}</h2>
             <p class="wizard-context">{{ contexto_wizard.onde }}</p>
+            <div class="aviso-compatibilidade aviso-a3-onde" role="note">
+                {{ ajuda_onde_a3_aviso }}
+            </div>
             <div class="radio-group vertical opcao-lista onde-usar-lista">
                 {% for val, label in opcoes_onde_usar %}
-                <label class="opcao-item onde-usar-item onde-usar-{{ val }} wizard-opcao{% if val == 'celular' %} onde-usar-recomendado{% endif %}">
+                <label class="opcao-item onde-usar-item onde-usar-{{ val }} wizard-opcao{% if val == 'pc_e_celular' %} onde-usar-recomendado{% endif %}">
                     <span class="opcao-top">
                         <input type="radio" name="onde_usar" value="{{ val }}"
-                               {% if val == 'celular' %}checked{% endif %} required>
+                               {% if val == 'pc_e_celular' %}checked{% endif %} required>
                         <span class="opcao-label">{{ label }}</span>
-                        {% if val == 'celular' %}<span class="badge-destaque">Comum em receituário</span>{% endif %}
-                        {% if val == 'pc_unico' %}<span class="badge-aviso">Pouco indicado p/ celular</span>{% endif %}
+                        {% if val == 'pc_e_celular' %}<span class="badge-destaque">PC + celular</span>{% endif %}
+                        {% if val == 'varios_pc' %}<span class="badge-aviso">A3 token · sem celular</span>{% endif %}
+                        {% if val == 'pc_unico' %}<span class="badge-aviso">A1 · um PC só</span>{% endif %}
                     </span>
                     <p class="opcao-desc">{{ ajuda_onde_usar[val] }}</p>
                 </label>
@@ -102,21 +106,21 @@
                 <p class="hint">Necessário para emitir documentos em nome da empresa.</p>
             </div>
         </section>
-        <section class="wizard-panel" data-step="formato" data-required="input[name=preferencia_midia]" data-skip-unless="onde:celular">
+        <section class="wizard-panel" data-step="formato" data-required="input[name=preferencia_midia]" data-skip-unless="onde:pc_e_celular">
             <h2 class="wizard-question">{{ pergunta_wizard.formato }}</h2>
             <p class="wizard-context">{{ contexto_wizard.formato }}</p>
             <div class="radio-group vertical opcao-lista">
-                {% for val, label in opcoes_midia_a1 %}
-                {% if val in ('nuvem', 'mobileid') %}
+                {% for val, label in opcoes_midia_celular %}
                 <label class="opcao-item wizard-opcao">
                     <span class="opcao-top">
                         <input type="radio" name="preferencia_midia" value="{{ val }}"
                                {% if val == 'nuvem' %}checked{% endif %} data-midia-celular>
                         <span class="opcao-label">{{ label }}</span>
+                        {% if val == 'nuvem' %}<span class="badge-destaque">A3 nuvem</span>{% endif %}
+                        {% if val == 'mobileid' %}<span class="badge-aviso">A1 · não é A3</span>{% endif %}
                     </span>
-                    <p class="opcao-desc">{{ ajuda_midia_a1[val] }}</p>
+                    <p class="opcao-desc">{{ ajuda_midia_celular[val] }}</p>
                 </label>
-                {% endif %}
                 {% endfor %}
             </div>
         </section>

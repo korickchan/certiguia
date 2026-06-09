@@ -38,7 +38,7 @@
                            {% if (vet.preferencia_midia or 'nuvem') == val %}checked{% endif %}>
                     <span class="opcao-label">{{ label }}</span>
                 </span>
-                <p class="opcao-desc">{{ ajuda_midia_a1[val] if val == 'mobileid' else ajuda_midia_a3[val] }}</p>
+                    <p class="opcao-desc">{{ ajuda_midia_celular[val] }}</p>
             </label>
             {% endfor %}
         </div>

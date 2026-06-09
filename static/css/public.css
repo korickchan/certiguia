@@ -557,6 +557,17 @@ details.preferencias-precos[open] summary { margin-bottom: 1rem; }
     background: rgba(5, 150, 105, 0.06);
 }
 
+.wizard-card .aviso-a3-onde {
+    margin-bottom: 1rem;
+    padding: 0.85rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: 10px;
+    border: 1px solid #fcd34d;
+    background: #fffbeb;
+    color: #92400e;
+}
+
 .public-body .onde-usar-item .opcao-top {
     flex-wrap: wrap;
     align-items: center;

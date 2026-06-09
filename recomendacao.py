@@ -169,10 +169,16 @@ def recomendar(
             "a maioria dos apps de prescrição não usa A1 em arquivo (.pfx). "
             "Token USB (A3 físico) não funciona no smartphone."
         )
+    if varios_computadores:
+        observacoes.append(
+            "A3 com token ou cartão serve em vários computadores, mas não no celular. "
+            "Se você também precisa assinar no smartphone, escolha «Computador e celular» "
+            "e prefira A3 em nuvem (HSM) — não é o mesmo produto que A3 token."
+        )
     if preferencia_midia == "nuvem" and not varios_computadores:
         observacoes.append(
-            "Certificado em nuvem (HSM) para celular costuma ser comercializado como e-CPF A3 em nuvem — "
-            "mesma validade ICP-Brasil, acessível pelo app no smartphone."
+            "A3 em nuvem (HSM) funciona no PC e no celular — diferente do A3 token USB, "
+            "que só serve em computadores com porta USB."
         )
 
     produto = PRODUTOS[produto_id]
@@ -259,8 +265,16 @@ def _texto_motivo(
         )
     if preferencia_midia == "nuvem" and armazenamento == "A3" and not varios_computadores:
         partes.append(
-            "Você escolheu uso no celular/tablet com certificado na nuvem — "
-            "as certificadoras vendem isso como e-CPF A3 em nuvem (HSM)."
+            "Você precisa usar no computador e no celular — indicamos A3 em nuvem (HSM), "
+            "não A3 token (token USB não funciona no smartphone)."
+        )
+    elif varios_computadores and armazenamento == "A3":
+        partes.append(
+            "Você escolheu vários computadores sem celular — indicamos A3 com token ou cartão."
+        )
+    elif finalidade == "receituario" and armazenamento == "A1" and preferencia_midia == "mobileid":
+        partes.append(
+            "Você escolheu A1 MobileID para uso no celular — confira se seu app de receituário aceita."
         )
     elif finalidade == "receituario" and armazenamento == "A1":
         partes.append(

@@ -28,9 +28,23 @@ OPCOES_MIDIA_A3 = [
     ("sem_midia", "Sem mídia física"),
 ]
 OPCOES_MIDIA_CELULAR = [
-    ("nuvem", "Nuvem (HSM) — app no celular"),
-    ("mobileid", "MobileID — app da certificadora"),
+    ("nuvem", "A3 em nuvem (HSM) — PC e celular"),
+    ("mobileid", "A1 MobileID — app no celular"),
 ]
+
+AJUDA_MIDIA_CELULAR = {
+    "nuvem": (
+        "Certificado A3 guardado na nuvem (HSM) da certificadora. "
+        "Funciona no computador e no celular/tablet, pelo app de receituário. "
+        "É o A3 indicado quando você precisa dos dois — não confunda com A3 token USB, "
+        "que só serve em computadores com porta USB."
+    ),
+    "mobileid": (
+        "Certificado A1 no app da certificadora no celular (MobileID). "
+        "Não é A3 — é outra modalidade, em geral só no smartphone. "
+        "Confira se o seu app de receituário aceita MobileID."
+    ),
+}
 OPCOES_VALIDADE = [1, 2, 3]
 
 MIDIAS_VALIDAS = {m[0] for m in OPCOES_MIDIA_A1} | {m[0] for m in OPCOES_MIDIA_A3}
@@ -201,7 +215,7 @@ PERGUNTA_WIZARD = {
     "finalidade": "Para que você precisa do certificado digital?",
     "onde": "Onde você vai usar para assinar documentos?",
     "titular": "Em nome de quem você emite documentos?",
-    "formato": "Qual formato prefere para uso no celular?",
+    "formato": "PC e celular — qual formato?",
     "emissao": "Como prefere validar sua identidade na certificadora?",
     "dados": "Seus dados para gerar o guia personalizado",
 }
@@ -209,53 +223,55 @@ PERGUNTA_WIZARD = {
 CONTEXTO_WIZARD = {
     "profissao": "Sua profissão define se o foco é receituário, fiscal ou documentos em geral.",
     "finalidade": "O uso principal evita comprar e-CPF quando precisa de e-CNPJ, ou vice-versa.",
-    "onde": "O aparelho onde você assina define A1, A3, nuvem ou MobileID — não mostramos isso ainda.",
+    "onde": "Onde você vai assinar define o tipo certo — A3 token e A3 nuvem não são a mesma coisa.",
     "titular": "CPF é seu nome profissional; CNPJ é a clínica ou empresa.",
-    "formato": "Nuvem e MobileID são opções diferentes para receituário no smartphone.",
+    "formato": "Para PC e celular existem dois caminhos: A3 nuvem (HSM) ou A1 MobileID.",
     "emissao": "Afeta preço e praticidade — videoconferência costuma ser mais rápida.",
     "dados": "Usamos só para montar seu guia e salvar suas preferências. Não vendemos certificado.",
 }
 
 OPCOES_ONDE_USAR = [
-    ("pc_unico", "Só no meu computador (um PC ou notebook)"),
-    ("celular", "No celular, tablet ou em mais de um lugar"),
-    ("varios_pc", "Em vários computadores (com token USB)"),
+    ("pc_unico", "Só em um computador (A1 em arquivo)"),
+    ("varios_pc", "Vários computadores — sem celular (A3 token/cartão)"),
+    ("pc_e_celular", "Computador e celular/tablet (A3 nuvem ou A1 MobileID)"),
 ]
+
+AJUDA_ONDE_A3_AVISO = (
+    "Atenção: nem todo A3 serve para celular. "
+    "A3 com token USB funciona só em computadores. "
+    "Para assinar no smartphone, o caminho é A3 em nuvem (HSM) ou A1 MobileID — opções diferentes."
+)
 
 AJUDA_ONDE_USAR = {
     "pc_unico": (
         "Indicamos e-CPF/e-CNPJ A1 em arquivo — costuma ser o mais barato. "
         "O certificado fica instalado naquele computador. "
-        "Dá para copiar o .pfx para outro PC ou celular, mas é trabalhoso e inseguro; "
-        "para receituário no smartphone, nuvem ou MobileID costumam funcionar melhor."
-    ),
-    "celular": (
-        "Indicamos A1 na nuvem (HSM): o certificado fica nos servidores da certificadora "
-        "e você acessa pelo app de receituário no celular, tablet ou PC. "
-        "Algumas certificadoras vendem A1 MobileID (app próprio) — também serve para móvel. "
-        "Evite A1 em arquivo (.pfx) e token USB se o celular for essencial."
+        "Não é a melhor escolha se você precisa assinar no celular."
     ),
     "varios_pc": (
-        "Indicamos A3 com token ou cartão: você conecta o dispositivo em cada computador. "
-        "Serve para clínica com vários desktops — não funciona no smartphone "
-        "(não há porta USB no celular)."
+        "Indicamos e-CPF/e-CNPJ A3 com token USB ou cartão inteligente. "
+        "Você conecta o dispositivo em cada computador da clínica ou escritório. "
+        "Este A3 não funciona no celular — não há como plugar o token no smartphone. "
+        "Se você também precisa do celular, volte e escolha «Computador e celular»."
+    ),
+    "pc_e_celular": (
+        "Indicamos certificado que funciona no PC e no celular/tablet. "
+        "Na prática são duas opções: A3 em nuvem (HSM), vendido pelas certificadoras como A3 nuvem, "
+        "ou A1 MobileID (app no celular). "
+        "Não compre A3 token pensando que vai funcionar no celular — só A3 nuvem ou MobileID servem."
     ),
 }
 
 AJUDA_VARIOS_COMPUTADORES = (
-    "Um só PC → em geral recomendamos A1 (arquivo ou nuvem), que costuma ser mais barato. "
-    "Vários PCs → A3 com token ou cartão: você conecta o dispositivo em cada computador "
-    "em que for assinar documentos."
+    "Vários computadores (sem celular) → A3 com token ou cartão: conecta o dispositivo "
+    "em cada PC. Não funciona no smartphone. "
+    "Computador e celular → A3 em nuvem (HSM) ou A1 MobileID — são outros produtos."
 )
 
 AJUDA_USO_CELULAR = (
-    "Para receituário no celular ou tablet, prefira certificado na nuvem (HSM) — "
-    "é o que a maioria dos apps de prescrição integra nativamente. "
-    "Algumas Autoridades Certificadoras oferecem A1 MobileID (app da AC no celular); "
-    "também pode servir, conforme o seu sistema de receituário. "
-    "A1 em arquivo (.pfx) até pode ser instalado no iPhone/Android para Gov.br e e-mail, "
-    "mas raramente funciona bem em apps de receituário profissional. "
-    "Token USB (A3 físico) não funciona no smartphone."
+    "Para assinar no PC e no celular, escolha A3 em nuvem (HSM) — é o A3 que as certificadoras "
+    "vendem para uso móvel. A3 token USB não serve no celular. "
+    "Alternativa: A1 MobileID (app da certificadora), em geral focado no smartphone."
 )
 
 _varredura_lock = threading.Lock()
@@ -778,7 +794,7 @@ def _consultar_catalogo_midias_moveis(filtro: FiltroPreco) -> list[dict]:
 def parse_onde_usar_form(form) -> dict:
     """Mapeia escolha «onde usar» para varios_pc + preferencia_midia."""
     onde = (form.get("onde_usar") or "pc_unico").strip()
-    if onde == "celular":
+    if onde in ("celular", "pc_e_celular"):
         return {
             "varios_computadores": False,
             "usa_celular": True,
