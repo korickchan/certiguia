@@ -105,6 +105,16 @@
             <legend>Como quer emitir e guardar o certificado?</legend>
             <p class="hint">{{ ajuda_preferencias_intro }}</p>
 
+            <div class="form-row opcao-bloco icp-info-box" id="uso-celular-wrap" style="display:none">
+                <label class="opcao-item">
+                    <span class="opcao-top">
+                        <input type="checkbox" name="usa_celular" value="sim" id="usa_celular">
+                        <span class="opcao-label">Vou assinar receituário pelo celular ou tablet</span>
+                    </span>
+                    <p class="opcao-desc">{{ ajuda_uso_celular }}</p>
+                </label>
+            </div>
+
             {% include "public/_preferencias_cadastro.html" %}
         </fieldset>
 
@@ -184,6 +194,26 @@ function atualizarMidiaPorTipo() {
 }
 variosRadios.forEach(r => r.addEventListener('change', atualizarMidiaPorTipo));
 atualizarMidiaPorTipo();
+
+const finalidadeSel = document.getElementById('finalidade');
+const usoCelularWrap = document.getElementById('uso-celular-wrap');
+const usaCelular = document.getElementById('usa_celular');
+
+function atualizarUsoCelular() {
+    const rec = finalidadeSel && finalidadeSel.value === 'receituario';
+    if (usoCelularWrap) usoCelularWrap.style.display = rec ? '' : 'none';
+    if (!rec && usaCelular) usaCelular.checked = false;
+}
+
+function aplicarNuvemSeCelular() {
+    if (!usaCelular || !usaCelular.checked) return;
+    const nuvem = document.querySelector('[data-midia-a1][value="nuvem"]');
+    if (nuvem) nuvem.checked = true;
+}
+
+if (finalidadeSel) finalidadeSel.addEventListener('change', atualizarUsoCelular);
+if (usaCelular) usaCelular.addEventListener('change', aplicarNuvemSeCelular);
+atualizarUsoCelular();
 
 const form = document.querySelector('.form-cadastro');
 if (form) {

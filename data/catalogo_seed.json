@@ -1,5 +1,5 @@
 {
-  "exportado_em": "2026-06-09T17:14:54.836453",
+  "exportado_em": "2026-06-09T18:16:26.539174",
   "itens": [
     {
       "chave": "certclick|e-CPF|A1|pf|arquivo|videoconferencia|1",
@@ -12,8 +12,8 @@
       "validade_anos": 1,
       "preco": 129.9,
       "url": "https://certclick.com.br/",
-      "observacao": "Preço à vista — E-CPF A1, emissão videoconferência, validade 1 ano. (card e-CPF A1/A3 CertClick (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "CertClick — e-CPF A1 (card e-CPF A1/A3 CertClick (HTTP)).",
+      "fonte": "certclick_playwright"
     },
     {
       "chave": "online|e-CPF|A1|pf|arquivo|videoconferencia|1",
@@ -26,8 +26,8 @@
       "validade_anos": 1,
       "preco": 130.0,
       "url": "https://www.onlinesulcertificadora.com.br/PRODUTO/e-CPF",
-      "observacao": "Preço à vista — E-CPF A1, emissão videoconferência, validade 1 ano. (loja Online Certificadora (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Online Certificadora — e-CPF A1 (loja Online Certificadora (HTTP)).",
+      "fonte": "online_playwright"
     },
     {
       "chave": "serpro|e-CPF|A1|pf|arquivo|videoconferencia|1",
@@ -40,8 +40,8 @@
       "validade_anos": 1,
       "preco": 153.0,
       "url": "https://servicos.serpro.gov.br/loja/certificacao-digital/",
-      "observacao": "Preço à vista — E-CPF A1, emissão videoconferência, validade 1 ano. Loja Serpro (Pessoa Física + Arquivo + 1 ano). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Serpro — Pessoa Física, Arquivo, 1 ano.",
+      "fonte": "serpro_playwright"
     },
     {
       "chave": "link|e-CPF|A1|pf|arquivo|videoconferencia|1",
@@ -54,8 +54,8 @@
       "validade_anos": 1,
       "preco": 156.45,
       "url": "https://compras.linkcertificacao.com.br/aclink/cpf/",
-      "observacao": "Preço à vista — E-CPF A1, emissão videoconferência, validade 1 ano. (loja oficial Link (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Link Certificação — e-CPF A1 (loja oficial Link (HTTP)).",
+      "fonte": "link_playwright"
     },
     {
       "chave": "soluti|e-CPF|A1|pf|arquivo|videoconferencia|1",
@@ -68,8 +68,8 @@
       "validade_anos": 1,
       "preco": 160.0,
       "url": "https://www.soluti.com.br/certificado-digital/e-cpf",
-      "observacao": "Preço à vista — E-CPF A1, emissão videoconferência, validade 1 ano. (página e-CPF Soluti (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Soluti — e-CPF A1 (página e-CPF Soluti (HTTP)).",
+      "fonte": "soluti_playwright"
     },
     {
       "chave": "digitalsign|e-CPF|A1|pf|arquivo|videoconferencia|1",
@@ -82,8 +82,8 @@
       "validade_anos": 1,
       "preco": 176.0,
       "url": "https://digitalsigncertificadora.com.br/",
-      "observacao": "Preço à vista — E-CPF A1, emissão videoconferência, validade 1 ano. (card e-CPF DigitalSign (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "DigitalSign — e-CPF A1 (card e-CPF DigitalSign (HTTP)).",
+      "fonte": "digitalsign_playwright"
     },
     {
       "chave": "certisign|e-CPF|A1|pf|arquivo|videoconferencia|1",
@@ -96,8 +96,8 @@
       "validade_anos": 1,
       "preco": 186.9,
       "url": "https://certisign.com.br/certificados/e-cpf/?codRev=96433&cod_rev=96433",
-      "observacao": "Preço à vista — E-CPF A1, emissão videoconferência, validade 1 ano. (preço à vista e-CPF A1 Certisign (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Certisign — e-CPF A1 (preço à vista e-CPF A1 Certisign (HTTP)).",
+      "fonte": "certisign_playwright"
     },
     {
       "chave": "safeweb|e-CPF|A1|pf|arquivo|videoconferencia|1",
@@ -111,7 +111,7 @@
       "preco": 195.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
       "observacao": "Safeweb — e-CPF A1, Arquivo, Emissão videoconferência, 1 ano(s).",
-      "fonte": "safeweb_api"
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "certclick|e-CPF|A3|pf|token|videoconferencia|1",
@@ -124,8 +124,8 @@
       "validade_anos": 1,
       "preco": 149.9,
       "url": "https://certclick.com.br/",
-      "observacao": "Preço à vista — E-CPF A3, emissão videoconferência, validade 1 ano. (card e-CPF A1/A3 CertClick (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "CertClick — e-CPF A3 (card e-CPF A1/A3 CertClick (HTTP)).",
+      "fonte": "certclick_playwright"
     },
     {
       "chave": "online|e-CPF|A3|pf|token|videoconferencia|1",
@@ -138,8 +138,8 @@
       "validade_anos": 1,
       "preco": 155.0,
       "url": "https://www.onlinesulcertificadora.com.br/PRODUTO/e-CPF/E-CPF_A3_DE_1_ANO-21",
-      "observacao": "Preço à vista — E-CPF A3, emissão videoconferência, validade 1 ano. (loja Online Certificadora (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Online Certificadora — e-CPF A3 (loja Online Certificadora (HTTP)).",
+      "fonte": "online_playwright"
     },
     {
       "chave": "link|e-CPF|A3|pf|token|videoconferencia|1",
@@ -150,10 +150,10 @@
       "midia": "token",
       "emissao": "videoconferencia",
       "validade_anos": 1,
-      "preco": 156.45,
+      "preco": 189.0,
       "url": "https://compras.linkcertificacao.com.br/aclink/cpf/",
-      "observacao": "Preço à vista — E-CPF A3, emissão videoconferência, validade 1 ano. (loja oficial Link (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Link Certificação — e-CPF A3 (loja oficial Link (HTTP)).",
+      "fonte": "link_playwright"
     },
     {
       "chave": "digitalsign|e-CPF|A3|pf|token|videoconferencia|1",
@@ -166,8 +166,8 @@
       "validade_anos": 1,
       "preco": 165.0,
       "url": "https://digitalsigncertificadora.com.br/",
-      "observacao": "Preço à vista — E-CPF A3, emissão videoconferência, validade 1 ano. (card e-CPF DigitalSign (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "DigitalSign — e-CPF A3 (card e-CPF DigitalSign (HTTP)).",
+      "fonte": "digitalsign_playwright"
     },
     {
       "chave": "serpro|e-CPF|A3|pf|token|videoconferencia|1",
@@ -208,8 +208,8 @@
       "validade_anos": 1,
       "preco": 230.9,
       "url": "https://certisign.com.br/certificados/e-cpf/?codRev=96433&cod_rev=96433",
-      "observacao": "Preço à vista — E-CPF A3, emissão videoconferência, validade 1 ano. (preço à vista e-CPF A3 Certisign (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Certisign — e-CPF A3 (preço à vista e-CPF A3 Certisign (HTTP)).",
+      "fonte": "certisign_playwright"
     },
     {
       "chave": "serpro|e-CNPJ|A1|pj|arquivo|videoconferencia|1",
@@ -222,8 +222,8 @@
       "validade_anos": 1,
       "preco": 218.0,
       "url": "https://servicos.serpro.gov.br/loja/certificacao-digital/",
-      "observacao": "Preço à vista — E-CNPJ A1, emissão videoconferência, validade 1 ano. Loja Serpro (Pessoa Jurídica + Arquivo + 1 ano). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Serpro — Pessoa Jurídica, Arquivo, 1 ano.",
+      "fonte": "serpro_playwright"
     },
     {
       "chave": "certisign|e-CNPJ|A1|pj|arquivo|videoconferencia|1",
@@ -236,8 +236,8 @@
       "validade_anos": 1,
       "preco": 230.9,
       "url": "https://certisign.com.br/certificados/e-cpf/?codRev=96433&cod_rev=96433",
-      "observacao": "Preço à vista — E-CNPJ A1, emissão videoconferência, validade 1 ano. (preço à vista e-CPF A1 Certisign (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Certisign — e-CNPJ A1 (preço à vista e-CPF A1 Certisign (HTTP)).",
+      "fonte": "certisign_playwright"
     },
     {
       "chave": "link|e-CNPJ|A1|pj|arquivo|videoconferencia|1",
@@ -248,10 +248,10 @@
       "midia": "arquivo",
       "emissao": "videoconferencia",
       "validade_anos": 1,
-      "preco": 232.05,
+      "preco": 221.55,
       "url": "https://compras.linkcertificacao.com.br/aclink/cnpj/",
-      "observacao": "Preço à vista — E-CNPJ A1, emissão videoconferência, validade 1 ano. (loja oficial Link (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Link Certificação — e-CNPJ A1 (loja oficial Link (HTTP)).",
+      "fonte": "link_playwright"
     },
     {
       "chave": "digitalsign|e-CNPJ|A1|pj|arquivo|videoconferencia|1",
@@ -264,8 +264,8 @@
       "validade_anos": 1,
       "preco": 268.0,
       "url": "https://digitalsigncertificadora.com.br/",
-      "observacao": "Preço à vista — E-CNPJ A1, emissão videoconferência, validade 1 ano. (card e-CPF DigitalSign (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "DigitalSign — e-CNPJ A1 (card e-CPF DigitalSign (HTTP)).",
+      "fonte": "digitalsign_playwright"
     },
     {
       "chave": "safeweb|e-CNPJ|A1|pj|arquivo|videoconferencia|1",
@@ -279,7 +279,7 @@
       "preco": 275.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecnpj",
       "observacao": "Safeweb — e-CNPJ A1, Arquivo, Emissão videoconferência, 1 ano(s).",
-      "fonte": "safeweb_api"
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "link|e-CNPJ|A3|pj|token|videoconferencia|1",
@@ -292,8 +292,8 @@
       "validade_anos": 1,
       "preco": 301.35,
       "url": "https://compras.linkcertificacao.com.br/aclink/cnpj/",
-      "observacao": "Preço à vista — E-CNPJ A3, emissão videoconferência, validade 1 ano. (loja oficial Link). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Link Certificação — e-CNPJ A3 (loja oficial Link (HTTP)).",
+      "fonte": "link_playwright"
     },
     {
       "chave": "certisign|e-CNPJ|A3|pj|token|videoconferencia|1",
@@ -306,8 +306,8 @@
       "validade_anos": 1,
       "preco": 324.4,
       "url": "https://certisign.com.br/certificados/e-cpf/?codRev=96433&cod_rev=96433",
-      "observacao": "Preço à vista — E-CNPJ A3, emissão videoconferência, validade 1 ano. (preço à vista e-CPF A3 Certisign (HTTP)). Confira no checkout antes de pagar.",
-      "fonte": "varredura"
+      "observacao": "Certisign — e-CNPJ A3 (preço à vista e-CPF A3 Certisign (HTTP)).",
+      "fonte": "certisign_playwright"
     },
     {
       "chave": "safeweb|e-CNPJ|A3|pj|token|videoconferencia|1",
@@ -530,8 +530,8 @@
       "validade_anos": 1,
       "preco": 195.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
-      "observacao": "Safeweb — e-CPF A3, Sem mídia, Renovação on-line, 1 ano(s).",
-      "fonte": "safeweb_api"
+      "observacao": "Safeweb — e-CPF A3, Sem mídia, Emissão presencial, 1 ano(s).",
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "safeweb|e-CNPJ|A3|pf|sem_midia|outro|1",
@@ -544,8 +544,8 @@
       "validade_anos": 1,
       "preco": 275.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
-      "observacao": "Safeweb — e-CNPJ A3, Sem mídia, Renovação on-line, 1 ano(s).",
-      "fonte": "safeweb_api"
+      "observacao": "Safeweb — e-CNPJ A3, Sem mídia, Emissão presencial, 1 ano(s).",
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "safeweb|e-CPF|A3|pf|sem_midia|outro|2",
@@ -558,8 +558,8 @@
       "validade_anos": 2,
       "preco": 240.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
-      "observacao": "Safeweb — e-CPF A3, Sem mídia, Renovação on-line, 2 ano(s).",
-      "fonte": "safeweb_api"
+      "observacao": "Safeweb — e-CPF A3, Sem mídia, Emissão presencial, 2 ano(s).",
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "safeweb|e-CNPJ|A3|pf|sem_midia|outro|2",
@@ -572,8 +572,8 @@
       "validade_anos": 2,
       "preco": 330.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
-      "observacao": "Safeweb — e-CNPJ A3, Sem mídia, Renovação on-line, 2 ano(s).",
-      "fonte": "safeweb_api"
+      "observacao": "Safeweb — e-CNPJ A3, Sem mídia, Emissão presencial, 2 ano(s).",
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "safeweb|e-CNPJ|A1|pf|arquivo|videoconferencia|1",
@@ -587,7 +587,7 @@
       "preco": 275.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
       "observacao": "Safeweb — e-CNPJ A1, Arquivo, Emissão videoconferência, 1 ano(s).",
-      "fonte": "safeweb_api"
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "safeweb|e-CPF|A3|pf|sem_midia|videoconferencia|1",
@@ -601,7 +601,7 @@
       "preco": 195.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
       "observacao": "Safeweb — e-CPF A3, Sem mídia, Emissão videoconferência, 1 ano(s).",
-      "fonte": "safeweb_api"
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "safeweb|e-CNPJ|A3|pf|sem_midia|videoconferencia|1",
@@ -615,7 +615,7 @@
       "preco": 275.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
       "observacao": "Safeweb — e-CNPJ A3, Sem mídia, Emissão videoconferência, 1 ano(s).",
-      "fonte": "safeweb_api"
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "safeweb|e-CPF|A3|pf|sem_midia|videoconferencia|2",
@@ -629,7 +629,7 @@
       "preco": 240.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
       "observacao": "Safeweb — e-CPF A3, Sem mídia, Emissão videoconferência, 2 ano(s).",
-      "fonte": "safeweb_api"
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "safeweb|e-CNPJ|A3|pf|sem_midia|videoconferencia|2",
@@ -643,7 +643,7 @@
       "preco": 330.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
       "observacao": "Safeweb — e-CNPJ A3, Sem mídia, Emissão videoconferência, 2 ano(s).",
-      "fonte": "safeweb_api"
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "safeweb|e-CNPJ|A1|pf|arquivo|outro|1",
@@ -656,8 +656,8 @@
       "validade_anos": 1,
       "preco": 275.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
-      "observacao": "Safeweb — e-CNPJ A1, Arquivo, Emissão on-line, 1 ano(s).",
-      "fonte": "safeweb_api"
+      "observacao": "Safeweb — e-CNPJ A1, Arquivo, Emissão presencial, 1 ano(s).",
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "safeweb|e-CNPJ|A3|pj|cartao|presencial|1",
@@ -782,8 +782,8 @@
       "validade_anos": 2,
       "preco": 330.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecnpj",
-      "observacao": "Safeweb — e-CNPJ A3, Sem mídia, Renovação on-line, 2 ano(s).",
-      "fonte": "safeweb_api"
+      "observacao": "Safeweb — e-CNPJ A3, Sem mídia, Emissão presencial, 2 ano(s).",
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "safeweb|e-CNPJ|A3|pj|sem_midia|videoconferencia|2",
@@ -797,7 +797,7 @@
       "preco": 330.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecnpj",
       "observacao": "Safeweb — e-CNPJ A3, Sem mídia, Emissão videoconferência, 2 ano(s).",
-      "fonte": "safeweb_api"
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "safeweb|e-CNPJ|A1|pj|arquivo|outro|1",
@@ -810,8 +810,8 @@
       "validade_anos": 1,
       "preco": 275.0,
       "url": "https://www.safeweb.com.br/produtos/checkout/ecnpj",
-      "observacao": "Safeweb — e-CNPJ A1, Arquivo, Emissão on-line, 1 ano(s).",
-      "fonte": "safeweb_api"
+      "observacao": "Safeweb — e-CNPJ A1, Arquivo, Emissão presencial, 1 ano(s).",
+      "fonte": "safeweb_playwright"
     },
     {
       "chave": "valid|e-CNPJ|A1|pj|arquivo|videoconferencia|1",
@@ -822,9 +822,9 @@
       "midia": "arquivo",
       "emissao": "videoconferencia",
       "validade_anos": 1,
-      "preco": 232.0,
-      "url": "https://validcertificadora.com.br/products/renovacao-e-cnpj-a1",
-      "observacao": "Valid — Renovação e-CNPJ A1, variante «Default Title».",
+      "preco": 203.0,
+      "url": "https://validcertificadora.com.br/products/e-cnpj-a1",
+      "observacao": "Valid — e-CNPJ A1, variante «Default Title».",
       "fonte": "valid_shopify"
     },
     {
@@ -851,8 +851,8 @@
       "emissao": "videoconferencia",
       "validade_anos": 1,
       "preco": 430.0,
-      "url": "https://validcertificadora.com.br/products/renovacao-e-cnpj-a3-em-token",
-      "observacao": "Valid — Renovação e-CNPJ A3 em Token - Com mídia, variante «1 ano».",
+      "url": "https://validcertificadora.com.br/products/e-cnpj-a3-em-token",
+      "observacao": "Valid — e-CNPJ A3 em Token, variante «1 ano».",
       "fonte": "valid_shopify"
     },
     {
@@ -865,8 +865,8 @@
       "emissao": "videoconferencia",
       "validade_anos": 2,
       "preco": 485.0,
-      "url": "https://validcertificadora.com.br/products/renovacao-e-cnpj-a3-em-token",
-      "observacao": "Valid — Renovação e-CNPJ A3 em Token - Com mídia, variante «2 anos».",
+      "url": "https://validcertificadora.com.br/products/e-cnpj-a3-em-token",
+      "observacao": "Valid — e-CNPJ A3 em Token, variante «2 anos».",
       "fonte": "valid_shopify"
     },
     {
@@ -879,8 +879,8 @@
       "emissao": "videoconferencia",
       "validade_anos": 1,
       "preco": 155.0,
-      "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a1",
-      "observacao": "Valid — Renovação e-CPF A1, variante «Default Title».",
+      "url": "https://validcertificadora.com.br/products/e-cpf-a1",
+      "observacao": "Valid — e-CPF A1, variante «Default Title».",
       "fonte": "valid_shopify"
     },
     {
@@ -893,8 +893,8 @@
       "emissao": "videoconferencia",
       "validade_anos": 1,
       "preco": 168.0,
-      "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a3-sem-midia",
-      "observacao": "Valid — Renovação e-CPF A3 - Sem Mídia, variante «1 ano».",
+      "url": "https://validcertificadora.com.br/products/e-cpf-a3",
+      "observacao": "Valid — e-CPF A3 - Sem Mídia, variante «1 ano».",
       "fonte": "valid_shopify"
     },
     {
@@ -907,8 +907,8 @@
       "emissao": "videoconferencia",
       "validade_anos": 2,
       "preco": 195.0,
-      "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a3-sem-midia",
-      "observacao": "Valid — Renovação e-CPF A3 - Sem Mídia, variante «2 anos».",
+      "url": "https://validcertificadora.com.br/products/e-cpf-a3",
+      "observacao": "Valid — e-CPF A3 - Sem Mídia, variante «2 anos».",
       "fonte": "valid_shopify"
     },
     {
@@ -921,8 +921,8 @@
       "emissao": "videoconferencia",
       "validade_anos": 1,
       "preco": 206.0,
-      "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a3-em-cartao-1",
-      "observacao": "Valid — Renovação e-CPF A3 em Cartão, variante «1 ano».",
+      "url": "https://validcertificadora.com.br/products/e-cpf-a3-em-cartao",
+      "observacao": "Valid — e-CPF A3 em Cartão, variante «1 ano».",
       "fonte": "valid_shopify"
     },
     {
@@ -935,8 +935,8 @@
       "emissao": "videoconferencia",
       "validade_anos": 2,
       "preco": 239.0,
-      "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a3-em-cartao-1",
-      "observacao": "Valid — Renovação e-CPF A3 em Cartão, variante «2 anos».",
+      "url": "https://validcertificadora.com.br/products/e-cpf-a3-em-cartao",
+      "observacao": "Valid — e-CPF A3 em Cartão, variante «2 anos».",
       "fonte": "valid_shopify"
     },
     {
@@ -949,8 +949,8 @@
       "emissao": "videoconferencia",
       "validade_anos": 1,
       "preco": 129.9,
-      "url": "https://validcertificadora.com.br/products/renovacao-do-direito-de-uso-do-certificado-e-cpf-a3-em-nuvem",
-      "observacao": "Valid — Renovação do direito de uso do certificado e-CPF A3 em nuvem, variante «1 ano».",
+      "url": "https://validcertificadora.com.br/products/e-cpf-a3-em-nuvem",
+      "observacao": "Valid — e-CPF A3 em Nuvem, variante «1 ano».",
       "fonte": "valid_shopify"
     },
     {
@@ -963,8 +963,8 @@
       "emissao": "videoconferencia",
       "validade_anos": 2,
       "preco": 208.0,
-      "url": "https://validcertificadora.com.br/products/renovacao-do-direito-de-uso-do-certificado-e-cpf-a3-em-nuvem",
-      "observacao": "Valid — Renovação do direito de uso do certificado e-CPF A3 em nuvem, variante «2 anos».",
+      "url": "https://validcertificadora.com.br/products/e-cpf-a3-em-nuvem",
+      "observacao": "Valid — e-CPF A3 em Nuvem, variante «2 anos».",
       "fonte": "valid_shopify"
     },
     {
@@ -977,8 +977,8 @@
       "emissao": "videoconferencia",
       "validade_anos": 1,
       "preco": 355.0,
-      "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a3-em-token",
-      "observacao": "Valid — Renovação e-CPF A3 em token, variante «1 ano».",
+      "url": "https://validcertificadora.com.br/products/e-cpf-a3-em-token",
+      "observacao": "Valid — e-CPF A3 em token, variante «1 ano».",
       "fonte": "valid_shopify"
     },
     {
@@ -991,9 +991,415 @@
       "emissao": "videoconferencia",
       "validade_anos": 2,
       "preco": 395.0,
+      "url": "https://validcertificadora.com.br/products/e-cpf-a3-em-token",
+      "observacao": "Valid — e-CPF A3 em token, variante «2 anos».",
+      "fonte": "valid_shopify"
+    },
+    {
+      "chave": "valid|e-CPF|A3|pf|nuvem|renovacao|1",
+      "certificadora": "valid",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "nuvem",
+      "emissao": "renovacao",
+      "validade_anos": 1,
+      "preco": 129.9,
+      "url": "https://validcertificadora.com.br/products/renovacao-do-direito-de-uso-do-certificado-e-cpf-a3-em-nuvem",
+      "observacao": "Valid — Renovação do direito de uso do certificado e-CPF A3 em nuvem, variante «1 ano».",
+      "fonte": "valid_shopify"
+    },
+    {
+      "chave": "valid|e-CPF|A3|pf|nuvem|renovacao|2",
+      "certificadora": "valid",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "nuvem",
+      "emissao": "renovacao",
+      "validade_anos": 2,
+      "preco": 208.0,
+      "url": "https://validcertificadora.com.br/products/renovacao-do-direito-de-uso-do-certificado-e-cpf-a3-em-nuvem",
+      "observacao": "Valid — Renovação do direito de uso do certificado e-CPF A3 em nuvem, variante «2 anos».",
+      "fonte": "valid_shopify"
+    },
+    {
+      "chave": "valid|e-CNPJ|A1|pj|arquivo|renovacao|1",
+      "certificadora": "valid",
+      "produto_tipo": "e-CNPJ",
+      "categoria": "pj",
+      "armazenamento": "A1",
+      "midia": "arquivo",
+      "emissao": "renovacao",
+      "validade_anos": 1,
+      "preco": 232.0,
+      "url": "https://validcertificadora.com.br/products/renovacao-e-cnpj-a1",
+      "observacao": "Valid — Renovação e-CNPJ A1, variante «Default Title».",
+      "fonte": "valid_shopify"
+    },
+    {
+      "chave": "valid|e-CNPJ|A3|pj|token|renovacao|1",
+      "certificadora": "valid",
+      "produto_tipo": "e-CNPJ",
+      "categoria": "pj",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "renovacao",
+      "validade_anos": 1,
+      "preco": 430.0,
+      "url": "https://validcertificadora.com.br/products/renovacao-e-cnpj-a3-em-token",
+      "observacao": "Valid — Renovação e-CNPJ A3 em Token - Com mídia, variante «1 ano».",
+      "fonte": "valid_shopify"
+    },
+    {
+      "chave": "valid|e-CNPJ|A3|pj|token|renovacao|2",
+      "certificadora": "valid",
+      "produto_tipo": "e-CNPJ",
+      "categoria": "pj",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "renovacao",
+      "validade_anos": 2,
+      "preco": 485.0,
+      "url": "https://validcertificadora.com.br/products/renovacao-e-cnpj-a3-em-token",
+      "observacao": "Valid — Renovação e-CNPJ A3 em Token - Com mídia, variante «2 anos».",
+      "fonte": "valid_shopify"
+    },
+    {
+      "chave": "valid|e-CPF|A1|pf|arquivo|renovacao|1",
+      "certificadora": "valid",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A1",
+      "midia": "arquivo",
+      "emissao": "renovacao",
+      "validade_anos": 1,
+      "preco": 155.0,
+      "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a1",
+      "observacao": "Valid — Renovação e-CPF A1, variante «Default Title».",
+      "fonte": "valid_shopify"
+    },
+    {
+      "chave": "valid|e-CPF|A3|pf|sem_midia|renovacao|1",
+      "certificadora": "valid",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "sem_midia",
+      "emissao": "renovacao",
+      "validade_anos": 1,
+      "preco": 168.0,
+      "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a3-sem-midia",
+      "observacao": "Valid — Renovação e-CPF A3 - Sem Mídia, variante «1 ano».",
+      "fonte": "valid_shopify"
+    },
+    {
+      "chave": "valid|e-CPF|A3|pf|sem_midia|renovacao|2",
+      "certificadora": "valid",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "sem_midia",
+      "emissao": "renovacao",
+      "validade_anos": 2,
+      "preco": 195.0,
+      "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a3-sem-midia",
+      "observacao": "Valid — Renovação e-CPF A3 - Sem Mídia, variante «2 anos».",
+      "fonte": "valid_shopify"
+    },
+    {
+      "chave": "valid|e-CPF|A3|pf|cartao|renovacao|1",
+      "certificadora": "valid",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "cartao",
+      "emissao": "renovacao",
+      "validade_anos": 1,
+      "preco": 206.0,
+      "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a3-em-cartao",
+      "observacao": "Valid — Renovação e-CPF A3 em Cartão, variante «1 ano».",
+      "fonte": "valid_shopify"
+    },
+    {
+      "chave": "valid|e-CPF|A3|pf|cartao|renovacao|2",
+      "certificadora": "valid",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "cartao",
+      "emissao": "renovacao",
+      "validade_anos": 2,
+      "preco": 239.0,
+      "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a3-em-cartao",
+      "observacao": "Valid — Renovação e-CPF A3 em Cartão, variante «2 anos».",
+      "fonte": "valid_shopify"
+    },
+    {
+      "chave": "valid|e-CPF|A3|pf|token|renovacao|1",
+      "certificadora": "valid",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "renovacao",
+      "validade_anos": 1,
+      "preco": 355.0,
+      "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a3-em-token",
+      "observacao": "Valid — Renovação e-CPF A3 em token, variante «1 ano».",
+      "fonte": "valid_shopify"
+    },
+    {
+      "chave": "valid|e-CPF|A3|pf|token|renovacao|2",
+      "certificadora": "valid",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "renovacao",
+      "validade_anos": 2,
+      "preco": 395.0,
       "url": "https://validcertificadora.com.br/products/renovacao-e-cpf-a3-em-token",
       "observacao": "Valid — Renovação e-CPF A3 em token, variante «2 anos».",
       "fonte": "valid_shopify"
+    },
+    {
+      "chave": "safeweb|e-CPF|A3|pf|cartao|outro|1",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "cartao",
+      "emissao": "outro",
+      "validade_anos": 1,
+      "preco": 250.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
+      "observacao": "Safeweb — e-CPF A3, Cartão, Emissão presencial, 1 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CNPJ|A3|pf|cartao|outro|1",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CNPJ",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "cartao",
+      "emissao": "outro",
+      "validade_anos": 1,
+      "preco": 330.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
+      "observacao": "Safeweb — e-CNPJ A3, Cartão, Emissão presencial, 1 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CPF|A3|pf|token|outro|1",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "outro",
+      "validade_anos": 1,
+      "preco": 400.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
+      "observacao": "Safeweb — e-CPF A3, Token, Emissão presencial, 1 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CNPJ|A3|pf|token|outro|1",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CNPJ",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "outro",
+      "validade_anos": 1,
+      "preco": 480.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
+      "observacao": "Safeweb — e-CNPJ A3, Token, Emissão presencial, 1 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CPF|A1|pf|arquivo|outro|1",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A1",
+      "midia": "arquivo",
+      "emissao": "outro",
+      "validade_anos": 1,
+      "preco": 195.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
+      "observacao": "Safeweb — e-CPF A1, Arquivo, Emissão presencial, 1 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CPF|A3|pf|cartao|outro|2",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "cartao",
+      "emissao": "outro",
+      "validade_anos": 2,
+      "preco": 295.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
+      "observacao": "Safeweb — e-CPF A3, Cartão, Emissão presencial, 2 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CNPJ|A3|pf|cartao|outro|2",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CNPJ",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "cartao",
+      "emissao": "outro",
+      "validade_anos": 2,
+      "preco": 385.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
+      "observacao": "Safeweb — e-CNPJ A3, Cartão, Emissão presencial, 2 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CPF|A3|pf|token|outro|2",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "outro",
+      "validade_anos": 2,
+      "preco": 445.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
+      "observacao": "Safeweb — e-CPF A3, Token, Emissão presencial, 2 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CNPJ|A3|pf|token|outro|2",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CNPJ",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "outro",
+      "validade_anos": 2,
+      "preco": 535.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecpf",
+      "observacao": "Safeweb — e-CNPJ A3, Token, Emissão presencial, 2 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CNPJ|A3|pj|cartao|outro|1",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CNPJ",
+      "categoria": "pj",
+      "armazenamento": "A3",
+      "midia": "cartao",
+      "emissao": "outro",
+      "validade_anos": 1,
+      "preco": 330.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecnpj",
+      "observacao": "Safeweb — e-CNPJ A3, Cartão, Emissão presencial, 1 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CPF|A3|pj|token|outro|1",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CPF",
+      "categoria": "pj",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "outro",
+      "validade_anos": 1,
+      "preco": 400.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecnpj",
+      "observacao": "Safeweb — e-CPF A3, Token, Emissão presencial, 1 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CNPJ|A3|pj|token|outro|1",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CNPJ",
+      "categoria": "pj",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "outro",
+      "validade_anos": 1,
+      "preco": 480.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecnpj",
+      "observacao": "Safeweb — e-CNPJ A3, Token, Emissão presencial, 1 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CNPJ|A3|pj|cartao|outro|2",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CNPJ",
+      "categoria": "pj",
+      "armazenamento": "A3",
+      "midia": "cartao",
+      "emissao": "outro",
+      "validade_anos": 2,
+      "preco": 385.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecnpj",
+      "observacao": "Safeweb — e-CNPJ A3, Cartão, Emissão presencial, 2 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CPF|A3|pj|token|outro|2",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CPF",
+      "categoria": "pj",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "outro",
+      "validade_anos": 2,
+      "preco": 445.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecnpj",
+      "observacao": "Safeweb — e-CPF A3, Token, Emissão presencial, 2 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "safeweb|e-CNPJ|A3|pj|token|outro|2",
+      "certificadora": "safeweb",
+      "produto_tipo": "e-CNPJ",
+      "categoria": "pj",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "outro",
+      "validade_anos": 2,
+      "preco": 535.0,
+      "url": "https://www.safeweb.com.br/produtos/checkout/ecnpj",
+      "observacao": "Safeweb — e-CNPJ A3, Token, Emissão presencial, 2 ano(s).",
+      "fonte": "safeweb_playwright"
+    },
+    {
+      "chave": "serpro|e-CPF|A3|pf|sem_midia|videoconferencia|2",
+      "certificadora": "serpro",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "sem_midia",
+      "emissao": "videoconferencia",
+      "validade_anos": 2,
+      "preco": 170.0,
+      "url": "https://servicos.serpro.gov.br/loja/certificacao-digital/",
+      "observacao": "Serpro — Pessoa Física, Somente o Certificado, 2 anos.",
+      "fonte": "serpro_playwright"
+    },
+    {
+      "chave": "digitalsign|e-CPF|A3|pf|nuvem|videoconferencia|1",
+      "certificadora": "digitalsign",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "nuvem",
+      "emissao": "videoconferencia",
+      "validade_anos": 1,
+      "preco": 165.0,
+      "url": "https://digitalsigncertificadora.com.br/",
+      "observacao": "DigitalSign — e-CPF A3 nuvem (texto da página).",
+      "fonte": "digitalsign_playwright"
     }
   ]
 }

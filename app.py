@@ -32,6 +32,7 @@ from catalogo_precos import (
     AJUDA_SECAO_A3,
     AJUDA_VALIDADE,
     AJUDA_VARIOS_COMPUTADORES,
+    AJUDA_USO_CELULAR,
     OPCOES_EMISSAO,
     OPCOES_MIDIA_A1,
     OPCOES_MIDIA_A3,
@@ -458,6 +459,7 @@ def _ctx_preferencias() -> dict:
         "ajuda_secao_a1": AJUDA_SECAO_A1,
         "ajuda_secao_a3": AJUDA_SECAO_A3,
         "ajuda_varios_computadores": AJUDA_VARIOS_COMPUTADORES,
+        "ajuda_uso_celular": AJUDA_USO_CELULAR,
     }
 
 
@@ -533,6 +535,8 @@ def comecar():
         varios_pc = request.form.get("varios_computadores") == "sim"
         tipo_arm_prev = "A3" if varios_pc else "A1"
         prefs = parse_preferencias_form(request.form, tipo_arm=tipo_arm_prev)
+        if request.form.get("usa_celular") == "sim":
+            prefs["preferencia_midia"] = "nuvem"
         registro = request.form.get("registro_profissional", "").strip() or request.form.get("crmv", "").strip() or "—"
         registro_uf = request.form.get("registro_uf", "").strip().upper() or request.form.get("crmv_uf", "").strip().upper() or "NA"
         sistema = request.form.get("sistema_receituario", "").strip() or None

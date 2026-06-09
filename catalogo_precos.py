@@ -107,6 +107,14 @@ AJUDA_VARIOS_COMPUTADORES = (
     "em que for assinar documentos."
 )
 
+AJUDA_USO_CELULAR = (
+    "Para receituário no celular ou tablet, escolha certificado na nuvem (HSM). "
+    "O token USB (A3) não funciona no smartphone — ele exige computador com a porta USB. "
+    "A1 na nuvem é o mais indicado para uso móvel; algumas certificadoras vendem «A3 em nuvem», "
+    "que também pode funcionar no celular, conforme o app de receituário. "
+    "Arquivo no PC (A1 arquivo) só assina naquele computador."
+)
+
 _varredura_lock = threading.Lock()
 _varredura_status: dict = {"running": False, "erro": None, "itens": 0}
 
@@ -354,7 +362,7 @@ def _salvar_resultado_scrape(produto_id: str, resultado: dict) -> None:
 
 
 def _executar_varredura() -> None:
-    from buscar_precos import _scrape_safeweb_catalogo, comparar_precos_produto
+    from varredura_playwright import coletar_catalogo_completo
 
     with _varredura_lock:
         _varredura_status.update({"running": True, "erro": None, "itens": 0})
@@ -370,26 +378,13 @@ def _executar_varredura() -> None:
 
     total = 0
     try:
-        for produto_id in PRODUTOS:
-            resultados = comparar_precos_produto(produto_id, usar_cache=False)
-            for r in resultados:
-                _salvar_resultado_scrape(produto_id, r)
-                if r.get("ok"):
-                    total += 1
-            _db.session.commit()
-
-        for categoria in ("pf", "pj"):
-            produtos = _scrape_safeweb_catalogo(categoria, browser=None)
-            if produtos:
-                total += importar_itens_safeweb(produtos, categoria)
-            _db.session.commit()
-
-        from buscar_precos import valid_catalogo_itens
-
-        for item in valid_catalogo_itens():
-            _upsert_preco(fonte="valid_shopify", **item)
+        linhas = coletar_catalogo_completo()
+        for item in linhas:
+            fonte = item.pop("fonte", "playwright")
+            _upsert_preco(fonte=fonte, **item)
             total += 1
-        _db.session.commit()
+            if total % 40 == 0:
+                _db.session.commit()
 
         meta.status = "ok"
         meta.concluido_em = datetime.utcnow()

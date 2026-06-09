@@ -126,6 +126,10 @@ def recomendar(
         observacoes.append(
             "Receitas de controle especial exigem assinatura qualificada ICP-Brasil no CPF do profissional (e-CPF)."
         )
+        observacoes.append(
+            "Para assinar receituário no celular, prefira certificado na nuvem — "
+            "não use token USB (A3 físico). Na comparação de preços, filtre «Nuvem (HSM)»."
+        )
 
     produto = PRODUTOS[produto_id]
     motivo = _texto_motivo(

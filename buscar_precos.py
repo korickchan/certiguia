@@ -159,7 +159,7 @@ def _valid_handles_preco(tipo: str, categoria: str, midia: str | None = None) ->
     if midia == "cartao":
         return [f"{base}-em-cartao"]
     if midia == "nuvem":
-        return [f"{base}-em-nuvem"]
+        return [f"{base}-em-nuvem", f"e-{fam}-a3-em-nuvem"]
     if midia == "sem_midia":
         return [base]
     return [f"{base}-em-token", base, f"{base}-em-cartao"]
@@ -204,13 +204,28 @@ def _valid_buscar_preco(
     return None, "", ""
 
 
+def _valid_all_products() -> list[dict]:
+    """Todas as páginas do catálogo Shopify Valid."""
+    todos: list[dict] = []
+    pagina = 1
+    while pagina <= 10:
+        data = _fetch_json(f"{VALID_BASE}/collections/all/products.json?limit=250&page={pagina}")
+        if not data or not isinstance(data, dict):
+            break
+        lote = data.get("products") or []
+        if not lote:
+            break
+        todos.extend(lote)
+        if len(lote) < 250:
+            break
+        pagina += 1
+    return todos
+
+
 def valid_catalogo_itens() -> list[dict]:
     """Lista preços e-CPF/e-CNPJ da Valid (catálogo Shopify completo)."""
-    data = _fetch_json(f"{VALID_BASE}/collections/all/products.json?limit=250")
-    if not data or not isinstance(data, dict):
-        return []
     rows: list[dict] = []
-    for product in data.get("products", []):
+    for product in _valid_all_products():
         if not _valid_relevante(product):
             continue
         handle = product["handle"]
@@ -224,6 +239,7 @@ def valid_catalogo_itens() -> list[dict]:
             continue
         midia = _valid_midia_from_product(handle, title, arm)
         url = f"{VALID_BASE}/products/{handle}"
+        emissao = "renovacao" if "renov" in _texto_ascii_minusculo(handle) else "videoconferencia"
         for v in product.get("variants") or []:
             va = _valid_validade_anos(v.get("title") or "")
             if va is None:
@@ -240,7 +256,7 @@ def valid_catalogo_itens() -> list[dict]:
                 "categoria": categoria,
                 "armazenamento": arm,
                 "midia": midia,
-                "emissao": "videoconferencia",
+                "emissao": emissao,
                 "validade_anos": va,
                 "preco": preco,
                 "url": url,
