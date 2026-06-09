@@ -312,12 +312,17 @@
     margin: 0.25rem 0 0;
 }
 
-.public-body .radio-group label {
+.public-body .radio-group > label:not(.opcao-item) {
     display: flex;
     align-items: flex-start;
     gap: 0.5rem;
     font-weight: 500;
     line-height: 1.45;
+}
+
+.public-body .radio-group label,
+.public-body .radio-group .opcao-item {
+    cursor: pointer;
 }
 
 .public-body .radio-group input[type="radio"] {
