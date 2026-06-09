@@ -127,8 +127,9 @@ def recomendar(
             "Receitas de controle especial exigem assinatura qualificada ICP-Brasil no CPF do profissional (e-CPF)."
         )
         observacoes.append(
-            "Para assinar receituário no celular, prefira certificado na nuvem — "
-            "não use token USB (A3 físico). Na comparação de preços, filtre «Nuvem (HSM)»."
+            "Para receituário no celular, prefira certificado na nuvem (HSM) ou A1 MobileID — "
+            "a maioria dos apps de prescrição não usa A1 em arquivo (.pfx). "
+            "Token USB (A3 físico) não funciona no smartphone."
         )
 
     produto = PRODUTOS[produto_id]
@@ -211,7 +212,12 @@ def _texto_motivo(
         partes.append(
             "Você indicou clínica/empresa, mas receitas e laudos em seu nome usam o e-CPF (CPF)."
         )
-    if armazenamento == "A1":
+    if finalidade == "receituario" and armazenamento == "A1":
+        partes.append(
+            "Para receituário no celular, nuvem (HSM) ou MobileID costumam funcionar melhor "
+            "que A1 em arquivo — confira o que o seu app de prescrição aceita."
+        )
+    elif armazenamento == "A1":
         partes.append("Um computador principal — A1 costuma ser mais barato e prático.")
     else:
         partes.append("Vários computadores — A3 (token) facilita o uso em mais de um lugar.")

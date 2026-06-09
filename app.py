@@ -31,6 +31,9 @@ from catalogo_precos import (
     AJUDA_SECAO_A1,
     AJUDA_SECAO_A3,
     AJUDA_VALIDADE,
+    AJUDA_ONDE_USAR,
+    AJUDA_ONDE_USAR_INTRO,
+    OPCOES_ONDE_USAR,
     AJUDA_VARIOS_COMPUTADORES,
     AJUDA_USO_CELULAR,
     OPCOES_EMISSAO,
@@ -43,6 +46,7 @@ from catalogo_precos import (
     info_catalogo,
     iniciar_varredura_background,
     init_catalogo,
+    parse_onde_usar_form,
     parse_preferencias_form,
 )
 from certificado import (
@@ -458,6 +462,9 @@ def _ctx_preferencias() -> dict:
         "ajuda_validade": AJUDA_VALIDADE,
         "ajuda_secao_a1": AJUDA_SECAO_A1,
         "ajuda_secao_a3": AJUDA_SECAO_A3,
+        "ajuda_onde_usar": AJUDA_ONDE_USAR,
+        "ajuda_onde_usar_intro": AJUDA_ONDE_USAR_INTRO,
+        "opcoes_onde_usar": OPCOES_ONDE_USAR,
         "ajuda_varios_computadores": AJUDA_VARIOS_COMPUTADORES,
         "ajuda_uso_celular": AJUDA_USO_CELULAR,
     }
@@ -532,10 +539,13 @@ def comecar():
                 finalidades=FINALIDADES,
                 **_ctx_preferencias(),
             )
-        varios_pc = request.form.get("varios_computadores") == "sim"
+        onde = parse_onde_usar_form(request.form)
+        varios_pc = onde["varios_computadores"]
         tipo_arm_prev = "A3" if varios_pc else "A1"
         prefs = parse_preferencias_form(request.form, tipo_arm=tipo_arm_prev)
-        if request.form.get("usa_celular") == "sim":
+        if onde.get("preferencia_midia"):
+            prefs["preferencia_midia"] = onde["preferencia_midia"]
+        if onde.get("usa_celular"):
             prefs["preferencia_midia"] = "nuvem"
         registro = request.form.get("registro_profissional", "").strip() or request.form.get("crmv", "").strip() or "—"
         registro_uf = request.form.get("registro_uf", "").strip().upper() or request.form.get("crmv_uf", "").strip().upper() or "NA"

@@ -38,7 +38,11 @@ def _linhas_safeweb(produtos: list, categoria: str) -> list[CatalogoLinha]:
         if not val:
             return ""
         v = val.lower()
-        if "nuvem" in v:
+        if "mobile" in v and "id" in v.replace("-", ""):
+            return "mobileid"
+        if "mobile" in v or ("mobil" in v and "id" in v):
+            return "mobileid"
+        if "nuvem" in v or "hsm" in v:
             return "nuvem"
         if "arquivo" in v:
             return "arquivo"
@@ -266,6 +270,8 @@ def _linhas_loja_playwright(page, cert_key: str) -> list[CatalogoLinha]:
         texto = _normalizar_texto(_html_para_texto(html))
         familia = "cpf" if categoria == "pf" else "cnpj"
         for midia_pat, midia_key in (
+            (rf"e-{familia}\s*{tipo.lower()}[^.]{{0,120}}mobile\s*id[^.]{{0,120}}R\$\s*([\d.,]+)", "mobileid"),
+            (rf"mobile\s*id[^.]{{0,120}}e-{familia}\s*{tipo.lower()}[^.]{{0,120}}R\$\s*([\d.,]+)", "mobileid"),
             (rf"e-{familia}\s*{tipo.lower()}[^.]{{0,120}}nuvem[^.]{{0,120}}R\$\s*([\d.,]+)", "nuvem"),
             (rf"nuvem[^.]{{0,120}}e-{familia}\s*{tipo.lower()}[^.]{{0,120}}R\$\s*([\d.,]+)", "nuvem"),
             (rf"e-{familia}\s*{tipo.lower()}[^.]{{0,120}}token[^.]{{0,120}}R\$\s*([\d.,]+)", "token"),
@@ -328,7 +334,7 @@ def _linhas_acdigital(page) -> list[CatalogoLinha]:
 def coletar_catalogo_completo(browser=None) -> list[CatalogoLinha]:
     """
     Coleta preços de todas as certificadoras (Playwright + APIs).
-    Inclui combinações de mídia (arquivo, nuvem, token, cartão) e validade.
+    Inclui combinações de mídia (arquivo, nuvem, mobileid, token, cartão) e validade.
     """
     from buscar_precos import (
         _launch_chromium,

@@ -91,29 +91,40 @@
                 </div>
                 <p class="hint" id="emite-hint">Receituário e laudos em seu nome usam e-CPF (CPF). e-CNPJ é para documentos da empresa.</p>
             </div>
-            <div class="form-row">
-                <span class="label">Usa o certificado em vários computadores?</span>
-                <div class="radio-group">
-                    <label><input type="radio" name="varios_computadores" value="nao" checked> Não, só um</label>
-                    <label><input type="radio" name="varios_computadores" value="sim"> Sim, vários</label>
-                </div>
-                <p class="hint">{{ ajuda_varios_computadores }}</p>
+        </fieldset>
+
+        <fieldset class="form-section form-section-destaque" id="onde-usar-section">
+            <legend>Onde você vai usar o certificado?</legend>
+            <p class="hint destaque-intro">{{ ajuda_onde_usar_intro }}</p>
+
+            <div class="radio-group vertical opcao-lista onde-usar-lista">
+                {% for val, label in opcoes_onde_usar %}
+                <label class="opcao-item onde-usar-item onde-usar-{{ val }}{% if val == 'celular' %} onde-usar-recomendado{% endif %}">
+                    <span class="opcao-top">
+                        <input type="radio" name="onde_usar" value="{{ val }}"
+                               {% if val == 'celular' %}checked{% endif %}
+                               data-onde="{{ val }}">
+                        <span class="opcao-label">{{ label }}</span>
+                        {% if val == 'celular' %}<span class="badge-destaque">Indicado p/ receituário móvel</span>{% endif %}
+                        {% if val == 'pc_unico' %}<span class="badge-aviso">Pouco indicado p/ receituário no celular</span>{% endif %}
+                    </span>
+                    <p class="opcao-desc">{{ ajuda_onde_usar[val] }}</p>
+                    {% if val == 'pc_unico' %}
+                    <p class="opcao-alerta">⚠ A1 em arquivo é o mais barato para um PC, mas a maioria dos apps de receituário no celular exige nuvem ou MobileID — não o .pfx comum.</p>
+                    {% elif val == 'varios_pc' %}
+                    <p class="opcao-alerta">⚠ Token USB não funciona em smartphone — só em computador com a porta USB.</p>
+                    {% endif %}
+                </label>
+                {% endfor %}
             </div>
+
+            <div class="aviso-compatibilidade" id="aviso-compatibilidade" role="status" aria-live="polite"></div>
+            <input type="hidden" name="varios_computadores" id="varios_computadores_hidden" value="nao">
         </fieldset>
 
         <fieldset class="form-section" id="preferencias-cert">
             <legend>Como quer emitir e guardar o certificado?</legend>
             <p class="hint">{{ ajuda_preferencias_intro }}</p>
-
-            <div class="form-row opcao-bloco icp-info-box" id="uso-celular-wrap" style="display:none">
-                <label class="opcao-item">
-                    <span class="opcao-top">
-                        <input type="checkbox" name="usa_celular" value="sim" id="usa_celular">
-                        <span class="opcao-label">Vou assinar receituário pelo celular ou tablet</span>
-                    </span>
-                    <p class="opcao-desc">{{ ajuda_uso_celular }}</p>
-                </label>
-            </div>
 
             {% include "public/_preferencias_cadastro.html" %}
         </fieldset>
@@ -172,48 +183,75 @@ if (cnpj) cnpj.addEventListener('input', e => { e.target.value = maskCNPJ(e.targ
 emiteRadios.forEach(r => r.addEventListener('change', atualizarCampoCnpj));
 atualizarCampoCnpj();
 
-const variosRadios = document.querySelectorAll('input[name="varios_computadores"]');
+const ondeUsarRadios = document.querySelectorAll('input[name="onde_usar"]');
 const midiaA1Wrap = document.getElementById('midia-a1-wrap');
 const midiaA3Wrap = document.getElementById('midia-a3-wrap');
+const variosHidden = document.getElementById('varios_computadores_hidden');
+const avisoCompat = document.getElementById('aviso-compatibilidade');
+const finalidadeSel = document.getElementById('finalidade');
 
-function atualizarMidiaPorTipo() {
-    const varios = document.querySelector('input[name="varios_computadores"]:checked')?.value === 'sim';
+function ondeUsarSelecionado() {
+    const r = document.querySelector('input[name="onde_usar"]:checked');
+    return r ? r.value : 'pc_unico';
+}
+
+function atualizarOndeUsar() {
+    const onde = ondeUsarSelecionado();
+    const varios = onde === 'varios_pc';
+    if (variosHidden) variosHidden.value = varios ? 'sim' : 'nao';
+
     if (midiaA1Wrap) midiaA1Wrap.style.display = varios ? 'none' : '';
     if (midiaA3Wrap) midiaA3Wrap.style.display = varios ? '' : 'none';
     document.querySelectorAll('[data-midia-a1]').forEach(el => { el.disabled = varios; });
     document.querySelectorAll('[data-midia-a3]').forEach(el => { el.disabled = !varios; });
-    if (!varios) {
-        if (!document.querySelector('[data-midia-a1]:checked')) {
-            const arq = document.querySelector('[data-midia-a1][value="arquivo"]');
-            if (arq) arq.checked = true;
-        }
-    } else if (!document.querySelector('[data-midia-a3]:checked')) {
+
+    if (onde === 'celular') {
+        const nuvem = document.querySelector('[data-midia-a1][value="nuvem"]');
+        if (nuvem) nuvem.checked = true;
+    } else if (onde === 'pc_unico') {
+        const arq = document.querySelector('[data-midia-a1][value="arquivo"]');
+        if (arq) arq.checked = true;
+    } else if (onde === 'varios_pc') {
         const tok = document.querySelector('[data-midia-a3][value="token"]');
         if (tok) tok.checked = true;
     }
-}
-variosRadios.forEach(r => r.addEventListener('change', atualizarMidiaPorTipo));
-atualizarMidiaPorTipo();
 
-const finalidadeSel = document.getElementById('finalidade');
-const usoCelularWrap = document.getElementById('uso-celular-wrap');
-const usaCelular = document.getElementById('usa_celular');
+    document.querySelectorAll('.onde-usar-item').forEach(el => {
+        el.classList.toggle('is-selected', el.querySelector('input')?.checked);
+    });
 
-function atualizarUsoCelular() {
+    document.querySelectorAll('[data-midia-a1]').forEach(el => {
+        const wrap = el.closest('.opcao-item');
+        const isArquivo = el.value === 'arquivo';
+        if (wrap) wrap.style.display = (onde === 'celular' && isArquivo) ? 'none' : '';
+    });
+
+    if (!avisoCompat) return;
     const rec = finalidadeSel && finalidadeSel.value === 'receituario';
-    if (usoCelularWrap) usoCelularWrap.style.display = rec ? '' : 'none';
-    if (!rec && usaCelular) usaCelular.checked = false;
+    if (rec && onde === 'pc_unico') {
+        avisoCompat.className = 'aviso-compatibilidade aviso-compatibilidade--alerta';
+        avisoCompat.innerHTML = '<strong>Atenção — receituário:</strong> A1 em arquivo (.pfx) '
+            + '<em>raramente funciona</em> nos apps de prescrição no celular (Memed, iClinic etc.). '
+            + 'Se você precisa prescrever pelo smartphone, escolha «No celular, tablet ou em mais de um lugar» — '
+            + 'nuvem ou MobileID.';
+    } else if (rec && onde === 'celular') {
+        avisoCompat.className = 'aviso-compatibilidade aviso-compatibilidade--ok';
+        avisoCompat.innerHTML = '<strong>Ótima escolha para receituário móvel.</strong> Compare preços de '
+            + '<em>nuvem (HSM)</em> e <em>MobileID</em> — formatos diferentes para uso no celular.';
+    } else if (onde === 'varios_pc') {
+        avisoCompat.className = 'aviso-compatibilidade aviso-compatibilidade--info';
+        avisoCompat.innerHTML = '<strong>A3 com token:</strong> ideal para vários computadores na clínica. '
+            + 'Lembre-se: o token USB não funciona no celular.';
+    } else {
+        avisoCompat.className = 'aviso-compatibilidade aviso-compatibilidade--info';
+        avisoCompat.innerHTML = '<strong>A1 em arquivo:</strong> mais barato para um PC fixo. '
+            + 'O .pfx pode ser importado no celular para Gov.br, mas não costuma servir para receituário profissional.';
+    }
 }
 
-function aplicarNuvemSeCelular() {
-    if (!usaCelular || !usaCelular.checked) return;
-    const nuvem = document.querySelector('[data-midia-a1][value="nuvem"]');
-    if (nuvem) nuvem.checked = true;
-}
-
-if (finalidadeSel) finalidadeSel.addEventListener('change', atualizarUsoCelular);
-if (usaCelular) usaCelular.addEventListener('change', aplicarNuvemSeCelular);
-atualizarUsoCelular();
+ondeUsarRadios.forEach(r => r.addEventListener('change', atualizarOndeUsar));
+if (finalidadeSel) finalidadeSel.addEventListener('change', atualizarOndeUsar);
+atualizarOndeUsar();
 
 const form = document.querySelector('.form-cadastro');
 if (form) {

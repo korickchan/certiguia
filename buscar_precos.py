@@ -127,6 +127,10 @@ def _valid_produto_tipo(handle: str, title: str) -> tuple[str, str] | None:
 
 def _valid_midia_from_product(handle: str, title: str, arm: str) -> str:
     h = _texto_ascii_minusculo(f"{handle} {title}")
+    if "mobile" in h and "id" in h.replace("-", ""):
+        return "mobileid"
+    if "mobileid" in h.replace("-", ""):
+        return "mobileid"
     if "nuvem" in h:
         return "nuvem"
     if "token" in h:

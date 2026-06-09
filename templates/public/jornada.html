@@ -223,7 +223,7 @@
 
                        {% if cert_key == p.certificadora %}checked{% endif %} onchange="this.form.submit()">
 
-                <h4>{{ p.nome }}</h4>
+                <h4>{{ p.nome }}{% if p.formato %} <span class="preco-formato">· {{ p.formato }}</span>{% endif %}</h4>
 
                 {% if p.melhor_preco and not cert_escolhida %}<span class="badge-melhor">Menor preço</span>{% endif %}
 

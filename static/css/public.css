@@ -390,6 +390,118 @@
     gap: 1.25rem;
 }
 
+/* Onde usar certificado — destaque anti-erro (PC vs celular) */
+.public-body .form-section-destaque {
+    border: 2px solid var(--pub-primary);
+    border-radius: var(--pub-radius);
+    padding: 1.25rem 1.25rem 1rem;
+    background: linear-gradient(180deg, rgba(13, 148, 136, 0.06) 0%, var(--pub-card) 100%);
+    box-shadow: 0 4px 20px rgba(13, 148, 136, 0.12);
+}
+
+.public-body .form-section-destaque legend {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--pub-primary-dark);
+}
+
+.public-body .destaque-intro {
+    font-size: 0.9375rem;
+    color: var(--pub-text);
+    margin-bottom: 1rem;
+    line-height: 1.55;
+}
+
+.public-body .onde-usar-lista {
+    gap: 1rem;
+}
+
+.public-body .onde-usar-item {
+    border-width: 2px;
+}
+
+.public-body .onde-usar-item.is-selected,
+.public-body .onde-usar-item:has(input:checked) {
+    border-color: var(--pub-primary);
+    box-shadow: 0 0 0 1px rgba(13, 148, 136, 0.2);
+}
+
+.public-body .onde-usar-recomendado:has(input:checked) {
+    border-color: #059669;
+    background: rgba(5, 150, 105, 0.06);
+}
+
+.public-body .onde-usar-item .opcao-top {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.public-body .badge-destaque,
+.public-body .badge-aviso {
+    display: inline-block;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    line-height: 1.3;
+}
+
+.public-body .badge-destaque {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.public-body .badge-aviso {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.public-body .opcao-alerta {
+    margin: 0.5rem 0 0 1.65rem;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    border-radius: 8px;
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    color: #78350f;
+}
+
+.public-body .aviso-compatibilidade {
+    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    line-height: 1.55;
+}
+
+.public-body .aviso-compatibilidade--alerta {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+.public-body .aviso-compatibilidade--ok {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+}
+
+.public-body .aviso-compatibilidade--info {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    color: #0c4a6e;
+}
+
+.public-body .preco-formato {
+    font-weight: 600;
+    font-size: 0.85em;
+    color: var(--pub-primary-dark);
+}
+
 @media (max-width: 640px) {
     .public-body .preferencias-precos .preferencias-cols {
         grid-template-columns: 1fr;

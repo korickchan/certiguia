@@ -19,6 +19,7 @@ OPCOES_EMISSAO = [
 OPCOES_MIDIA_A1 = [
     ("arquivo", "Arquivo no computador"),
     ("nuvem", "Nuvem (HSM)"),
+    ("mobileid", "MobileID (app no celular)"),
 ]
 OPCOES_MIDIA_A3 = [
     ("token", "Token USB / pendrive"),
@@ -29,6 +30,8 @@ OPCOES_VALIDADE = [1, 2, 3]
 
 MIDIAS_VALIDAS = {m[0] for m in OPCOES_MIDIA_A1} | {m[0] for m in OPCOES_MIDIA_A3}
 EMISSOES_VALIDAS = {e[0] for e in OPCOES_EMISSAO}
+
+MIDIAS_MOVEIS = frozenset({"nuvem", "mobileid"})
 
 AJUDA_PREFERENCIAS_INTRO = (
     "Cada certificadora cobra valores diferentes conforme como você emite, "
@@ -54,13 +57,21 @@ AJUDA_MIDIA_A1 = {
     "arquivo": (
         "O certificado é instalado como arquivo digital (.pfx) em um único computador. "
         "É o formato mais comum de A1 e, em geral, o mais barato. "
-        "Ideal se você usa sempre o mesmo PC ou notebook."
+        "Ideal se você usa sempre o mesmo PC ou notebook. "
+        "Tecnicamente dá para importar o .pfx no iPhone ou Android (Gov.br, e-mail etc.), "
+        "mas a maioria dos apps de receituário não usa esse formato — prefira nuvem ou MobileID."
     ),
     "nuvem": (
         "O certificado fica em servidores seguros da certificadora (HSM/nuvem), "
-        "não no seu computador. Você acessa pela internet, de qualquer lugar. "
-        "Útil para clínica com vários profissionais, e-CNPJ da empresa ou "
-        "quem não quer depender de um PC específico."
+        "não no seu aparelho. Você acessa pela internet, de qualquer lugar — "
+        "incluindo celular e tablet, via app de receituário ou navegador. "
+        "É a opção mais prática para prescrição móvel e para quem não quer depender de um PC."
+    ),
+    "mobileid": (
+        "Certificado A1 pensado para celular/tablet, gerenciado pelo app da certificadora "
+        "(ex.: Certisign mobileID, Valid Credentials). O certificado fica no aparelho móvel. "
+        "Confira se o seu app de receituário aceita MobileID — nem todos integram. "
+        "Diferente da nuvem (HSM): aqui o certificado está no smartphone, não nos servidores da AC."
     ),
 }
 
@@ -91,8 +102,8 @@ AJUDA_VALIDADE = (
 )
 
 AJUDA_SECAO_A1 = (
-    "Certificado A1 — fica no computador (arquivo) ou na nuvem. "
-    "Indicado quando você usa essencialmente um único equipamento."
+    "Certificado A1 — arquivo no PC, nuvem (HSM) ou MobileID (app no celular). "
+    "Para receituário móvel, prefira nuvem ou MobileID."
 )
 
 AJUDA_SECAO_A3 = (
@@ -101,6 +112,37 @@ AJUDA_SECAO_A3 = (
     "do sistema exige mídia física."
 )
 
+AJUDA_ONDE_USAR_INTRO = (
+    "Escolha onde você vai assinar receitas e documentos. "
+    "Isso define o tipo de certificado — errar aqui leva a comprar o produto errado."
+)
+
+OPCOES_ONDE_USAR = [
+    ("pc_unico", "Só no meu computador (um PC ou notebook)"),
+    ("celular", "No celular, tablet ou em mais de um lugar"),
+    ("varios_pc", "Em vários computadores (com token USB)"),
+]
+
+AJUDA_ONDE_USAR = {
+    "pc_unico": (
+        "Indicamos e-CPF/e-CNPJ A1 em arquivo — costuma ser o mais barato. "
+        "O certificado fica instalado naquele computador. "
+        "Dá para copiar o .pfx para outro PC ou celular, mas é trabalhoso e inseguro; "
+        "para receituário no smartphone, nuvem ou MobileID costumam funcionar melhor."
+    ),
+    "celular": (
+        "Indicamos A1 na nuvem (HSM): o certificado fica nos servidores da certificadora "
+        "e você acessa pelo app de receituário no celular, tablet ou PC. "
+        "Algumas certificadoras vendem A1 MobileID (app próprio) — também serve para móvel. "
+        "Evite A1 em arquivo (.pfx) e token USB se o celular for essencial."
+    ),
+    "varios_pc": (
+        "Indicamos A3 com token ou cartão: você conecta o dispositivo em cada computador. "
+        "Serve para clínica com vários desktops — não funciona no smartphone "
+        "(não há porta USB no celular)."
+    ),
+}
+
 AJUDA_VARIOS_COMPUTADORES = (
     "Um só PC → em geral recomendamos A1 (arquivo ou nuvem), que costuma ser mais barato. "
     "Vários PCs → A3 com token ou cartão: você conecta o dispositivo em cada computador "
@@ -108,11 +150,13 @@ AJUDA_VARIOS_COMPUTADORES = (
 )
 
 AJUDA_USO_CELULAR = (
-    "Para receituário no celular ou tablet, escolha certificado na nuvem (HSM). "
-    "O token USB (A3) não funciona no smartphone — ele exige computador com a porta USB. "
-    "A1 na nuvem é o mais indicado para uso móvel; algumas certificadoras vendem «A3 em nuvem», "
-    "que também pode funcionar no celular, conforme o app de receituário. "
-    "Arquivo no PC (A1 arquivo) só assina naquele computador."
+    "Para receituário no celular ou tablet, prefira certificado na nuvem (HSM) — "
+    "é o que a maioria dos apps de prescrição integra nativamente. "
+    "Algumas Autoridades Certificadoras oferecem A1 MobileID (app da AC no celular); "
+    "também pode servir, conforme o seu sistema de receituário. "
+    "A1 em arquivo (.pfx) até pode ser instalado no iPhone/Android para Gov.br e e-mail, "
+    "mas raramente funciona bem em apps de receituário profissional. "
+    "Token USB (A3 físico) não funciona no smartphone."
 )
 
 _varredura_lock = threading.Lock()
@@ -146,8 +190,13 @@ class FiltroPreco:
 def _normalizar_midia(valor: str | None) -> str:
     if not valor:
         return ""
-    v = valor.lower().strip()
-    if "nuvem" in v or v == "cloud":
+    v = valor.lower().strip().replace("_", "-")
+    compact = v.replace("-", "").replace(" ", "")
+    if "mobileid" in compact or "mobileid" in v:
+        return "mobileid"
+    if "mobile" in v and "id" in compact:
+        return "mobileid"
+    if "nuvem" in v or v == "cloud" or "hsm" in v:
         return "nuvem"
     if "arquivo" in v:
         return "arquivo"
@@ -160,6 +209,12 @@ def _normalizar_midia(valor: str | None) -> str:
     if "sem" in v and "m" in v:
         return "sem_midia"
     return v
+
+
+def _rotulo_formato(armazenamento: str, midia: str) -> str:
+    midia_map = dict(OPCOES_MIDIA_A1 + OPCOES_MIDIA_A3)
+    rotulo_midia = midia_map.get(midia, midia or "—")
+    return f"{armazenamento} · {rotulo_midia}"
 
 
 def _normalizar_emissao(item: dict | None = None, texto: str | None = None) -> str:
@@ -464,7 +519,88 @@ def _midia_compativel(filtro: FiltroPreco, midia_row: str) -> bool:
         return m in ("arquivo", "")
     if filtro.midia == "nuvem":
         return m == "nuvem"
+    if filtro.midia == "mobileid":
+        return m == "mobileid"
     return False
+
+
+def _consultar_catalogo_midias_moveis(filtro: FiltroPreco) -> list[dict]:
+    """Nuvem e MobileID — inclui A1 e A3; uma linha por certificadora + formato."""
+    rows = (
+        _PrecoCatalogo.query.filter_by(
+            produto_tipo=filtro.produto_tipo,
+            categoria=filtro.categoria,
+            validade_anos=filtro.validade_anos,
+        )
+        .order_by(_PrecoCatalogo.preco.asc())
+        .all()
+    )
+
+    por_chave: dict[str, object] = {}
+    for row in rows:
+        m = _normalizar_midia(row.midia)
+        if m not in MIDIAS_MOVEIS:
+            continue
+        if filtro.midia and m != filtro.midia:
+            continue
+        if not _emissao_compativel(filtro, row.emissao or ""):
+            continue
+        chave = f"{row.certificadora}|{row.armazenamento}|{m}"
+        atual = por_chave.get(chave)
+        if not atual or row.preco < atual.preco:
+            por_chave[chave] = row
+
+    resultados: list[dict] = []
+    for row in sorted(por_chave.values(), key=lambda r: r.preco):
+        cert = certificadoras_ativas().get(row.certificadora, {})
+        formato = _rotulo_formato(row.armazenamento, _normalizar_midia(row.midia))
+        resultados.append({
+            "certificadora": row.certificadora,
+            "nome": cert.get("nome", row.certificadora),
+            "formato": formato,
+            "produto_id": filtro.produto_id,
+            "ok": True,
+            "preco": row.preco,
+            "preco_formatado": _formatar_preco(row.preco),
+            "url": row.url or url_certificadora(
+                row.certificadora, row.armazenamento, filtro.categoria
+            ),
+            "observacao": (
+                f"{formato}. {row.observacao or ''} Catálogo atualizado em "
+                f"{row.atualizado_em.strftime('%d/%m/%Y %H:%M') if row.atualizado_em else '—'}."
+            ).strip(),
+            "instrucao": cert.get(f"instrucao_{row.armazenamento.lower()}", ""),
+            "atualizado_em": row.atualizado_em.strftime("%d/%m/%Y %H:%M") if row.atualizado_em else "",
+            "fonte": "catalogo",
+        })
+
+    if resultados:
+        menor = min(r["preco"] for r in resultados)
+        for r in resultados:
+            r["melhor_preco"] = r["preco"] == menor
+    return resultados
+
+
+def parse_onde_usar_form(form) -> dict:
+    """Mapeia escolha «onde usar» para varios_pc + preferencia_midia."""
+    onde = (form.get("onde_usar") or "pc_unico").strip()
+    if onde == "celular":
+        return {
+            "varios_computadores": False,
+            "preferencia_midia": "nuvem",
+            "usa_celular": True,
+        }
+    if onde == "varios_pc":
+        return {
+            "varios_computadores": True,
+            "preferencia_midia": "token",
+            "usa_celular": False,
+        }
+    return {
+        "varios_computadores": False,
+        "preferencia_midia": "arquivo",
+        "usa_celular": False,
+    }
 
 
 def parse_preferencias_form(form, *, tipo_arm: str = "A1") -> dict:
@@ -494,6 +630,11 @@ def parse_preferencias_form(form, *, tipo_arm: str = "A1") -> dict:
 
 def consultar_catalogo(filtro: FiltroPreco) -> list[dict]:
     """Retorna preços do catálogo para os critérios do usuário."""
+    if filtro.midia in MIDIAS_MOVEIS:
+        moveis = _consultar_catalogo_midias_moveis(filtro)
+        if moveis:
+            return moveis
+
     rows = (
         _PrecoCatalogo.query.filter_by(
             produto_tipo=filtro.produto_tipo,
