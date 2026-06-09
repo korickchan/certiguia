@@ -16,7 +16,7 @@ PRODUTOS = {
         "categoria": "pf",
         "tipo_armazenamento": "A3",
         "chave_preco": "e-cpf a3",
-        "resumo": "Certificado da pessoa física (CPF), token USB ou cartão.",
+        "resumo": "Certificado da pessoa física (CPF) — token USB, cartão ou nuvem (HSM).",
         "validade": "1 a 3 anos",
     },
     "e-cnpj-a1": {
@@ -64,6 +64,21 @@ def _cnpj_informado(cnpj) -> bool:
     return len(digitos) == 14
 
 
+def _armazenamento_recomendado(
+    *,
+    varios_computadores: bool,
+    preferencia_midia: str | None = None,
+) -> str:
+    """Define A1 vs A3 conforme uso e mídia — nuvem (HSM) no celular costuma ser vendida como A3."""
+    if varios_computadores:
+        return "A3"
+    if preferencia_midia == "nuvem":
+        return "A3"
+    if preferencia_midia in ("token", "cartao", "sem_midia"):
+        return "A3"
+    return "A1"
+
+
 def recomendar(
     *,
     profissao="outro",
@@ -72,6 +87,7 @@ def recomendar(
     finalidade="documentos",
     cnpj=None,
     eh_veterinario=None,
+    preferencia_midia: str | None = None,
 ):
     """
     emite_como: 'pf' | 'pj' | 'ambos'
@@ -83,7 +99,10 @@ def recomendar(
     elif eh_veterinario is False and profissao == "veterinario":
         profissao = "outro"
 
-    armazenamento = "A3" if varios_computadores else "A1"
+    armazenamento = _armazenamento_recomendado(
+        varios_computadores=varios_computadores,
+        preferencia_midia=preferencia_midia,
+    )
     observacoes = []
     tem_cnpj = _cnpj_informado(cnpj)
     precisa_pf_assinatura = finalidade in ("receituario", "documentos", "geral") or profissao in (
@@ -131,10 +150,16 @@ def recomendar(
             "a maioria dos apps de prescrição não usa A1 em arquivo (.pfx). "
             "Token USB (A3 físico) não funciona no smartphone."
         )
+    if preferencia_midia == "nuvem" and not varios_computadores:
+        observacoes.append(
+            "Certificado em nuvem (HSM) para celular costuma ser comercializado como e-CPF A3 em nuvem — "
+            "mesma validade ICP-Brasil, acessível pelo app no smartphone."
+        )
 
     produto = PRODUTOS[produto_id]
     motivo = _texto_motivo(
-        produto, armazenamento, profissao, emite_como, varios_computadores, finalidade, tem_cnpj
+        produto, armazenamento, profissao, emite_como, varios_computadores, finalidade, tem_cnpj,
+        preferencia_midia=preferencia_midia,
     )
 
     return {
@@ -197,6 +222,7 @@ def _texto_motivo(
     varios_computadores,
     finalidade,
     tem_cnpj,
+    preferencia_midia=None,
 ):
     prof = PROFISSOES.get(profissao, PROFISSOES["outro"])
     partes = [f"Indicamos {produto['nome']} porque você atua como {prof['nome'].lower()}."]
@@ -212,7 +238,12 @@ def _texto_motivo(
         partes.append(
             "Você indicou clínica/empresa, mas receitas e laudos em seu nome usam o e-CPF (CPF)."
         )
-    if finalidade == "receituario" and armazenamento == "A1":
+    if preferencia_midia == "nuvem" and armazenamento == "A3" and not varios_computadores:
+        partes.append(
+            "Você escolheu uso no celular/tablet com certificado na nuvem — "
+            "as certificadoras vendem isso como e-CPF A3 em nuvem (HSM)."
+        )
+    elif finalidade == "receituario" and armazenamento == "A1":
         partes.append(
             "Para receituário no celular, nuvem (HSM) ou MobileID costumam funcionar melhor "
             "que A1 em arquivo — confira o que o seu app de prescrição aceita."

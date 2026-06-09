@@ -569,6 +569,7 @@ def comecar():
             varios_computadores=varios_pc,
             finalidade=finalidade,
             cnpj=cnpj,
+            preferencia_midia=prefs["preferencia_midia"],
         )
 
         vet = Veterinario(
@@ -631,6 +632,7 @@ def jornada(protocolo):
             varios_computadores=bool(vet.varios_computadores),
             finalidade=vet.finalidade or "documentos",
             cnpj=vet.cnpj,
+            preferencia_midia=getattr(vet, "preferencia_midia", None),
         )
         rec_secundario = rec.get("secundario")
         rec_observacoes = rec.get("observacoes") or []

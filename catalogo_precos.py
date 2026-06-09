@@ -635,6 +635,8 @@ def _consultar_catalogo_midias_moveis(filtro: FiltroPreco) -> list[dict]:
             continue
         if not _emissao_compativel(filtro, row.emissao or ""):
             continue
+        if filtro.armazenamento and row.armazenamento != filtro.armazenamento:
+            continue
         chave = f"{row.certificadora}|{row.armazenamento}|{m}"
         atual = por_chave.get(chave)
         if not atual or row.preco < atual.preco:

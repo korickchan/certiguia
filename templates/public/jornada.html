@@ -6,7 +6,7 @@
 
 {% block content %}
 {% if precos_ok %}
-<div class="flash flash-success public-inline-flash">Preços atualizados com sucesso. Confira os valores abaixo antes de comprar.</div>
+<div class="flash flash-success public-inline-flash">Cadastro concluído. Leia a recomendação e clique em «Ver preços» quando quiser comparar certificadoras.</div>
 {% endif %}
 
 <div class="jornada-header">
@@ -90,10 +90,10 @@
 
 
 
-<section class="public-card recomendacao-final">
+<section class="public-card recomendacao-final" id="jornada-etapa-recomendacao">
 
     <h2>Seu certificado indicado</h2>
-    <p class="hint">Com base nas respostas que você deu no cadastro — confira abaixo os preços por certificadora.</p>
+    <p class="hint">Com base nas respostas do questionário — leia a recomendação antes de ver preços.</p>
 
     {% if produto %}
 
@@ -102,6 +102,13 @@
         <h3>{{ produto.nome }}</h3>
 
         <p>{{ produto.resumo }}</p>
+
+        {% if vet.preferencia_midia in ('nuvem', 'mobileid') %}
+        <p class="recomendacao-formato">
+            Formato escolhido:
+            <strong>{{ dict(opcoes_midia_a1 + opcoes_midia_a3).get(vet.preferencia_midia, vet.preferencia_midia) }}</strong>
+        </p>
+        {% endif %}
 
         {% if vet.motivo_recomendacao %}<p class="motivo">{{ vet.motivo_recomendacao }}</p>{% endif %}
 
@@ -121,21 +128,19 @@
 
     </div>
 
-    <form method="post" action="{{ url_for('alterar_produto_publico', protocolo=vet.protocolo) }}" class="produto-selector">
-        <label for="produto_id">Comparar preços de qual certificado?</label>
-        <select name="produto_id" id="produto_id" onchange="this.form.submit()">
-            {% for pid, p in produtos.items() %}
-            <option value="{{ pid }}" {% if produto_atual == pid %}selected{% endif %}>{{ p.nome }}</option>
-            {% endfor %}
-        </select>
-        <p class="hint">Ao trocar o tipo, os preços são recarregados do catálogo (instantâneo).</p>
-    </form>
+    <div class="jornada-etapa-actions">
+        <button type="button" class="btn btn-primary btn-lg" id="btn-ver-precos">
+            Ver preços por certificadora →
+        </button>
+    </div>
 
     {% endif %}
 
 </section>
 
 
+
+<div id="jornada-etapa-precos" class="jornada-etapa-precos" hidden>
 
 <section class="public-card certificadora-section">
 
@@ -280,7 +285,15 @@
 
 <section class="public-card preferencias-precos preferencias-precos--secundario">
     <h2>Refinar comparação de preços <span class="hint-inline">(opcional)</span></h2>
-    <p class="hint">Já indicamos o certificado acima. Ajuste emissão, validade ou formato se quiser ver outros valores no catálogo.</p>
+    <p class="hint">Ajuste emissão, validade ou formato, ou compare outro tipo de certificado.</p>
+    <form method="post" action="{{ url_for('alterar_produto_publico', protocolo=vet.protocolo) }}" class="produto-selector">
+        <label for="produto_id">Comparar outro tipo de certificado</label>
+        <select name="produto_id" id="produto_id" onchange="this.form.submit()">
+            {% for pid, p in produtos.items() %}
+            <option value="{{ pid }}" {% if produto_atual == pid %}selected{% endif %}>{{ p.nome }}</option>
+            {% endfor %}
+        </select>
+    </form>
     <form method="post" action="{{ url_for('atualizar_preferencias_publico', protocolo=vet.protocolo) }}" class="form-preferencias">
         {% include "public/_preferencias_jornada.html" %}
         <div class="form-actions">
@@ -288,6 +301,8 @@
         </div>
     </form>
 </section>
+
+</div>
 
 
 
@@ -507,5 +522,27 @@
 
 </section>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const btn = document.getElementById('btn-ver-precos');
+    const precos = document.getElementById('jornada-etapa-precos');
+    if (!btn || !precos) return;
+
+    function mostrarPrecos() {
+        precos.hidden = false;
+        btn.hidden = true;
+        precos.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    btn.addEventListener('click', mostrarPrecos);
+
+    if (window.location.hash === '#precos') {
+        mostrarPrecos();
+    }
+})();
+</script>
 {% endblock %}
 

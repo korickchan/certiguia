@@ -266,8 +266,9 @@
 }
 .wizard-title { font-size: 1.35rem; margin-bottom: 0.35rem; }
 .wizard-subtitle { margin-bottom: 1.5rem; }
-.wizard-panel { display: none; animation: wizardFadeIn 0.3s ease; }
-.wizard-panel.active { display: block; }
+.wizard-panel { display: none !important; animation: wizardFadeIn 0.3s ease; }
+.wizard-panel.active { display: block !important; }
+.wizard-form > .wizard-panel:not(.active) { display: none !important; }
 @keyframes wizardFadeIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
@@ -331,6 +332,19 @@
     font-size: 0.85em;
     color: var(--pub-muted);
 }
+
+.jornada-etapa-actions {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--pub-border);
+    text-align: center;
+}
+.recomendacao-formato {
+    font-size: 0.9rem;
+    margin: 0.75rem 0 0;
+    color: var(--pub-primary-dark);
+}
+.jornada-etapa-precos[hidden] { display: none !important; }
 
 .public-body .form-section {
     background: #fafbfc;

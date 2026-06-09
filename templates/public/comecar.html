@@ -202,12 +202,12 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/form.js') }}"></script>
-<script src="{{ url_for('static', filename='js/comecar-wizard.js') }}"></script>
 <script>
 window.CERTIGUIA_WIZARD = {
     profissoes: {{ profissoes|tojson }},
     ajudaMidiaA1: {{ ajuda_midia_a1|tojson }},
 };
 </script>
+<script src="{{ url_for('static', filename='js/comecar-wizard.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/form.js') }}"></script>
 {% endblock %}
