@@ -38,14 +38,14 @@
         {% if catalogo.varredura_em_andamento %}
         <span class="badge badge-yellow">Varredura em andamento…</span>
         {% elif catalogo.precisa_atualizar %}
-        <span class="badge badge-yellow">Desatualizado — será atualizado automaticamente</span>
+        <span class="badge badge-yellow">Desatualizado — rode a varredura externa e faça deploy do seed</span>
         {% endif %}
     </p>
     <p class="text-muted">
         O usuário vê preços filtrados instantaneamente (produto, mídia, videoconferência, validade).
-        A varredura roda em background a cada
-        {% if catalogo.intervalo_dias >= 1 %}{{ catalogo.intervalo_dias|int }} dia(s){% else %}{{ catalogo.intervalo_horas }} horas{% endif %}
-        ou ao clicar em «Varredura agora».
+        No Render o catálogo vem do arquivo <code>data/catalogo_seed.json</code>.
+        Para atualizar: <code>python scripts/varredura_catalogo.py</code> (local/CI) e deploy.
+        «Varredura agora» só funciona se <code>CATALOGO_VARREDURA_ONLINE=1</code> no servidor.
     </p>
 </section>
 

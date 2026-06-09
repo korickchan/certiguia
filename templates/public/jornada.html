@@ -67,21 +67,27 @@
 
     {% if precos %}
     {% set com_preco = precos|selectattr('ok')|list %}
+    {% set sem_preco = precos|rejectattr('ok')|list %}
     <p class="hint icp-nota">
         {{ produto.nome if produto else produtos[produto_atual].nome }}
         · {{ filtro_precos.rotulo() }}
-        {% if com_preco %} · {{ com_preco|length }} opção{% if com_preco|length > 1 %}ões{% endif %} encontrada{% if com_preco|length > 1 %}s{% endif %}{% endif %}
+        {% if com_preco %} · {{ com_preco|length }} opção{% if com_preco|length > 1 %}ões{% endif %} com preço{% endif %}
+        {% if sem_preco %} · {{ sem_preco|length }} só com link no site{% endif %}
     </p>
 
     <form method="post" action="{{ url_for('escolher_certificadora', protocolo=vet.protocolo) }}" class="cert-picker">
         <div class="precos-grid">
-            {% for p in precos if p.ok %}
-            <label class="preco-card {% if p.melhor_preco %}melhor{% endif %} {% if cert_key == p.certificadora %}selected{% endif %}">
+            {% for p in precos %}
+            <label class="preco-card {% if p.ok and p.melhor_preco %}melhor{% endif %} {% if not p.ok %}preco-card--sem-preco{% endif %} {% if cert_key == p.certificadora %}selected{% endif %}">
                 <input type="radio" name="certificadora" value="{{ p.certificadora }}"
                        {% if cert_key == p.certificadora %}checked{% endif %} onchange="this.form.submit()">
                 <h4>{{ p.nome }}{% if p.formato %} <span class="preco-formato">· {{ p.formato }}</span>{% endif %}</h4>
+                {% if p.ok %}
                 {% if p.melhor_preco and not cert_escolhida %}<span class="badge-melhor">Menor preço</span>{% endif %}
                 <p class="preco-valor">{{ p.preco_formatado }}</p>
+                {% else %}
+                <p class="preco-sem-valor">Valor não encontrado para opção recomendada</p>
+                {% endif %}
                 {% with cert_key=p.certificadora, site_url=p.url %}
                 {% include "public/_icp_card_footer.html" %}
                 {% endwith %}
@@ -92,12 +98,8 @@
 
     {% if not com_preco %}
     <div class="aviso-compatibilidade aviso-compatibilidade--alerta">
-        {% if vet.preferencia_midia == 'mobileid' %}
-        <strong>MobileID:</strong> nenhuma certificadora com preço de MobileID no catálogo agora.
-        Tente «Nuvem (HSM)» nas preferências abaixo ou confira direto no site da Certisign/Soluti/Valid.
-        {% else %}
-        Nenhum preço encontrado para {{ filtro_precos.rotulo() }}. Ajuste o formato abaixo ou aguarde a varredura do catálogo.
-        {% endif %}
+        Nenhum preço no catálogo para {{ filtro_precos.rotulo() }}.
+        Confira o valor direto no site de cada certificadora (links acima).
     </div>
     {% endif %}
 

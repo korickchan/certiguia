@@ -614,6 +614,39 @@ def _midia_compativel(filtro: FiltroPreco, midia_row: str) -> bool:
     return False
 
 
+def _entry_sem_preco(cert_key: str, cert: dict, filtro: FiltroPreco, *, formato: str = "") -> dict:
+    arm = filtro.armazenamento or "A1"
+    return {
+        "certificadora": cert_key,
+        "nome": cert.get("nome", cert_key),
+        "formato": formato,
+        "produto_id": filtro.produto_id,
+        "ok": False,
+        "erro": "Valor não encontrado para opção recomendada",
+        "url": url_certificadora(cert_key, arm, filtro.categoria),
+        "instrucao": cert.get(f"instrucao_{arm.lower()}", ""),
+        "fonte": "catalogo",
+    }
+
+
+def _completar_certificadoras_sem_preco(resultados: list[dict], filtro: FiltroPreco) -> list[dict]:
+    """Garante uma linha por AC — com preço ou link quando não houver no catálogo."""
+    presentes = {r["certificadora"] for r in resultados}
+    for key, cert in certificadoras_ativas().items():
+        if key not in presentes:
+            resultados.append(_entry_sem_preco(key, cert, filtro))
+    com_preco = [r for r in resultados if r.get("ok")]
+    if com_preco:
+        menor = min(r["preco"] for r in com_preco)
+        for r in resultados:
+            r["melhor_preco"] = r.get("ok") and r["preco"] == menor
+    else:
+        for r in resultados:
+            r["melhor_preco"] = False
+    resultados.sort(key=lambda x: (not x.get("ok"), x.get("preco", 9999), x.get("nome", "")))
+    return resultados
+
+
 def _consultar_catalogo_midias_moveis(filtro: FiltroPreco) -> list[dict]:
     """Nuvem e MobileID — inclui A1 e A3; uma linha por certificadora + formato."""
     rows = (
@@ -666,11 +699,7 @@ def _consultar_catalogo_midias_moveis(filtro: FiltroPreco) -> list[dict]:
             "fonte": "catalogo",
         })
 
-    if resultados:
-        menor = min(r["preco"] for r in resultados)
-        for r in resultados:
-            r["melhor_preco"] = r["preco"] == menor
-    return resultados
+    return _completar_certificadoras_sem_preco(resultados, filtro)
 
 
 def parse_onde_usar_form(form) -> dict:
@@ -726,7 +755,7 @@ def consultar_catalogo(filtro: FiltroPreco) -> list[dict]:
         if moveis:
             return moveis
         if filtro.midia == "mobileid":
-            return []
+            return _completar_certificadoras_sem_preco([], filtro)
 
     rows = (
         _PrecoCatalogo.query.filter_by(
@@ -770,26 +799,9 @@ def consultar_catalogo(filtro: FiltroPreco) -> list[dict]:
                 "fonte": "catalogo",
             })
         else:
-            resultados.append({
-                "certificadora": key,
-                "nome": cert["nome"],
-                "produto_id": filtro.produto_id,
-                "ok": False,
-                "erro": "Preço não disponível no catálogo para esta combinação.",
-                "url": url_certificadora(key, filtro.armazenamento, filtro.categoria),
-            })
+            resultados.append(_entry_sem_preco(key, cert, filtro))
 
-    com_preco = [r for r in resultados if r.get("ok")]
-    if com_preco:
-        menor = min(r["preco"] for r in com_preco)
-        for r in resultados:
-            r["melhor_preco"] = r.get("ok") and r["preco"] == menor
-    else:
-        for r in resultados:
-            r["melhor_preco"] = False
-
-    resultados.sort(key=lambda x: (not x.get("ok"), x.get("preco", 9999)))
-    return resultados
+    return _completar_certificadoras_sem_preco(resultados, filtro)
 
 
 def aplicar_precos_catalogo_vet(vet, db_session) -> list[dict]:

@@ -344,9 +344,9 @@ def _migrate_db():
 
 
 def _garantir_precos_catalogo(vet, *, forcar_varredura: bool = False) -> list:
-    """Consulta catálogo local; dispara varredura em background se estiver desatualizado."""
+    """Consulta catálogo local (seed/DB). Varredura online só se explicitamente habilitada."""
     precos = aplicar_precos_catalogo_vet(vet, db.session)
-    if forcar_varredura or catalogo_precisa_atualizar():
+    if forcar_varredura and os.getenv("CATALOGO_VARREDURA_ONLINE", "0") == "1":
         iniciar_varredura_background(app)
     return precos
 
@@ -452,7 +452,7 @@ with app.app_context():
 
     importar_catalogo_seed()
     complementar_catalogo_fixos()
-    if os.getenv("CATALOGO_VARREDURA_INICIO", "1") == "1":
+    if os.getenv("CATALOGO_VARREDURA_INICIO", "0") == "1":
         if PrecoCatalogo.query.count() == 0 or catalogo_precisa_atualizar():
             iniciar_varredura_background(app)
 
@@ -799,7 +799,11 @@ def atualizar_precos_publico(protocolo):
     elif info_catalogo().get("varredura_em_andamento"):
         flash("Catálogo em atualização. Os valores aparecerão em alguns minutos.", "warning")
     else:
-        flash("Nenhum preço encontrado para esta combinação. Varredura iniciada.", "warning")
+        flash(
+            "Nenhum preço encontrado para esta combinação no catálogo. "
+            "Os valores são atualizados periodicamente via varredura externa.",
+            "warning",
+        )
     return redirect(url_for("jornada", protocolo=protocolo, precos_ok=1))
 
 

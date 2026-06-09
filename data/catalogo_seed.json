@@ -1,5 +1,5 @@
 {
-  "exportado_em": "2026-06-09T18:59:25.735349",
+  "exportado_em": "2026-06-09T19:52:13.887708",
   "itens": [
     {
       "chave": "certclick|e-CPF|A1|pf|arquivo|videoconferencia|1",
@@ -68,7 +68,7 @@
       "validade_anos": 1,
       "preco": 160.0,
       "url": "https://www.soluti.com.br/certificado-digital/e-cpf",
-      "observacao": "Soluti — e-CPF A1 (página e-CPF Soluti (HTTP)).",
+      "observacao": "Soluti — CERTIFICADO PF A1.",
       "fonte": "soluti_playwright"
     },
     {
@@ -234,8 +234,8 @@
       "midia": "arquivo",
       "emissao": "videoconferencia",
       "validade_anos": 1,
-      "preco": 230.9,
-      "url": "https://certisign.com.br/certificados/e-cpf/?codRev=96433&cod_rev=96433",
+      "preco": 252.9,
+      "url": "https://certisign.com.br/certificados/e-cnpj/?codRev=96433&cod_rev=96433",
       "observacao": "Certisign — e-CNPJ A1 (preço à vista e-CPF A1 Certisign (HTTP)).",
       "fonte": "certisign_playwright"
     },
@@ -305,7 +305,7 @@
       "emissao": "videoconferencia",
       "validade_anos": 1,
       "preco": 324.4,
-      "url": "https://certisign.com.br/certificados/e-cpf/?codRev=96433&cod_rev=96433",
+      "url": "https://certisign.com.br/certificados/e-cnpj/?codRev=96433&cod_rev=96433",
       "observacao": "Certisign — e-CNPJ A3 (preço à vista e-CPF A3 Certisign (HTTP)).",
       "fonte": "certisign_playwright"
     },
@@ -1442,6 +1442,34 @@
       "url": "https://validcertificadora.com.br/",
       "observacao": "Valid — e-CPF A1 via app Valid Credentials (MobileID). Confira no site.",
       "fonte": "fixo_mobileid"
+    },
+    {
+      "chave": "soluti|e-CPF|A3|pf|token|renovacao|1",
+      "certificadora": "soluti",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "renovacao",
+      "validade_anos": 1,
+      "preco": 240.0,
+      "url": "https://www.soluti.com.br/certificado-digital/e-cpf",
+      "observacao": "Soluti — RENOVAÇÃO CERTIFICADO PF A3.",
+      "fonte": "soluti_playwright"
+    },
+    {
+      "chave": "soluti|e-CPF|A3|pf|token|videoconferencia|1",
+      "certificadora": "soluti",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A3",
+      "midia": "token",
+      "emissao": "videoconferencia",
+      "validade_anos": 1,
+      "preco": 290.0,
+      "url": "https://www.soluti.com.br/certificado-digital/e-cpf",
+      "observacao": "Soluti — KIT PF A3 - Smart Card G&amp;D SAFESIGN SOLUTI.",
+      "fonte": "soluti_playwright"
     }
   ]
 }

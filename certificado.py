@@ -82,6 +82,8 @@ CERTIFICADORAS = {
         "nome_ac_iti": "AC Certisign",
         "url_a1": "https://certisign.com.br/certificados/e-cpf/?codRev=96433&cod_rev=96433",
         "url_a3": "https://certisign.com.br/certificados/e-cpf/?codRev=96433&cod_rev=96433",
+        "url_cnpj_a1": "https://certisign.com.br/certificados/e-cnpj/?codRev=96433&cod_rev=96433",
+        "url_cnpj_a3": "https://certisign.com.br/certificados/e-cnpj/?codRev=96433&cod_rev=96433",
         "instrucao_a1": "Na página, selecione e-CPF → modelo A1 (arquivo no computador, 1 ano).",
         "instrucao_a3": "Na página, selecione e-CPF → modelo A3 (token ou cartão).",
         "preco_a1_label": "Ver preço no site (promoções variam)",

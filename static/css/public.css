@@ -994,6 +994,18 @@ details.preferencias-precos[open] summary { margin-bottom: 1rem; }
     letter-spacing: 0.05em;
 }
 .preco-valor { font-size: 1.625rem; font-weight: 700; font-family: 'Fraunces', serif; color: var(--pub-text); }
+.preco-sem-valor {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #b45309;
+    line-height: 1.45;
+    margin: 0.35rem 0 0.5rem;
+}
+.preco-card--sem-preco {
+    background: #fffbeb;
+    border-style: dashed;
+    border-color: #fcd34d;
+}
 .preco-obs { font-size: 0.75rem; line-height: 1.45; color: #64748b; margin: 0.35rem 0 0; }
 .preco-erro { color: #b45309; font-size: 0.875rem; margin: 0.35rem 0; line-height: 1.4; }
 
