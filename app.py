@@ -33,6 +33,12 @@ from catalogo_precos import (
     AJUDA_VALIDADE,
     AJUDA_ONDE_USAR,
     AJUDA_ONDE_USAR_INTRO,
+    AJUDA_WIZARD_INTRO,
+    AJUDA_PROFISSAO,
+    AJUDA_FINALIDADE,
+    AJUDA_EMITE_COMO,
+    PERGUNTA_WIZARD,
+    CONTEXTO_WIZARD,
     OPCOES_ONDE_USAR,
     AJUDA_VARIOS_COMPUTADORES,
     AJUDA_USO_CELULAR,
@@ -464,6 +470,12 @@ def _ctx_preferencias() -> dict:
         "ajuda_secao_a3": AJUDA_SECAO_A3,
         "ajuda_onde_usar": AJUDA_ONDE_USAR,
         "ajuda_onde_usar_intro": AJUDA_ONDE_USAR_INTRO,
+        "ajuda_wizard_intro": AJUDA_WIZARD_INTRO,
+        "ajuda_profissao": AJUDA_PROFISSAO,
+        "ajuda_finalidade": AJUDA_FINALIDADE,
+        "ajuda_emite_como": AJUDA_EMITE_COMO,
+        "pergunta_wizard": PERGUNTA_WIZARD,
+        "contexto_wizard": CONTEXTO_WIZARD,
         "opcoes_onde_usar": OPCOES_ONDE_USAR,
         "ajuda_varios_computadores": AJUDA_VARIOS_COMPUTADORES,
         "ajuda_uso_celular": AJUDA_USO_CELULAR,
@@ -545,7 +557,7 @@ def comecar():
         prefs = parse_preferencias_form(request.form, tipo_arm=tipo_arm_prev)
         if onde.get("preferencia_midia"):
             prefs["preferencia_midia"] = onde["preferencia_midia"]
-        if onde.get("usa_celular"):
+        elif onde.get("usa_celular") and prefs["preferencia_midia"] not in ("nuvem", "mobileid"):
             prefs["preferencia_midia"] = "nuvem"
         registro = request.form.get("registro_profissional", "").strip() or request.form.get("crmv", "").strip() or "—"
         registro_uf = request.form.get("registro_uf", "").strip().upper() or request.form.get("crmv_uf", "").strip().upper() or "NA"

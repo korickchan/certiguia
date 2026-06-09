@@ -1,136 +1,201 @@
 {% extends "public/base.html" %}
-{% block title %}Cadastro rápido{% endblock %}
+{% block title %}Descubra seu certificado{% endblock %}
 
 {% block content %}
-<div class="public-card public-card-wide">
-    <div class="wizard-steps">
-        <div class="wizard-step active"></div>
-        <div class="wizard-step active"></div>
+<div class="public-card public-card-wide wizard-card">
+    <div class="wizard-progress" aria-hidden="true">
+        <div class="wizard-progress-bar" id="wizard-progress-bar"></div>
     </div>
-    <h1>Cadastro rápido</h1>
-    <p class="text-muted">Leva menos de 2 minutos. Você recebe um guia personalizado para sua profissão.</p>
+    <p class="wizard-step-label" id="wizard-step-label">Passo 1</p>
 
-    <form method="post" class="form-cadastro" data-show-loading>
-        <fieldset class="form-section">
-            <legend>Seus dados</legend>
-            <div class="form-row">
-                <label for="nome_completo">Nome completo *</label>
-                <input type="text" id="nome_completo" name="nome_completo" required>
-            </div>
-            <div class="form-row two-cols">
-                <div>
-                    <label for="cpf">CPF *</label>
-                    <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
-                </div>
-                <div id="cnpj-wrap">
-                    <label for="cnpj">CNPJ da clínica/empresa</label>
-                    <input type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00">
-                    <p class="hint" id="cnpj-hint">Obrigatório se você emite pela clínica ou empresa.</p>
-                </div>
-            </div>
-            <div class="form-row two-cols">
-                <div>
-                    <label for="email">E-mail *</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                <div>
-                    <label for="whatsapp">WhatsApp *</label>
-                    <input type="tel" id="whatsapp" name="whatsapp" placeholder="(71) 99999-9999" required>
-                </div>
-            </div>
-        </fieldset>
+    <h1 class="wizard-title">Descubra o certificado ideal</h1>
+    <p class="text-muted wizard-subtitle">{{ ajuda_wizard_intro }}</p>
 
-        <fieldset class="form-section">
-            <legend>Sua atuação profissional</legend>
-            <div class="form-row">
-                <label for="profissao">Profissão *</label>
-                <select id="profissao" name="profissao" required>
-                    {% for key, info in profissoes.items() %}
-                    <option value="{{ key }}">{{ info.nome }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-row two-cols">
-                <div>
-                    <label for="registro_profissional" id="label-registro">Registro profissional</label>
-                    <input type="text" id="registro_profissional" name="registro_profissional" placeholder="Ex.: 12345">
-                </div>
-                <div>
-                    <label for="registro_uf">UF</label>
-                    <select id="registro_uf" name="registro_uf">
-                        <option value="">—</option>
-                        {% for uf in estados %}
-                        <option value="{{ uf }}">{{ uf }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            <div class="form-row">
-                <label for="finalidade">Para que você precisa do certificado? *</label>
-                <select id="finalidade" name="finalidade" required>
-                    {% for key, label in finalidades.items() %}
-                    <option value="{{ key }}" {% if key == 'receituario' %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-row">
-                <label for="sistema_receituario">Sistema de receituário (se já usa algum)</label>
-                <input type="text" id="sistema_receituario" name="sistema_receituario"
-                       placeholder="Ex.: VetSoft, Prescreve, Memed, iClinic… (opcional)">
-            </div>
-        </fieldset>
-
-        <fieldset class="form-section">
-            <legend>Como você emite documentos?</legend>
-            <div class="form-row">
-                <span class="label">Titularidade</span>
-                <div class="radio-group vertical">
-                    <label><input type="radio" name="emite_como" value="pf" checked> Como pessoa física (CPF) — sem clínica/empresa</label>
-                    <label><input type="radio" name="emite_como" value="pj"> Pela clínica/empresa (CNPJ)</label>
-                    <label><input type="radio" name="emite_como" value="ambos"> Os dois (CPF e CNPJ)</label>
-                </div>
-                <p class="hint" id="emite-hint">Receituário e laudos em seu nome usam e-CPF (CPF). e-CNPJ é para documentos da empresa.</p>
-            </div>
-        </fieldset>
-
-        <fieldset class="form-section form-section-destaque" id="onde-usar-section">
-            <legend>Onde você vai usar o certificado?</legend>
-            <p class="hint destaque-intro">{{ ajuda_onde_usar_intro }}</p>
-
-            <div class="radio-group vertical opcao-lista onde-usar-lista">
-                {% for val, label in opcoes_onde_usar %}
-                <label class="opcao-item onde-usar-item onde-usar-{{ val }}{% if val == 'celular' %} onde-usar-recomendado{% endif %}">
+    <form method="post" class="form-cadastro wizard-form" id="wizard-form" data-show-loading novalidate>
+        {# ── Passo 1: Profissão ── #}
+        <section class="wizard-panel active" data-step="profissao" data-required="input[name=profissao]">
+            <h2 class="wizard-question">{{ pergunta_wizard.profissao }}</h2>
+            <p class="wizard-context">{{ contexto_wizard.profissao }}</p>
+            <div class="radio-group vertical opcao-lista">
+                {% for key, info in profissoes.items() %}
+                <label class="opcao-item wizard-opcao">
                     <span class="opcao-top">
-                        <input type="radio" name="onde_usar" value="{{ val }}"
-                               {% if val == 'celular' %}checked{% endif %}
-                               data-onde="{{ val }}">
-                        <span class="opcao-label">{{ label }}</span>
-                        {% if val == 'celular' %}<span class="badge-destaque">Indicado p/ receituário móvel</span>{% endif %}
-                        {% if val == 'pc_unico' %}<span class="badge-aviso">Pouco indicado p/ receituário no celular</span>{% endif %}
+                        <input type="radio" name="profissao" value="{{ key }}"
+                               {% if key == 'veterinario' %}checked{% endif %} required>
+                        <span class="opcao-label">{{ info.nome }}</span>
                     </span>
-                    <p class="opcao-desc">{{ ajuda_onde_usar[val] }}</p>
-                    {% if val == 'pc_unico' %}
-                    <p class="opcao-alerta">⚠ A1 em arquivo é o mais barato para um PC, mas a maioria dos apps de receituário no celular exige nuvem ou MobileID — não o .pfx comum.</p>
-                    {% elif val == 'varios_pc' %}
-                    <p class="opcao-alerta">⚠ Token USB não funciona em smartphone — só em computador com a porta USB.</p>
-                    {% endif %}
+                    <p class="opcao-desc">{{ ajuda_profissao[key] }}</p>
                 </label>
                 {% endfor %}
             </div>
+        </section>
 
-            <div class="aviso-compatibilidade" id="aviso-compatibilidade" role="status" aria-live="polite"></div>
+        {# ── Passo 2: Finalidade ── #}
+        <section class="wizard-panel" data-step="finalidade" data-required="input[name=finalidade]">
+            <h2 class="wizard-question">{{ pergunta_wizard.finalidade }}</h2>
+            <p class="wizard-context">{{ contexto_wizard.finalidade }}</p>
+            <div class="radio-group vertical opcao-lista">
+                {% for key, label in finalidades.items() %}
+                <label class="opcao-item wizard-opcao">
+                    <span class="opcao-top">
+                        <input type="radio" name="finalidade" value="{{ key }}"
+                               {% if key == 'receituario' %}checked{% endif %} required>
+                        <span class="opcao-label">{{ label }}</span>
+                    </span>
+                    <p class="opcao-desc">{{ ajuda_finalidade[key] }}</p>
+                </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        {# ── Passo 3: Onde usar ── #}
+        <section class="wizard-panel" data-step="onde" data-required="input[name=onde_usar]">
+            <h2 class="wizard-question">{{ pergunta_wizard.onde }}</h2>
+            <p class="wizard-context">{{ contexto_wizard.onde }}</p>
+            <div class="radio-group vertical opcao-lista onde-usar-lista">
+                {% for val, label in opcoes_onde_usar %}
+                <label class="opcao-item onde-usar-item onde-usar-{{ val }} wizard-opcao{% if val == 'celular' %} onde-usar-recomendado{% endif %}">
+                    <span class="opcao-top">
+                        <input type="radio" name="onde_usar" value="{{ val }}"
+                               {% if val == 'celular' %}checked{% endif %} required>
+                        <span class="opcao-label">{{ label }}</span>
+                        {% if val == 'celular' %}<span class="badge-destaque">Comum em receituário</span>{% endif %}
+                        {% if val == 'pc_unico' %}<span class="badge-aviso">Pouco indicado p/ celular</span>{% endif %}
+                    </span>
+                    <p class="opcao-desc">{{ ajuda_onde_usar[val] }}</p>
+                </label>
+                {% endfor %}
+            </div>
             <input type="hidden" name="varios_computadores" id="varios_computadores_hidden" value="nao">
-        </fieldset>
+        </section>
 
-        <fieldset class="form-section" id="preferencias-cert">
-            <legend>Como quer emitir e guardar o certificado?</legend>
-            <p class="hint">{{ ajuda_preferencias_intro }}</p>
+        {# ── Passo 4: Titularidade ── #}
+        <section class="wizard-panel" data-step="titular" data-required="input[name=emite_como]">
+            <h2 class="wizard-question">{{ pergunta_wizard.titular }}</h2>
+            <p class="wizard-context">{{ contexto_wizard.titular }}</p>
+            <div class="radio-group vertical opcao-lista">
+                <label class="opcao-item wizard-opcao">
+                    <span class="opcao-top">
+                        <input type="radio" name="emite_como" value="pf" checked required>
+                        <span class="opcao-label">Como pessoa física (CPF)</span>
+                    </span>
+                    <p class="opcao-desc">{{ ajuda_emite_como.pf }}</p>
+                </label>
+                <label class="opcao-item wizard-opcao">
+                    <span class="opcao-top">
+                        <input type="radio" name="emite_como" value="pj" required>
+                        <span class="opcao-label">Pela clínica ou empresa (CNPJ)</span>
+                    </span>
+                    <p class="opcao-desc">{{ ajuda_emite_como.pj }}</p>
+                </label>
+                <label class="opcao-item wizard-opcao">
+                    <span class="opcao-top">
+                        <input type="radio" name="emite_como" value="ambos" required>
+                        <span class="opcao-label">Os dois (CPF e CNPJ)</span>
+                    </span>
+                    <p class="opcao-desc">{{ ajuda_emite_como.ambos }}</p>
+                </label>
+            </div>
+        </section>
 
-            {% include "public/_preferencias_cadastro.html" %}
-        </fieldset>
+        {# ── Passo 5: Formato celular (só se escolheu celular) ── #}
+        <section class="wizard-panel" data-step="formato" data-required="input[name=preferencia_midia]" data-skip-unless="onde:celular">
+            <h2 class="wizard-question">{{ pergunta_wizard.formato }}</h2>
+            <p class="wizard-context">{{ contexto_wizard.formato }}</p>
+            <div class="radio-group vertical opcao-lista">
+                {% for val, label in opcoes_midia_a1 %}
+                {% if val in ('nuvem', 'mobileid') %}
+                <label class="opcao-item wizard-opcao">
+                    <span class="opcao-top">
+                        <input type="radio" name="preferencia_midia" value="{{ val }}"
+                               {% if val == 'nuvem' %}checked{% endif %} data-midia-celular>
+                        <span class="opcao-label">{{ label }}</span>
+                    </span>
+                    <p class="opcao-desc">{{ ajuda_midia_a1[val] }}</p>
+                </label>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </section>
 
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary btn-lg">Ver minha recomendação</button>
+        {# ── Passo 6: Emissão ── #}
+        <section class="wizard-panel" data-step="emissao" data-required="input[name=preferencia_emissao]">
+            <h2 class="wizard-question">{{ pergunta_wizard.emissao }}</h2>
+            <p class="wizard-context">{{ contexto_wizard.emissao }}</p>
+            <div class="radio-group vertical opcao-lista">
+                {% for val, label in opcoes_emissao %}
+                <label class="opcao-item wizard-opcao">
+                    <span class="opcao-top">
+                        <input type="radio" name="preferencia_emissao" value="{{ val }}"
+                               {% if val == 'videoconferencia' %}checked{% endif %} required>
+                        <span class="opcao-label">{{ label }}</span>
+                    </span>
+                    <p class="opcao-desc">{{ ajuda_emissao[val] }}</p>
+                </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        {# ── Passo 7: Dados ── #}
+        <section class="wizard-panel" data-step="dados">
+            <h2 class="wizard-question">{{ pergunta_wizard.dados }}</h2>
+            <p class="wizard-context">{{ contexto_wizard.dados }}</p>
+            <div class="wizard-dados-grid">
+                <div class="form-row">
+                    <label for="nome_completo">Nome completo *</label>
+                    <input type="text" id="nome_completo" name="nome_completo" required>
+                </div>
+                <div class="form-row two-cols">
+                    <div>
+                        <label for="cpf">CPF *</label>
+                        <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
+                    </div>
+                    <div id="cnpj-wrap" style="display:none">
+                        <label for="cnpj">CNPJ da clínica/empresa *</label>
+                        <input type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00">
+                    </div>
+                </div>
+                <div class="form-row two-cols">
+                    <div>
+                        <label for="email">E-mail *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div>
+                        <label for="whatsapp">WhatsApp *</label>
+                        <input type="tel" id="whatsapp" name="whatsapp" placeholder="(71) 99999-9999" required>
+                    </div>
+                </div>
+                <div class="form-row two-cols">
+                    <div>
+                        <label for="registro_profissional" id="label-registro">Registro profissional</label>
+                        <input type="text" id="registro_profissional" name="registro_profissional" placeholder="Opcional">
+                    </div>
+                    <div>
+                        <label for="registro_uf">UF</label>
+                        <select id="registro_uf" name="registro_uf">
+                            <option value="">—</option>
+                            {% for uf in estados %}
+                            <option value="{{ uf }}">{{ uf }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label for="sistema_receituario">Sistema de receituário (se já usa)</label>
+                    <input type="text" id="sistema_receituario" name="sistema_receituario"
+                           placeholder="Ex.: VetSoft, Memed, iClinic… (opcional)">
+                </div>
+            </div>
+            <p class="wizard-final-note">Na próxima tela você verá <strong>qual certificado combina com você</strong> e os <strong>preços por certificadora</strong>.</p>
+        </section>
+
+        {# Preferências derivadas (não perguntamos ao usuário neste fluxo) #}
+        <input type="hidden" name="preferencia_validade_anos" value="1">
+
+        <div class="wizard-nav">
+            <button type="button" class="btn btn-outline" id="wizard-prev" disabled>Voltar</button>
+            <button type="button" class="btn btn-primary" id="wizard-next">Continuar</button>
+            <button type="submit" class="btn btn-primary btn-lg" id="wizard-submit" hidden>Ver certificado e preços</button>
         </div>
     </form>
 </div>
@@ -138,130 +203,11 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/form.js') }}"></script>
+<script src="{{ url_for('static', filename='js/comecar-wizard.js') }}"></script>
 <script>
-const profissoes = {{ profissoes|tojson }};
-const sel = document.getElementById('profissao');
-const lbl = document.getElementById('label-registro');
-function atualizarRegistro() {
-    const p = profissoes[sel.value];
-    lbl.textContent = (p ? p.registro : 'Registro') + ' (opcional agora)';
-}
-sel.addEventListener('change', atualizarRegistro);
-atualizarRegistro();
-
-function maskCNPJ(value) {
-    return value.replace(/\D/g, '')
-        .replace(/^(\d{2})(\d)/, '$1.$2')
-        .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-        .replace(/\.(\d{3})(\d)/, '.$1/$2')
-        .replace(/(\d{4})(\d)/, '$1-$2')
-        .slice(0, 18);
-}
-const cnpj = document.getElementById('cnpj');
-const cnpjWrap = document.getElementById('cnpj-wrap');
-const cnpjHint = document.getElementById('cnpj-hint');
-const emiteRadios = document.querySelectorAll('input[name="emite_como"]');
-
-function emiteComoSelecionado() {
-    const r = document.querySelector('input[name="emite_como"]:checked');
-    return r ? r.value : 'pf';
-}
-
-function atualizarCampoCnpj() {
-    const modo = emiteComoSelecionado();
-    const precisa = modo === 'pj' || modo === 'ambos';
-    if (cnpjWrap) cnpjWrap.style.display = precisa ? '' : 'none';
-    if (cnpj) cnpj.required = precisa;
-    if (cnpjHint) {
-        cnpjHint.textContent = precisa
-            ? 'Informe o CNPJ da clínica ou empresa.'
-            : 'Não necessário — você emite só como pessoa física (CPF).';
-    }
-}
-
-if (cnpj) cnpj.addEventListener('input', e => { e.target.value = maskCNPJ(e.target.value); });
-emiteRadios.forEach(r => r.addEventListener('change', atualizarCampoCnpj));
-atualizarCampoCnpj();
-
-const ondeUsarRadios = document.querySelectorAll('input[name="onde_usar"]');
-const midiaA1Wrap = document.getElementById('midia-a1-wrap');
-const midiaA3Wrap = document.getElementById('midia-a3-wrap');
-const variosHidden = document.getElementById('varios_computadores_hidden');
-const avisoCompat = document.getElementById('aviso-compatibilidade');
-const finalidadeSel = document.getElementById('finalidade');
-
-function ondeUsarSelecionado() {
-    const r = document.querySelector('input[name="onde_usar"]:checked');
-    return r ? r.value : 'pc_unico';
-}
-
-function atualizarOndeUsar() {
-    const onde = ondeUsarSelecionado();
-    const varios = onde === 'varios_pc';
-    if (variosHidden) variosHidden.value = varios ? 'sim' : 'nao';
-
-    if (midiaA1Wrap) midiaA1Wrap.style.display = varios ? 'none' : '';
-    if (midiaA3Wrap) midiaA3Wrap.style.display = varios ? '' : 'none';
-    document.querySelectorAll('[data-midia-a1]').forEach(el => { el.disabled = varios; });
-    document.querySelectorAll('[data-midia-a3]').forEach(el => { el.disabled = !varios; });
-
-    if (onde === 'celular') {
-        const nuvem = document.querySelector('[data-midia-a1][value="nuvem"]');
-        if (nuvem) nuvem.checked = true;
-    } else if (onde === 'pc_unico') {
-        const arq = document.querySelector('[data-midia-a1][value="arquivo"]');
-        if (arq) arq.checked = true;
-    } else if (onde === 'varios_pc') {
-        const tok = document.querySelector('[data-midia-a3][value="token"]');
-        if (tok) tok.checked = true;
-    }
-
-    document.querySelectorAll('.onde-usar-item').forEach(el => {
-        el.classList.toggle('is-selected', el.querySelector('input')?.checked);
-    });
-
-    document.querySelectorAll('[data-midia-a1]').forEach(el => {
-        const wrap = el.closest('.opcao-item');
-        const isArquivo = el.value === 'arquivo';
-        if (wrap) wrap.style.display = (onde === 'celular' && isArquivo) ? 'none' : '';
-    });
-
-    if (!avisoCompat) return;
-    const rec = finalidadeSel && finalidadeSel.value === 'receituario';
-    if (rec && onde === 'pc_unico') {
-        avisoCompat.className = 'aviso-compatibilidade aviso-compatibilidade--alerta';
-        avisoCompat.innerHTML = '<strong>Atenção — receituário:</strong> A1 em arquivo (.pfx) '
-            + '<em>raramente funciona</em> nos apps de prescrição no celular (Memed, iClinic etc.). '
-            + 'Se você precisa prescrever pelo smartphone, escolha «No celular, tablet ou em mais de um lugar» — '
-            + 'nuvem ou MobileID.';
-    } else if (rec && onde === 'celular') {
-        avisoCompat.className = 'aviso-compatibilidade aviso-compatibilidade--ok';
-        avisoCompat.innerHTML = '<strong>Ótima escolha para receituário móvel.</strong> Compare preços de '
-            + '<em>nuvem (HSM)</em> e <em>MobileID</em> — formatos diferentes para uso no celular.';
-    } else if (onde === 'varios_pc') {
-        avisoCompat.className = 'aviso-compatibilidade aviso-compatibilidade--info';
-        avisoCompat.innerHTML = '<strong>A3 com token:</strong> ideal para vários computadores na clínica. '
-            + 'Lembre-se: o token USB não funciona no celular.';
-    } else {
-        avisoCompat.className = 'aviso-compatibilidade aviso-compatibilidade--info';
-        avisoCompat.innerHTML = '<strong>A1 em arquivo:</strong> mais barato para um PC fixo. '
-            + 'O .pfx pode ser importado no celular para Gov.br, mas não costuma servir para receituário profissional.';
-    }
-}
-
-ondeUsarRadios.forEach(r => r.addEventListener('change', atualizarOndeUsar));
-if (finalidadeSel) finalidadeSel.addEventListener('change', atualizarOndeUsar);
-atualizarOndeUsar();
-
-const form = document.querySelector('.form-cadastro');
-if (form) {
-    form.addEventListener('submit', function () {
-        const btn = form.querySelector('button[type="submit"]');
-        if (btn) {
-            btn.disabled = true;
-            btn.textContent = 'Gerando seu guia…';
-        }
-    });
-}
+window.CERTIGUIA_WIZARD = {
+    profissoes: {{ profissoes|tojson }},
+    ajudaMidiaA1: {{ ajuda_midia_a1|tojson }},
+};
 </script>
 {% endblock %}

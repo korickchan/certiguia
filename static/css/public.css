@@ -240,6 +240,98 @@
 }
 .wizard-step.active { background: var(--pub-primary); }
 
+/* Wizard — uma pergunta por etapa */
+.wizard-card { max-width: 680px; }
+.wizard-progress {
+    height: 6px;
+    background: var(--pub-border);
+    border-radius: 3px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+}
+.wizard-progress-bar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--pub-primary), #059669);
+    border-radius: 3px;
+    transition: width 0.35s ease;
+}
+.wizard-step-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--pub-primary-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+}
+.wizard-title { font-size: 1.35rem; margin-bottom: 0.35rem; }
+.wizard-subtitle { margin-bottom: 1.5rem; }
+.wizard-panel { display: none; animation: wizardFadeIn 0.3s ease; }
+.wizard-panel.active { display: block; }
+@keyframes wizardFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.wizard-question {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--pub-text);
+    margin: 0 0 0.65rem;
+}
+.wizard-context {
+    font-size: 0.9375rem;
+    color: var(--pub-muted);
+    line-height: 1.55;
+    margin-bottom: 1.25rem;
+    padding-left: 0.75rem;
+    border-left: 3px solid var(--pub-primary);
+}
+.wizard-opcao.is-selected,
+.wizard-opcao:has(input:checked) {
+    border-color: var(--pub-primary);
+    box-shadow: 0 0 0 1px rgba(13, 148, 136, 0.15);
+}
+.wizard-dados-grid .form-row { margin-bottom: 1rem; }
+.wizard-final-note {
+    margin-top: 1.25rem;
+    padding: 0.85rem 1rem;
+    background: #ecfdf5;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: #065f46;
+}
+.wizard-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--pub-border);
+}
+.wizard-nav .btn-primary { margin-left: auto; }
+.wizard-nav #wizard-submit { width: 100%; margin-top: 0.5rem; }
+@media (min-width: 480px) {
+    .wizard-nav #wizard-submit { width: auto; margin-top: 0; }
+}
+
+.preferencias-precos--secundario {
+    opacity: 0.95;
+    border-style: dashed;
+}
+.preferencias-precos--secundario h2 {
+    font-size: 1.1rem;
+}
+.hint-inline {
+    font-weight: 400;
+    font-size: 0.85em;
+    color: var(--pub-muted);
+}
+
 .public-body .form-section {
     background: #fafbfc;
     border: 1px solid var(--pub-border);

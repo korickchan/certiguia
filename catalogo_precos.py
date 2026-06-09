@@ -117,6 +117,96 @@ AJUDA_ONDE_USAR_INTRO = (
     "Isso define o tipo de certificado — errar aqui leva a comprar o produto errado."
 )
 
+AJUDA_WIZARD_INTRO = (
+    "Uma pergunta por vez, sem jargão. Com base nas suas respostas, "
+    "no final indicamos o certificado adequado e comparamos preços entre certificadoras."
+)
+
+AJUDA_PROFISSAO = {
+    "veterinario": (
+        "Receituário animal, laudos e documentos profissionais em seu nome "
+        "usam certificado e-CPF (CPF), credenciado ICP-Brasil."
+    ),
+    "medico": (
+        "Receitas, prontuário e documentos clínicos em seu nome exigem e-CPF (CPF) "
+        "com validade jurídica ICP-Brasil."
+    ),
+    "dentista": (
+        "Documentos odontológicos, receitas e laudos em seu nome profissional "
+        "usam e-CPF (CPF)."
+    ),
+    "farmaceutico": (
+        "Dispensação, documentos farmacêuticos e assinaturas profissionais "
+        "em geral usam e-CPF (CPF)."
+    ),
+    "contador": (
+        "Obrigações fiscais da empresa costumam exigir e-CNPJ; "
+        "documentos pessoais do contador usam e-CPF."
+    ),
+    "advogado": (
+        "Petições, contratos e documentos em seu nome usam e-CPF (CPF); "
+        "documentos do escritório podem exigir e-CNPJ."
+    ),
+    "outro": (
+        "A profissão ajuda a orientar receituário, fiscal ou uso geral — "
+        "ajustamos a recomendação conforme sua resposta."
+    ),
+}
+
+AJUDA_FINALIDADE = {
+    "receituario": (
+        "Emitir receitas digitais, prescrições ou receituário de controle especial. "
+        "Quase sempre exige e-CPF; no celular, prefira nuvem ou MobileID."
+    ),
+    "documentos": (
+        "Assinar contratos, laudos, termos e documentos profissionais "
+        "com validade jurídica."
+    ),
+    "fiscal": (
+        "Nota fiscal eletrônica, SPED, e-CAC e demais obrigações da empresa — "
+        "em geral e-CNPJ (CNPJ da clínica ou empresa)."
+    ),
+    "geral": (
+        "Vários usos (Gov.br, e-mail, sistemas diversos). "
+        "Indicamos o tipo mais versátil conforme onde você for usar."
+    ),
+}
+
+AJUDA_EMITE_COMO = {
+    "pf": (
+        "Receituário, laudos e documentos em seu nome profissional usam e-CPF (CPF). "
+        "Indicado se você não emite pela clínica/empresa."
+    ),
+    "pj": (
+        "Documentos em nome da clínica ou empresa (NF-e, contratos da PJ etc.) "
+        "usam e-CNPJ (CNPJ). Receitas em seu nome ainda precisam de e-CPF."
+    ),
+    "ambos": (
+        "Você emite tanto em seu CPF quanto pelo CNPJ da clínica/empresa — "
+        "pode precisar dos dois certificados."
+    ),
+}
+
+PERGUNTA_WIZARD = {
+    "profissao": "Qual é sua área de atuação?",
+    "finalidade": "Para que você precisa do certificado digital?",
+    "onde": "Onde você vai usar para assinar documentos?",
+    "titular": "Em nome de quem você emite documentos?",
+    "formato": "Qual formato prefere para uso no celular?",
+    "emissao": "Como prefere validar sua identidade na certificadora?",
+    "dados": "Seus dados para gerar o guia personalizado",
+}
+
+CONTEXTO_WIZARD = {
+    "profissao": "Sua profissão define se o foco é receituário, fiscal ou documentos em geral.",
+    "finalidade": "O uso principal evita comprar e-CPF quando precisa de e-CNPJ, ou vice-versa.",
+    "onde": "O aparelho onde você assina define A1, A3, nuvem ou MobileID — não mostramos isso ainda.",
+    "titular": "CPF é seu nome profissional; CNPJ é a clínica ou empresa.",
+    "formato": "Nuvem e MobileID são opções diferentes para receituário no smartphone.",
+    "emissao": "Afeta preço e praticidade — videoconferência costuma ser mais rápida.",
+    "dados": "Usamos só para montar seu guia e salvar suas preferências. Não vendemos certificado.",
+}
+
 OPCOES_ONDE_USAR = [
     ("pc_unico", "Só no meu computador (um PC ou notebook)"),
     ("celular", "No celular, tablet ou em mais de um lugar"),
@@ -587,7 +677,6 @@ def parse_onde_usar_form(form) -> dict:
     if onde == "celular":
         return {
             "varios_computadores": False,
-            "preferencia_midia": "nuvem",
             "usa_celular": True,
         }
     if onde == "varios_pc":

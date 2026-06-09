@@ -90,9 +90,10 @@
 
 
 
-<section class="public-card">
+<section class="public-card recomendacao-final">
 
-    <h2>Recomendação</h2>
+    <h2>Seu certificado indicado</h2>
+    <p class="hint">Com base nas respostas que você deu no cadastro — confira abaixo os preços por certificadora.</p>
 
     {% if produto %}
 
@@ -136,24 +137,11 @@
 
 
 
-<section class="public-card preferencias-precos">
-    <h2>Preferências para comparar preços</h2>
-    <p class="hint">{{ ajuda_preferencias_intro }}</p>
-    <form method="post" action="{{ url_for('atualizar_preferencias_publico', protocolo=vet.protocolo) }}" class="form-preferencias">
-        {% include "public/_preferencias_jornada.html" %}
-        <div class="form-actions">
-            <button type="submit" class="btn btn-sm btn-primary">Aplicar e atualizar preços</button>
-        </div>
-    </form>
-</section>
-
-
-
 <section class="public-card certificadora-section">
 
     <div class="card-header-row">
 
-        <h2>{% if cert_escolhida %}Certificadora escolhida{% else %}Escolha a certificadora{% endif %}</h2>
+        <h2>{% if cert_escolhida %}Certificadora escolhida{% else %}Compare preços e escolha a certificadora{% endif %}</h2>
 
         <a href="{{ url_for('atualizar_precos_publico', protocolo=vet.protocolo, forcar=1) }}" class="btn btn-sm">{% if precos %}Atualizar preços{% else %}Buscar preços{% endif %}</a>
 
@@ -286,6 +274,19 @@
 
     {% endif %}
 
+</section>
+
+
+
+<section class="public-card preferencias-precos preferencias-precos--secundario">
+    <h2>Refinar comparação de preços <span class="hint-inline">(opcional)</span></h2>
+    <p class="hint">Já indicamos o certificado acima. Ajuste emissão, validade ou formato se quiser ver outros valores no catálogo.</p>
+    <form method="post" action="{{ url_for('atualizar_preferencias_publico', protocolo=vet.protocolo) }}" class="form-preferencias">
+        {% include "public/_preferencias_jornada.html" %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-sm btn-primary">Aplicar e atualizar preços</button>
+        </div>
+    </form>
 </section>
 
 
