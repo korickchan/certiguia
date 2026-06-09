@@ -72,6 +72,8 @@ def _armazenamento_recomendado(
     """Define A1 vs A3 conforme uso e mídia — nuvem (HSM) no celular costuma ser vendida como A3."""
     if varios_computadores:
         return "A3"
+    if preferencia_midia == "mobileid":
+        return "A1"
     if preferencia_midia == "nuvem":
         return "A3"
     if preferencia_midia in ("token", "cartao", "sem_midia"):

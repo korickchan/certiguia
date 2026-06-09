@@ -45,8 +45,10 @@ from catalogo_precos import (
     OPCOES_EMISSAO,
     OPCOES_MIDIA_A1,
     OPCOES_MIDIA_A3,
+    OPCOES_MIDIA_CELULAR,
     OPCOES_VALIDADE,
     aplicar_precos_catalogo_vet,
+    ajustar_preferencias_vet,
     catalogo_precisa_atualizar,
     complementar_catalogo_fixos,
     filtros_de_vet,
@@ -55,6 +57,7 @@ from catalogo_precos import (
     init_catalogo,
     parse_onde_usar_form,
     parse_preferencias_form,
+    uso_formato_celular,
 )
 from certificado import (
     CERTIFICADORAS,
@@ -462,6 +465,7 @@ def _ctx_preferencias() -> dict:
         "opcoes_emissao": OPCOES_EMISSAO,
         "opcoes_midia_a1": OPCOES_MIDIA_A1,
         "opcoes_midia_a3": OPCOES_MIDIA_A3,
+        "opcoes_midia_celular": OPCOES_MIDIA_CELULAR,
         "opcoes_validade": OPCOES_VALIDADE,
         "ajuda_preferencias_intro": AJUDA_PREFERENCIAS_INTRO,
         "ajuda_emissao": AJUDA_EMISSAO,
@@ -546,7 +550,8 @@ def comecar():
             )
         onde = parse_onde_usar_form(request.form)
         varios_pc = onde["varios_computadores"]
-        tipo_arm_prev = "A3" if varios_pc else "A1"
+        midia_form = (request.form.get("preferencia_midia") or "").strip()
+        tipo_arm_prev = "A3" if varios_pc or midia_form == "nuvem" else "A1"
         prefs = parse_preferencias_form(request.form, tipo_arm=tipo_arm_prev)
         if onde.get("preferencia_midia"):
             prefs["preferencia_midia"] = onde["preferencia_midia"]
@@ -694,17 +699,28 @@ def jornada(protocolo):
         filtro_precos=filtro_precos,
         catalogo=catalogo,
         finalidades=FINALIDADES,
+        uso_celular=uso_formato_celular(vet),
     )
+
+
+def _midia_celular_form(form) -> bool:
+    return (form.get("preferencia_midia") or "").strip() in ("nuvem", "mobileid")
 
 
 @app.route("/p/<protocolo>/preferencias", methods=["POST"])
 def atualizar_preferencias_publico(protocolo):
     vet = Veterinario.query.filter_by(protocolo=protocolo.upper()).first_or_404()
-    tipo_arm = tipo_certificado_efetivo(vet)
-    prefs = parse_preferencias_form(request.form, tipo_arm=tipo_arm)
+    if uso_formato_celular(vet) or _midia_celular_form(request.form):
+        prefs = parse_preferencias_form(request.form, tipo_arm="A1")
+        if prefs["preferencia_midia"] not in {o[0] for o in OPCOES_MIDIA_CELULAR}:
+            prefs["preferencia_midia"] = "nuvem"
+    else:
+        tipo_arm = tipo_certificado_efetivo(vet)
+        prefs = parse_preferencias_form(request.form, tipo_arm=tipo_arm)
     vet.preferencia_midia = prefs["preferencia_midia"]
     vet.preferencia_emissao = prefs["preferencia_emissao"]
     vet.preferencia_validade_anos = prefs["preferencia_validade_anos"]
+    ajustar_preferencias_vet(vet)
     vet.precos_json = None
     db.session.commit()
     _garantir_precos_catalogo(vet)
@@ -758,8 +774,6 @@ def alterar_produto_publico(protocolo):
     produto = PRODUTOS[pid]
     vet.produto_recomendado = pid
     vet.tipo_certificado = produto["tipo_armazenamento"]
-    from catalogo_precos import ajustar_preferencias_vet
-
     ajustar_preferencias_vet(vet)
     vet.precos_json = None
     db.session.commit()

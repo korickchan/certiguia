@@ -1,4 +1,4 @@
-{# Preferências de certificado — jornada. Variáveis: vet, tipo_arm #}
+{# Preferências de certificado — jornada. Variáveis: vet, tipo_arm, uso_celular #}
 
 <div class="form-row opcao-bloco">
     <span class="label">Tipo de emissão</span>
@@ -27,8 +27,23 @@
         <p class="hint opcao-bloco-hint">{{ ajuda_validade }}</p>
     </div>
     <div class="form-row opcao-bloco">
+        {% if uso_celular %}
+        <span class="label">Formato para celular</span>
+        <p class="hint opcao-bloco-hint">{{ ajuda_uso_celular }}</p>
+        <div class="radio-group vertical opcao-lista">
+            {% for val, label in opcoes_midia_celular %}
+            <label class="opcao-item">
+                <span class="opcao-top">
+                    <input type="radio" name="preferencia_midia" value="{{ val }}"
+                           {% if (vet.preferencia_midia or 'nuvem') == val %}checked{% endif %}>
+                    <span class="opcao-label">{{ label }}</span>
+                </span>
+                <p class="opcao-desc">{{ ajuda_midia_a1[val] if val == 'mobileid' else ajuda_midia_a3[val] }}</p>
+            </label>
+            {% endfor %}
+        </div>
+        {% elif tipo_arm == 'A3' %}
         <span class="label">Mídia / formato ({{ tipo_arm }})</span>
-        {% if tipo_arm == 'A3' %}
         <p class="hint opcao-bloco-hint">{{ ajuda_secao_a3 }}</p>
         <div class="radio-group vertical opcao-lista">
             {% for val, label in opcoes_midia_a3 %}
@@ -43,6 +58,7 @@
             {% endfor %}
         </div>
         {% else %}
+        <span class="label">Mídia / formato ({{ tipo_arm }})</span>
         <p class="hint opcao-bloco-hint">{{ ajuda_secao_a1 }}</p>
         <div class="radio-group vertical opcao-lista">
             {% for val, label in opcoes_midia_a1 %}

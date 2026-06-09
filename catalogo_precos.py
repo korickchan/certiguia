@@ -22,9 +22,14 @@ OPCOES_MIDIA_A1 = [
     ("mobileid", "MobileID (app no celular)"),
 ]
 OPCOES_MIDIA_A3 = [
+    ("nuvem", "Nuvem (HSM) — celular/tablet"),
     ("token", "Token USB / pendrive"),
     ("cartao", "Cartão inteligente"),
     ("sem_midia", "Sem mídia física"),
+]
+OPCOES_MIDIA_CELULAR = [
+    ("nuvem", "Nuvem (HSM) — app no celular"),
+    ("mobileid", "MobileID — app da certificadora"),
 ]
 OPCOES_VALIDADE = [1, 2, 3]
 
@@ -76,6 +81,11 @@ AJUDA_MIDIA_A1 = {
 }
 
 AJUDA_MIDIA_A3 = {
+    "nuvem": (
+        "Certificado A3 em nuvem (HSM): fica nos servidores da certificadora e você acessa "
+        "pelo app de receituário no celular, tablet ou PC. "
+        "É o formato que a maioria das ACs vende para uso móvel — não confunda com token USB."
+    ),
     "token": (
         "Dispositivo USB (token ou pendrive criptográfico) que você conecta no computador "
         "para assinar documentos. Pode usar em vários PCs — basta levar o token com você. "
@@ -107,9 +117,8 @@ AJUDA_SECAO_A1 = (
 )
 
 AJUDA_SECAO_A3 = (
-    "Certificado A3 — fica em token USB, cartão ou equivalente. "
-    "Indicado para usar em vários computadores ou quando a recomendação "
-    "do sistema exige mídia física."
+    "Certificado A3 — nuvem (HSM) para celular, ou token/cartão para vários PCs. "
+    "Para receituário no smartphone, escolha nuvem — token USB não funciona no celular."
 )
 
 AJUDA_ONDE_USAR_INTRO = (
@@ -324,6 +333,50 @@ def _normalizar_emissao(item: dict | None = None, texto: str | None = None) -> s
     return "videoconferencia"
 
 
+def _perfil_formato_celular(midia: str) -> tuple[str, str]:
+    """MobileID → A1; nuvem (HSM) no celular → A3."""
+    m = _normalizar_midia(midia)
+    if m == "mobileid":
+        return "A1", "mobileid"
+    if m == "nuvem":
+        return "A3", "nuvem"
+    raise ValueError(f"Mídia não é formato celular: {midia}")
+
+
+def uso_formato_celular(vet) -> bool:
+    """Usuário escolheu uso no celular (nuvem ou MobileID), sem token em vários PCs."""
+    if getattr(vet, "varios_computadores", False):
+        return False
+    m = _normalizar_midia(getattr(vet, "preferencia_midia", None))
+    return m in MIDIAS_MOVEIS
+
+
+def _sincronizar_vet_formato_celular(vet) -> None:
+    """Alinha produto A1/A3 e mídia quando o perfil é celular/tablet."""
+    from recomendacao import produto_id_efetivo
+
+    if not uso_formato_celular(vet):
+        return
+    arm, midia = _perfil_formato_celular(vet.preferencia_midia)
+    vet.preferencia_midia = midia
+    pid = produto_id_efetivo(vet)
+    categoria = PRODUTOS[pid]["categoria"] if pid in PRODUTOS else "pf"
+    if getattr(vet, "emite_como", None) == "pj" and _cnpj_informado_vet(vet):
+        categoria = "pj"
+    elif getattr(vet, "emite_como", None) in ("pf", "ambos", None):
+        categoria = "pf"
+    familia = "cpf" if categoria == "pf" else "cnpj"
+    vet.produto_recomendado = f"e-{familia}-{arm.lower()}"
+    vet.tipo_certificado = arm
+
+
+def _cnpj_informado_vet(vet) -> bool:
+    if not getattr(vet, "cnpj", None):
+        return False
+    digitos = "".join(c for c in str(vet.cnpj) if c.isdigit())
+    return len(digitos) == 14
+
+
 def filtros_de_produto(
     produto_id: str,
     *,
@@ -349,11 +402,16 @@ def ajustar_preferencias_vet(vet) -> None:
     """Garante mídia compatível com A1/A3 do produto recomendado."""
     from recomendacao import produto_id_efetivo
 
-    arm = PRODUTOS[produto_id_efetivo(vet)]["tipo_armazenamento"]
-    opcoes = OPCOES_MIDIA_A3 if arm == "A3" else OPCOES_MIDIA_A1
-    valid = {o[0] for o in opcoes}
-    if vet.preferencia_midia not in valid:
-        vet.preferencia_midia = opcoes[0][0]
+    midia_atual = _normalizar_midia(getattr(vet, "preferencia_midia", None))
+    if midia_atual in MIDIAS_MOVEIS and not getattr(vet, "varios_computadores", False):
+        _sincronizar_vet_formato_celular(vet)
+    else:
+        arm = PRODUTOS[produto_id_efetivo(vet)]["tipo_armazenamento"]
+        opcoes = OPCOES_MIDIA_A3 if arm == "A3" else OPCOES_MIDIA_A1
+        valid = {o[0] for o in opcoes}
+        if vet.preferencia_midia not in valid:
+            vet.preferencia_midia = opcoes[0][0]
+
     if vet.preferencia_emissao not in EMISSOES_VALIDAS:
         vet.preferencia_emissao = "videoconferencia"
     if (vet.preferencia_validade_anos or 1) not in OPCOES_VALIDADE:
@@ -368,6 +426,18 @@ def filtros_de_vet(vet) -> FiltroPreco:
     midia = getattr(vet, "preferencia_midia", None) or None
     emissao = getattr(vet, "preferencia_emissao", None) or "videoconferencia"
     validade = getattr(vet, "preferencia_validade_anos", None) or 1
+
+    if uso_formato_celular(vet):
+        arm, midia = _perfil_formato_celular(midia or vet.preferencia_midia)
+        return FiltroPreco(
+            produto_id=pid,
+            categoria=PRODUTOS[pid]["categoria"],
+            armazenamento=arm,
+            emissao=emissao,
+            validade_anos=int(validade or 1),
+            midia=midia,
+        )
+
     return filtros_de_produto(pid, midia=midia, emissao=emissao, validade_anos=int(validade or 1))
 
 
@@ -616,6 +686,8 @@ def _midia_compativel(filtro: FiltroPreco, midia_row: str) -> bool:
 
 def _entry_sem_preco(cert_key: str, cert: dict, filtro: FiltroPreco, *, formato: str = "") -> dict:
     arm = filtro.armazenamento or "A1"
+    if not formato and filtro.midia in MIDIAS_MOVEIS:
+        formato = _rotulo_formato(arm, filtro.midia)
     return {
         "certificadora": cert_key,
         "nome": cert.get("nome", cert_key),
@@ -648,7 +720,8 @@ def _completar_certificadoras_sem_preco(resultados: list[dict], filtro: FiltroPr
 
 
 def _consultar_catalogo_midias_moveis(filtro: FiltroPreco) -> list[dict]:
-    """Nuvem e MobileID — inclui A1 e A3; uma linha por certificadora + formato."""
+    """Nuvem (A3) ou MobileID (A1) — só preços com mídia móvel explícita no catálogo."""
+    arm_obrigatorio, midia_obrigatoria = _perfil_formato_celular(filtro.midia or "")
     rows = (
         _PrecoCatalogo.query.filter_by(
             produto_tipo=filtro.produto_tipo,
@@ -664,13 +737,13 @@ def _consultar_catalogo_midias_moveis(filtro: FiltroPreco) -> list[dict]:
         m = _normalizar_midia(row.midia)
         if m not in MIDIAS_MOVEIS:
             continue
-        if filtro.midia and m != filtro.midia:
+        if m != midia_obrigatoria:
+            continue
+        if row.armazenamento != arm_obrigatorio:
             continue
         if not _emissao_compativel(filtro, row.emissao or ""):
             continue
-        if filtro.armazenamento and row.armazenamento != filtro.armazenamento:
-            continue
-        chave = f"{row.certificadora}|{row.armazenamento}|{m}"
+        chave = row.certificadora
         atual = por_chave.get(chave)
         if not atual or row.preco < atual.preco:
             por_chave[chave] = row
@@ -751,11 +824,7 @@ def parse_preferencias_form(form, *, tipo_arm: str = "A1") -> dict:
 def consultar_catalogo(filtro: FiltroPreco) -> list[dict]:
     """Retorna preços do catálogo para os critérios do usuário."""
     if filtro.midia in MIDIAS_MOVEIS:
-        moveis = _consultar_catalogo_midias_moveis(filtro)
-        if moveis:
-            return moveis
-        if filtro.midia == "mobileid":
-            return _completar_certificadoras_sem_preco([], filtro)
+        return _consultar_catalogo_midias_moveis(filtro)
 
     rows = (
         _PrecoCatalogo.query.filter_by(

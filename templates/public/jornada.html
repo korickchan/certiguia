@@ -71,6 +71,9 @@
     <p class="hint icp-nota">
         {{ produto.nome if produto else produtos[produto_atual].nome }}
         · {{ filtro_precos.rotulo() }}
+        {% if uso_celular %}
+        · apenas certificadoras com {% if vet.preferencia_midia == 'mobileid' %}MobileID (A1){% else %}nuvem A3{% endif %} no catálogo
+        {% endif %}
         {% if com_preco %} · {{ com_preco|length }} opção{% if com_preco|length > 1 %}ões{% endif %} com preço{% endif %}
         {% if sem_preco %} · {{ sem_preco|length }} só com link no site{% endif %}
     </p>
@@ -111,12 +114,16 @@
 <details class="public-card preferencias-precos preferencias-precos--secundario">
     <summary>Ajustar critérios de preço (opcional)</summary>
     <form method="post" action="{{ url_for('alterar_produto_publico', protocolo=vet.protocolo) }}" class="produto-selector">
+        {% if uso_celular %}
+        <p class="hint">Uso no celular: o tipo segue o formato escolhido — {{ produto.nome if produto else 'e-CPF' }} ({{ dict(opcoes_midia_celular).get(vet.preferencia_midia, vet.preferencia_midia) }}).</p>
+        {% else %}
         <label for="produto_id">Tipo de certificado</label>
         <select name="produto_id" id="produto_id" onchange="this.form.submit()">
             {% for pid, p in produtos.items() %}
             <option value="{{ pid }}" {% if produto_atual == pid %}selected{% endif %}>{{ p.nome }}</option>
             {% endfor %}
         </select>
+        {% endif %}
     </form>
     <form method="post" action="{{ url_for('atualizar_preferencias_publico', protocolo=vet.protocolo) }}" class="form-preferencias">
         {% include "public/_preferencias_jornada.html" %}
