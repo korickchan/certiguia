@@ -18,6 +18,8 @@
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--pub-bg);
     color: var(--pub-text);
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .public-body h1, .public-body h2, .public-body h3 {
@@ -120,6 +122,14 @@
     line-height: 1.65;
 }
 .hero-actions { display: flex; gap: 0.875rem; justify-content: center; flex-wrap: wrap; }
+
+.hero-mobile-note {
+    width: 100%;
+    margin: 0.75rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--pub-muted);
+    line-height: 1.5;
+}
 
 .public-body .btn-primary {
     background: var(--pub-primary);
@@ -565,6 +575,28 @@
 
 .loading-error .btn { margin-top: 1rem; }
 
+.loading-hero-img {
+    width: min(240px, 78vw);
+    height: auto;
+    margin: 0 auto 1.25rem;
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+}
+
+.loading-card:has(.loading-hero-img) .loading-spinner {
+    display: none;
+}
+
+.obs-list {
+    margin: 0.85rem 0 0;
+    padding-left: 1.15rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: #334155;
+}
+
+.obs-list li + li { margin-top: 0.35rem; }
+
 /* Jornada */
 .jornada-header {
     display: flex;
@@ -993,10 +1025,96 @@
 }
 
 @media (max-width: 600px) {
-    .hero { padding: 2.5rem 1rem 3rem; }
+    .hero { padding: 2.5rem 1rem 3rem; margin-left: -1rem; margin-right: -1rem; }
+    .public-main { padding-left: 1rem; padding-right: 1rem; }
     .public-body .form-row.two-cols,
     .two-cols { grid-template-columns: 1fr !important; }
     .progress-step .step-label { display: none; }
+    .progress-tracker {
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x proximity;
+        padding-bottom: 0.35rem;
+    }
+    .progress-step { scroll-snap-align: start; min-width: 3.25rem; }
     .jornada-header { flex-direction: column; }
+    .jornada-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    .jornada-actions .btn,
+    .jornada-actions a {
+        width: 100%;
+        justify-content: center;
+        min-height: 44px;
+    }
     .public-card-wide { margin: 1rem auto; padding: 1.25rem; }
+    .public-card { padding: 1.25rem; }
+    .card-header-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .card-header-row .btn { width: 100%; justify-content: center; min-height: 44px; }
+    .precos-grid { grid-template-columns: 1fr; }
+    .preco-card {
+        padding: 1rem 1rem 1rem 1.15rem;
+        min-height: 44px;
+    }
+    .preco-card input[type="radio"] {
+        top: 1rem;
+        right: 1rem;
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+    .etapa-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .etapa-form select,
+    .produto-selector select {
+        width: 100%;
+        max-width: none;
+        min-height: 44px;
+        font-size: 16px;
+    }
+    .public-body input[type="text"],
+    .public-body input[type="email"],
+    .public-body input[type="tel"],
+    .public-body select,
+    .public-body textarea {
+        font-size: 16px;
+        min-height: 44px;
+    }
+    .public-body .radio-group label {
+        min-height: 44px;
+        align-items: center;
+        padding: 0.35rem 0;
+    }
+    .public-body .radio-group input[type="radio"] {
+        width: 1.15rem;
+        height: 1.15rem;
+        margin-top: 0;
+    }
+    .public-body .btn-lg,
+    .public-body .btn-primary,
+    .btn-donate,
+    .btn-validar-iti {
+        min-height: 48px;
+        font-size: 1rem;
+    }
+    .passos-lista li {
+        padding-left: 2.85rem;
+        font-size: 0.9375rem;
+    }
+    .passos-lista li::before {
+        left: 0.75rem;
+    }
+    .hero-actions { flex-direction: column; align-items: stretch; }
+    .hero-actions .btn { width: 100%; min-height: 48px; }
+    .public-header-inner {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+    }
+    .public-footer {
+        padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    }
 }

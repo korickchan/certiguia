@@ -2,12 +2,72 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0d9488">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>{% block title %}CertiGuia — Certificado Digital{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/public.css') }}">
+    <style>
+        #site-splash {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+                max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+            background: linear-gradient(145deg, #ecfdf5 0%, #eff6ff 100%);
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #site-splash.site-splash--hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .site-splash-inner {
+            text-align: center;
+            max-width: 22rem;
+            width: 100%;
+        }
+        .site-splash-img {
+            width: min(280px, 88vw);
+            height: auto;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1);
+        }
+        .site-splash-note {
+            margin: 1rem 0 0;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: #64748b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        body.site-loading { overflow: hidden; }
+    </style>
 </head>
 <body class="public-body">
+    <div id="site-splash" role="status" aria-live="polite" aria-label="Carregando CertiGuia">
+        <div class="site-splash-inner">
+            <img
+                class="site-splash-img"
+                src="{{ url_for('static', filename='img/loading-certiguia.png') }}"
+                alt="CertiGuia — carregando seu guia"
+                width="512"
+                height="512"
+                decoding="async"
+            >
+            <p class="site-splash-note">
+                Na primeira visita do dia, o servidor gratuito pode levar até <strong>1–2 minutos</strong> para acordar.
+                Aguarde nesta tela.
+            </p>
+        </div>
+    </div>
+
     <header class="public-header">
         <div class="public-header-inner">
             <a href="{{ url_for('index') }}" class="public-brand">CertiGuia</a>
@@ -36,6 +96,7 @@
         <p>Doação opcional via Pix · <a href="{{ url_for('admin.login') }}">Área admin</a></p>
     </footer>
 
+    <script src="{{ url_for('static', filename='js/public.js') }}" defer></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -4,6 +4,14 @@
 {% block content %}
 <div class="loading-page">
     <div class="loading-card" id="loading-card">
+        <img
+            class="loading-hero-img"
+            src="{{ url_for('static', filename='img/loading-certiguia.png') }}"
+            alt="CertiGuia — buscando preços"
+            width="512"
+            height="512"
+            decoding="async"
+        >
         <div class="loading-spinner" aria-hidden="true"></div>
         <h1>Buscando preços nas certificadoras</h1>
         <p class="loading-lead">
@@ -12,6 +20,7 @@
         </p>
         <p class="loading-warn">
             Isso pode levar <strong>de 1 a 3 minutos</strong>. Não feche nem atualize esta página.
+            No iPhone, mantenha a tela ligada até concluir.
         </p>
         <ul class="loading-steps">
             <li id="step-1" class="loading-step active">Conectando às certificadoras…</li>
