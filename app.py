@@ -300,6 +300,11 @@ _scrape_lock = threading.Lock()
 _scrape_jobs: dict[str, dict] = {}
 
 
+def _redirect_jornada_precos(protocolo: str) -> str:
+    """URL relativa — seguro em thread de background (sem request Flask ativo)."""
+    return f"/p/{protocolo.upper()}?precos_ok=1"
+
+
 def _run_scrape_precos_async(protocolo: str, produto_id: str) -> None:
     """Busca preços em thread — evita timeout de proxy/Safari em requisição longa."""
     key = protocolo.upper()
@@ -310,7 +315,7 @@ def _run_scrape_precos_async(protocolo: str, produto_id: str) -> None:
                 raise ValueError("Protocolo não encontrado.")
             _buscar_e_salvar_precos(vet, produto_id, usar_cache=False)
             db.session.commit()
-            redirect = url_for("jornada", protocolo=protocolo, precos_ok=1)
+            redirect = _redirect_jornada_precos(protocolo)
             with _scrape_lock:
                 _scrape_jobs[key] = {"status": "done", "ok": True, "redirect": redirect}
         except Exception as exc:
@@ -357,7 +362,7 @@ def _status_scrape_precos(protocolo: str) -> dict:
     if vet and vet.precos_json:
         return {
             "ok": True,
-            "redirect": url_for("jornada", protocolo=protocolo, precos_ok=1),
+            "redirect": _redirect_jornada_precos(protocolo),
         }
     return {"ok": False, "pending": True}
 
