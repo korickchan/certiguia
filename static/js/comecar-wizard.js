@@ -120,8 +120,15 @@
 
         const ultimo = stepIndex === total - 1;
         if (btnPrev) btnPrev.disabled = stepIndex === 0;
-        if (btnNext) btnNext.hidden = ultimo;
-        if (btnSubmit) btnSubmit.hidden = !ultimo;
+        if (btnNext) {
+            btnNext.hidden = ultimo;
+            btnNext.disabled = ultimo;
+        }
+        if (btnSubmit) {
+            btnSubmit.hidden = !ultimo;
+            btnSubmit.disabled = !ultimo;
+            btnSubmit.type = ultimo ? "submit" : "button";
+        }
 
         syncMidiaOculta();
         syncCnpj();
@@ -201,7 +208,24 @@
     if (btnNext) btnNext.addEventListener("click", avancar);
     if (btnPrev) btnPrev.addEventListener("click", voltar);
 
-    form.addEventListener("submit", () => {
+    form.addEventListener("submit", (e) => {
+        const visiveis = paineisVisiveis();
+        const noUltimo = stepIndex === visiveis.length - 1;
+        if (!noUltimo) {
+            e.preventDefault();
+            avancar();
+            return;
+        }
+        const panel = visiveis[stepIndex];
+        if (panel && !validarPainel(panel)) {
+            e.preventDefault();
+            form.reportValidity();
+            return;
+        }
+        if (panel?.dataset.step === "titular" && !validarTitularCnpj()) {
+            e.preventDefault();
+            return;
+        }
         syncMidiaOculta();
         syncCnpj();
         if (btnSubmit) {

@@ -315,6 +315,10 @@
     border-top: 1px solid var(--pub-border);
 }
 .wizard-nav .btn-primary { margin-left: auto; }
+.wizard-nav #wizard-submit[hidden],
+.wizard-nav #wizard-next[hidden] {
+    display: none !important;
+}
 .wizard-nav #wizard-submit { width: 100%; margin-top: 0.5rem; }
 @media (min-width: 480px) {
     .wizard-nav #wizard-submit { width: auto; margin-top: 0; }
