@@ -79,6 +79,176 @@ def _fetch_html(url: str, timeout: int = _HTTP_TIMEOUT) -> str | None:
         return None
 
 
+def _fetch_json(url: str, timeout: int = _HTTP_TIMEOUT) -> dict | list | None:
+    raw = _fetch_html(url, timeout=timeout)
+    if not raw:
+        return None
+    try:
+        import json
+
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+
+
+VALID_BASE = "https://validcertificadora.com.br"
+
+
+def _valid_validade_anos(variant_title: str) -> int | None:
+    t = _texto_ascii_minusculo(variant_title or "")
+    if "6 mes" in t:
+        return None
+    if t in ("default title", "") or "1 ano" in t:
+        return 1
+    if "3 ano" in t:
+        return 3
+    if "2 ano" in t:
+        return 2
+    return None
+
+
+def _valid_armazenamento(handle: str, title: str) -> str | None:
+    h = _texto_ascii_minusculo(f"{handle} {title}")
+    if "-a3" in h or " a3" in h or h.endswith("a3"):
+        return "A3"
+    if "-a1" in h or " a1" in h or h.endswith("a1"):
+        return "A1"
+    return None
+
+
+def _valid_produto_tipo(handle: str, title: str) -> tuple[str, str] | None:
+    h = _texto_ascii_minusculo(f"{handle} {title}")
+    if "e-cnpj" in h:
+        return "e-CNPJ", "pj"
+    if "e-cpf" in h:
+        return "e-CPF", "pf"
+    return None
+
+
+def _valid_midia_from_product(handle: str, title: str, arm: str) -> str:
+    h = _texto_ascii_minusculo(f"{handle} {title}")
+    if "nuvem" in h:
+        return "nuvem"
+    if "token" in h:
+        return "token"
+    if "cartao" in h or "cart" in h:
+        return "cartao"
+    if "sem-midia" in h or "sem midia" in h:
+        return "sem_midia"
+    return "arquivo" if arm == "A1" else "sem_midia"
+
+
+def _valid_relevante(product: dict) -> bool:
+    handle = product.get("handle") or ""
+    title = product.get("title") or ""
+    h = _texto_ascii_minusculo(handle)
+    if any(x in h for x in ("combo", "-req", "copia", "leitora", "nf-e", "nfe", "ct-e", "cte", "safeid")):
+        return False
+    if "+" in title:
+        return False
+    return bool(_valid_produto_tipo(handle, title) and _valid_armazenamento(handle, title))
+
+
+def _valid_handles_preco(tipo: str, categoria: str, midia: str | None = None) -> list[str]:
+    fam = "cpf" if categoria == "pf" else "cnpj"
+    base = f"e-{fam}-{tipo.lower()}"
+    if tipo == "A1":
+        return [base]
+    if midia == "token":
+        return [f"{base}-em-token"]
+    if midia == "cartao":
+        return [f"{base}-em-cartao"]
+    if midia == "nuvem":
+        return [f"{base}-em-nuvem"]
+    if midia == "sem_midia":
+        return [base]
+    return [f"{base}-em-token", base, f"{base}-em-cartao"]
+
+
+def _valid_preco_de_produto(product: dict, validade_anos: int = 1) -> float | None:
+    candidatos: list[float] = []
+    variants = product.get("variants") or []
+    for v in variants:
+        va = _valid_validade_anos(v.get("title") or "")
+        if va != validade_anos:
+            continue
+        try:
+            candidatos.append(float(v["price"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+    if candidatos:
+        return min(candidatos)
+    if len(variants) == 1:
+        try:
+            return float(variants[0]["price"])
+        except (KeyError, TypeError, ValueError):
+            pass
+    return None
+
+
+def _valid_buscar_preco(
+    tipo: str,
+    categoria: str,
+    validade_anos: int = 1,
+    midia: str | None = None,
+) -> tuple[float | None, str, str]:
+    """Busca preço na API pública Shopify da Valid (/products/{handle}.json)."""
+    for handle in _valid_handles_preco(tipo, categoria, midia):
+        data = _fetch_json(f"{VALID_BASE}/products/{handle}.json")
+        if not data or "product" not in data:
+            continue
+        product = data["product"]
+        preco = _valid_preco_de_produto(product, validade_anos)
+        if preco is not None and _valor_valido(preco, tipo, categoria):
+            return preco, product.get("title", handle), f"{VALID_BASE}/products/{handle}"
+    return None, "", ""
+
+
+def valid_catalogo_itens() -> list[dict]:
+    """Lista preços e-CPF/e-CNPJ da Valid (catálogo Shopify completo)."""
+    data = _fetch_json(f"{VALID_BASE}/collections/all/products.json?limit=250")
+    if not data or not isinstance(data, dict):
+        return []
+    rows: list[dict] = []
+    for product in data.get("products", []):
+        if not _valid_relevante(product):
+            continue
+        handle = product["handle"]
+        title = product.get("title") or handle
+        tip = _valid_produto_tipo(handle, title)
+        if not tip:
+            continue
+        produto_tipo, categoria = tip
+        arm = _valid_armazenamento(handle, title)
+        if not arm:
+            continue
+        midia = _valid_midia_from_product(handle, title, arm)
+        url = f"{VALID_BASE}/products/{handle}"
+        for v in product.get("variants") or []:
+            va = _valid_validade_anos(v.get("title") or "")
+            if va is None:
+                continue
+            try:
+                preco = float(v["price"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if not _valor_valido(preco, arm, categoria):
+                continue
+            rows.append({
+                "certificadora": "valid",
+                "produto_tipo": produto_tipo,
+                "categoria": categoria,
+                "armazenamento": arm,
+                "midia": midia,
+                "emissao": "videoconferencia",
+                "validade_anos": va,
+                "preco": preco,
+                "url": url,
+                "observacao": f"Valid — {title}, variante «{v.get('title')}».",
+            })
+    return rows
+
+
 def _html_para_texto(html: str) -> str:
     t = re.sub(r"<script[\s\S]*?</script>", " ", html, flags=re.I)
     t = re.sub(r"<style[\s\S]*?</style>", " ", t, flags=re.I)
@@ -139,10 +309,12 @@ def _extrair_preco_html(
         metodo = "loja Online Certificadora (HTTP)"
 
     elif certificadora_key == "valid":
-        preco = _extrair_preco_produto(texto, chave_produto, tipo, categoria)
+        preco, titulo, _url = _valid_buscar_preco(tipo, categoria)
         if not preco:
-            preco = _extrair_preco_produto(html, chave_produto, tipo, categoria)
-        metodo = f"card {nome_produto} Valid (HTTP)"
+            preco = _extrair_preco_valid_html(html, tipo, categoria)
+            metodo = "catálogo Valid (HTML Shopify)"
+        else:
+            metodo = f"Valid Shopify API ({titulo})"
 
     if not preco:
         preco = _extrair_preco_produto(texto, chave_produto, tipo, categoria)
@@ -156,6 +328,20 @@ def _scrape_http(
     tipo: str,
     categoria: str = "pf",
 ) -> dict | None:
+    if certificadora_key == "valid":
+        preco, titulo, product_url = _valid_buscar_preco(tipo, categoria)
+        if not preco:
+            html = _fetch_html(url)
+            if html:
+                preco = _extrair_preco_valid_html(html, tipo, categoria)
+                titulo = chave_produto
+                product_url = url
+        if not preco:
+            return None
+        resultado = _resultado_preco_ok(preco, chave_produto.upper(), f"Valid Shopify ({titulo})")
+        resultado["url"] = product_url
+        return resultado
+
     html = _fetch_html(url)
     if not html:
         return None
@@ -256,6 +442,25 @@ def _extrair_preco_produto(texto: str, chave_produto: str, tipo: str, categoria:
         if preco:
             return preco
     return None
+
+
+def _extrair_preco_valid_html(html: str, tipo: str, categoria: str) -> float | None:
+    """Fallback: preços em centavos no JSON embutido da busca Shopify."""
+    fam = "cpf" if categoria == "pf" else "cnpj"
+    alvo = f"e-{fam}-{tipo.lower()}"
+    candidatos: list[float] = []
+    for m in re.finditer(
+        rf'"handle":"({re.escape(alvo)}[^"]*)"[^}}]{{0,500}}?"price":(\d+)',
+        html,
+        re.I,
+    ):
+        handle, cents = m.group(1), int(m.group(2))
+        if "combo" in handle or "leitora" in handle:
+            continue
+        valor = cents / 100.0
+        if _valor_valido(valor, tipo, categoria):
+            candidatos.append(valor)
+    return min(candidatos) if candidatos else None
 
 
 def _extrair_preco_ecpf_texto(texto: str, tipo: str) -> float | None:

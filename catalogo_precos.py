@@ -384,6 +384,13 @@ def _executar_varredura() -> None:
                 total += importar_itens_safeweb(produtos, categoria)
             _db.session.commit()
 
+        from buscar_precos import valid_catalogo_itens
+
+        for item in valid_catalogo_itens():
+            _upsert_preco(fonte="valid_shopify", **item)
+            total += 1
+        _db.session.commit()
+
         meta.status = "ok"
         meta.concluido_em = datetime.utcnow()
         meta.itens_total = _PrecoCatalogo.query.count()
