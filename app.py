@@ -444,17 +444,8 @@ with app.app_context():
             iniciar_varredura_background(app)
 
 
-@app.context_processor
-def inject_icp_helpers():
+def _ctx_preferencias() -> dict:
     return {
-        "ac_credenciada_iti": ac_credenciada_iti,
-        "aviso_icp_certificadora": aviso_icp_certificadora,
-        "rotulo_icp_certificadora": rotulo_icp_certificadora,
-        "url_iti_certificadora": url_iti_certificadora,
-        "url_certificadora": url_certificadora,
-        "iti_repositorio": ITI_REPOSITORIO,
-        "iti_lista_ac": ITI_LISTA_AC,
-        "iti_validar": ITI_VALIDAR,
         "opcoes_emissao": OPCOES_EMISSAO,
         "opcoes_midia_a1": OPCOES_MIDIA_A1,
         "opcoes_midia_a3": OPCOES_MIDIA_A3,
@@ -467,6 +458,21 @@ def inject_icp_helpers():
         "ajuda_secao_a1": AJUDA_SECAO_A1,
         "ajuda_secao_a3": AJUDA_SECAO_A3,
         "ajuda_varios_computadores": AJUDA_VARIOS_COMPUTADORES,
+    }
+
+
+@app.context_processor
+def inject_icp_helpers():
+    return {
+        "ac_credenciada_iti": ac_credenciada_iti,
+        "aviso_icp_certificadora": aviso_icp_certificadora,
+        "rotulo_icp_certificadora": rotulo_icp_certificadora,
+        "url_iti_certificadora": url_iti_certificadora,
+        "url_certificadora": url_certificadora,
+        "iti_repositorio": ITI_REPOSITORIO,
+        "iti_lista_ac": ITI_LISTA_AC,
+        "iti_validar": ITI_VALIDAR,
+        **_ctx_preferencias(),
     }
 
 
@@ -497,6 +503,7 @@ def comecar():
                 estados=ESTADOS_BR,
                 profissoes=PROFISSOES,
                 finalidades=FINALIDADES,
+                **_ctx_preferencias(),
             )
 
         eh_vet = request.form.get("eh_veterinario") == "sim"
@@ -521,6 +528,7 @@ def comecar():
                 estados=ESTADOS_BR,
                 profissoes=PROFISSOES,
                 finalidades=FINALIDADES,
+                **_ctx_preferencias(),
             )
         varios_pc = request.form.get("varios_computadores") == "sim"
         tipo_arm_prev = "A3" if varios_pc else "A1"
@@ -578,6 +586,7 @@ def comecar():
         estados=ESTADOS_BR,
         profissoes=PROFISSOES,
         finalidades=FINALIDADES,
+        **_ctx_preferencias(),
     )
 
 

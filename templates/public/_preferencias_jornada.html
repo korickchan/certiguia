@@ -1,0 +1,61 @@
+{# Preferências de certificado — jornada. Variáveis: vet, tipo_arm #}
+
+<div class="form-row opcao-bloco">
+    <span class="label">Tipo de emissão</span>
+    <div class="radio-group vertical opcao-lista">
+        {% for val, label in opcoes_emissao %}
+        <label class="opcao-item">
+            <span class="opcao-top">
+                <input type="radio" name="preferencia_emissao" value="{{ val }}"
+                       {% if (vet.preferencia_emissao or 'videoconferencia') == val %}checked{% endif %}>
+                <span class="opcao-label">{{ label }}</span>
+            </span>
+            <p class="opcao-desc">{{ ajuda_emissao[val] }}</p>
+        </label>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="form-row two-cols preferencias-cols">
+    <div class="form-row opcao-bloco">
+        <label for="preferencia_validade_anos">Validade</label>
+        <select id="preferencia_validade_anos" name="preferencia_validade_anos">
+            {% for anos in opcoes_validade %}
+            <option value="{{ anos }}" {% if (vet.preferencia_validade_anos or 1) == anos %}selected{% endif %}>{{ anos }} ano{% if anos > 1 %}s{% endif %}</option>
+            {% endfor %}
+        </select>
+        <p class="hint opcao-bloco-hint">{{ ajuda_validade }}</p>
+    </div>
+    <div class="form-row opcao-bloco">
+        <span class="label">Mídia / formato ({{ tipo_arm }})</span>
+        {% if tipo_arm == 'A3' %}
+        <p class="hint opcao-bloco-hint">{{ ajuda_secao_a3 }}</p>
+        <div class="radio-group vertical opcao-lista">
+            {% for val, label in opcoes_midia_a3 %}
+            <label class="opcao-item">
+                <span class="opcao-top">
+                    <input type="radio" name="preferencia_midia" value="{{ val }}"
+                           {% if (vet.preferencia_midia or 'token') == val %}checked{% endif %}>
+                    <span class="opcao-label">{{ label }}</span>
+                </span>
+                <p class="opcao-desc">{{ ajuda_midia_a3[val] }}</p>
+            </label>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="hint opcao-bloco-hint">{{ ajuda_secao_a1 }}</p>
+        <div class="radio-group vertical opcao-lista">
+            {% for val, label in opcoes_midia_a1 %}
+            <label class="opcao-item">
+                <span class="opcao-top">
+                    <input type="radio" name="preferencia_midia" value="{{ val }}"
+                           {% if (vet.preferencia_midia or 'arquivo') == val %}checked{% endif %}>
+                    <span class="opcao-label">{{ label }}</span>
+                </span>
+                <p class="opcao-desc">{{ ajuda_midia_a1[val] }}</p>
+            </label>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>

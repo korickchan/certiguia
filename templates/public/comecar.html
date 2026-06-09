@@ -1,5 +1,4 @@
 {% extends "public/base.html" %}
-{% from "public/_macros_preferencias.html" import bloco_emissao, bloco_validade, bloco_midia_a1, bloco_midia_a3 with context %}
 {% block title %}Cadastro rápido{% endblock %}
 
 {% block content %}
@@ -106,10 +105,7 @@
             <legend>Como quer emitir e guardar o certificado?</legend>
             <p class="hint">{{ ajuda_preferencias_intro }}</p>
 
-            {{ bloco_emissao('preferencia_emissao', 'videoconferencia') }}
-            {{ bloco_validade('preferencia_validade_anos', 1) }}
-            {{ bloco_midia_a1('preferencia_midia', 'arquivo') }}
-            {{ bloco_midia_a3('preferencia_midia', 'token', hidden=true) }}
+            {% include "public/_preferencias_cadastro.html" %}
         </fieldset>
 
         <div class="form-actions">

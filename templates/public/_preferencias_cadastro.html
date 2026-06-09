@@ -1,0 +1,61 @@
+{# Preferências de certificado — cadastro (/comecar). Usa {% include %} (contexto completo). #}
+
+<div class="form-row opcao-bloco">
+    <span class="label">Tipo de emissão *</span>
+    <div class="radio-group vertical opcao-lista">
+        {% for val, label in opcoes_emissao %}
+        <label class="opcao-item">
+            <span class="opcao-top">
+                <input type="radio" name="preferencia_emissao" value="{{ val }}"
+                       {% if val == 'videoconferencia' %}checked{% endif %}>
+                <span class="opcao-label">{{ label }}</span>
+            </span>
+            <p class="opcao-desc">{{ ajuda_emissao[val] }}</p>
+        </label>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="form-row opcao-bloco">
+    <label for="preferencia_validade_anos">Validade desejada *</label>
+    <select id="preferencia_validade_anos" name="preferencia_validade_anos">
+        {% for anos in opcoes_validade %}
+        <option value="{{ anos }}" {% if anos == 1 %}selected{% endif %}>{{ anos }} ano{% if anos > 1 %}s{% endif %}</option>
+        {% endfor %}
+    </select>
+    <p class="hint opcao-bloco-hint">{{ ajuda_validade }}</p>
+</div>
+
+<div class="form-row opcao-bloco" id="midia-a1-wrap">
+    <span class="label">Formato A1 (um computador) *</span>
+    <p class="hint opcao-bloco-hint">{{ ajuda_secao_a1 }}</p>
+    <div class="radio-group vertical opcao-lista">
+        {% for val, label in opcoes_midia_a1 %}
+        <label class="opcao-item">
+            <span class="opcao-top">
+                <input type="radio" name="preferencia_midia" value="{{ val }}"
+                       {% if val == 'arquivo' %}checked{% endif %} data-midia-a1>
+                <span class="opcao-label">{{ label }}</span>
+            </span>
+            <p class="opcao-desc">{{ ajuda_midia_a1[val] }}</p>
+        </label>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="form-row opcao-bloco" id="midia-a3-wrap" style="display:none">
+    <span class="label">Formato A3 (vários computadores) *</span>
+    <p class="hint opcao-bloco-hint">{{ ajuda_secao_a3 }}</p>
+    <div class="radio-group vertical opcao-lista">
+        {% for val, label in opcoes_midia_a3 %}
+        <label class="opcao-item">
+            <span class="opcao-top">
+                <input type="radio" name="preferencia_midia" value="{{ val }}"
+                       {% if val == 'token' %}checked{% endif %} data-midia-a3 disabled>
+                <span class="opcao-label">{{ label }}</span>
+            </span>
+            <p class="opcao-desc">{{ ajuda_midia_a3[val] }}</p>
+        </label>
+        {% endfor %}
+    </div>
+</div>

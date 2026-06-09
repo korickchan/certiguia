@@ -1,5 +1,4 @@
 {% extends "public/base.html" %}
-{% from "public/_macros_preferencias.html" import bloco_emissao, bloco_validade, bloco_midia_tipo_arm with context %}
 
 {% block title %}Seu guia — {{ vet.protocolo }}{% endblock %}
 
@@ -141,11 +140,7 @@
     <h2>Preferências para comparar preços</h2>
     <p class="hint">{{ ajuda_preferencias_intro }}</p>
     <form method="post" action="{{ url_for('atualizar_preferencias_publico', protocolo=vet.protocolo) }}" class="form-preferencias">
-        {{ bloco_emissao('preferencia_emissao', vet.preferencia_emissao or 'videoconferencia') }}
-        <div class="form-row two-cols preferencias-cols">
-            <div>{{ bloco_validade('preferencia_validade_anos', vet.preferencia_validade_anos or 1) }}</div>
-            <div>{{ bloco_midia_tipo_arm('preferencia_midia', tipo_arm, vet.preferencia_midia or ('token' if tipo_arm == 'A3' else 'arquivo')) }}</div>
-        </div>
+        {% include "public/_preferencias_jornada.html" %}
         <div class="form-actions">
             <button type="submit" class="btn btn-sm btn-primary">Aplicar e atualizar preços</button>
         </div>

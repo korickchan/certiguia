@@ -263,7 +263,13 @@
     border-radius: 8px;
     font-size: 0.9375rem;
     font-family: inherit;
+    color: var(--pub-text);
+    background-color: var(--pub-card);
     transition: border-color 0.15s, box-shadow 0.15s;
+}
+.public-body select option {
+    color: var(--pub-text);
+    background-color: #fff;
 }
 .public-body input:focus,
 .public-body select:focus,
