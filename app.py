@@ -23,6 +23,27 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import inspect, text
 
 from buscar_precos import comparar_precos, comparar_precos_produto, playwright_disponivel
+from catalogo_precos import (
+    AJUDA_EMISSAO,
+    AJUDA_MIDIA_A1,
+    AJUDA_MIDIA_A3,
+    AJUDA_PREFERENCIAS_INTRO,
+    AJUDA_SECAO_A1,
+    AJUDA_SECAO_A3,
+    AJUDA_VALIDADE,
+    AJUDA_VARIOS_COMPUTADORES,
+    OPCOES_EMISSAO,
+    OPCOES_MIDIA_A1,
+    OPCOES_MIDIA_A3,
+    OPCOES_VALIDADE,
+    aplicar_precos_catalogo_vet,
+    catalogo_precisa_atualizar,
+    filtros_de_vet,
+    info_catalogo,
+    iniciar_varredura_background,
+    init_catalogo,
+    parse_preferencias_form,
+)
 from certificado import (
     CERTIFICADORAS,
     ETAPAS_CERTIFICADO,
@@ -154,6 +175,9 @@ class Veterinario(db.Model):
     finalidade = db.Column(db.String(30), default="documentos")
     sistema_receituario = db.Column(db.String(100))
     certificadora_escolhida = db.Column(db.String(30))
+    preferencia_midia = db.Column(db.String(20))
+    preferencia_emissao = db.Column(db.String(30), default="videoconferencia")
+    preferencia_validade_anos = db.Column(db.Integer, default=1)
 
     @staticmethod
     def gerar_protocolo():
@@ -219,6 +243,36 @@ class Veterinario(db.Model):
             return 0
 
 
+class PrecoCatalogo(db.Model):
+    __tablename__ = "precos_catalogo"
+
+    id = db.Column(db.Integer, primary_key=True)
+    chave = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    certificadora = db.Column(db.String(30), nullable=False, index=True)
+    produto_tipo = db.Column(db.String(20), nullable=False, index=True)
+    categoria = db.Column(db.String(2), nullable=False)
+    armazenamento = db.Column(db.String(2), nullable=False)
+    midia = db.Column(db.String(40))
+    emissao = db.Column(db.String(30))
+    validade_anos = db.Column(db.Integer, default=1)
+    preco = db.Column(db.Float, nullable=False)
+    url = db.Column(db.String(500))
+    observacao = db.Column(db.Text)
+    fonte = db.Column(db.String(30))
+    atualizado_em = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class CatalogoMeta(db.Model):
+    __tablename__ = "catalogo_meta"
+
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(20), default="vazio")
+    iniciado_em = db.Column(db.DateTime)
+    concluido_em = db.Column(db.DateTime)
+    itens_total = db.Column(db.Integer, default=0)
+    erro = db.Column(db.Text)
+
+
 def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -267,11 +321,22 @@ def _migrate_db():
         "finalidade": "VARCHAR(30) DEFAULT 'documentos'",
         "sistema_receituario": "VARCHAR(100)",
         "certificadora_escolhida": "VARCHAR(30)",
+        "preferencia_midia": "VARCHAR(20)",
+        "preferencia_emissao": "VARCHAR(30) DEFAULT 'videoconferencia'",
+        "preferencia_validade_anos": "INTEGER DEFAULT 1",
     }
     for coluna, typedef in novas.items():
         if coluna not in existentes:
             db.session.execute(text(f"ALTER TABLE veterinarios ADD COLUMN {coluna} {typedef}"))
     db.session.commit()
+
+
+def _garantir_precos_catalogo(vet, *, forcar_varredura: bool = False) -> list:
+    """Consulta catálogo local; dispara varredura em background se estiver desatualizado."""
+    precos = aplicar_precos_catalogo_vet(vet, db.session)
+    if forcar_varredura or catalogo_precisa_atualizar():
+        iniciar_varredura_background(app)
+    return precos
 
 
 def _aplicar_recomendacao(vet, rec):
@@ -370,6 +435,13 @@ def _status_scrape_precos(protocolo: str) -> dict:
 with app.app_context():
     db.create_all()
     _migrate_db()
+    init_catalogo(db, PrecoCatalogo, CatalogoMeta)
+    from catalogo_precos import importar_catalogo_seed
+
+    importar_catalogo_seed()
+    if os.getenv("CATALOGO_VARREDURA_INICIO", "1") == "1":
+        if PrecoCatalogo.query.count() == 0 or catalogo_precisa_atualizar():
+            iniciar_varredura_background(app)
 
 
 @app.context_processor
@@ -383,6 +455,18 @@ def inject_icp_helpers():
         "iti_repositorio": ITI_REPOSITORIO,
         "iti_lista_ac": ITI_LISTA_AC,
         "iti_validar": ITI_VALIDAR,
+        "opcoes_emissao": OPCOES_EMISSAO,
+        "opcoes_midia_a1": OPCOES_MIDIA_A1,
+        "opcoes_midia_a3": OPCOES_MIDIA_A3,
+        "opcoes_validade": OPCOES_VALIDADE,
+        "ajuda_preferencias_intro": AJUDA_PREFERENCIAS_INTRO,
+        "ajuda_emissao": AJUDA_EMISSAO,
+        "ajuda_midia_a1": AJUDA_MIDIA_A1,
+        "ajuda_midia_a3": AJUDA_MIDIA_A3,
+        "ajuda_validade": AJUDA_VALIDADE,
+        "ajuda_secao_a1": AJUDA_SECAO_A1,
+        "ajuda_secao_a3": AJUDA_SECAO_A3,
+        "ajuda_varios_computadores": AJUDA_VARIOS_COMPUTADORES,
     }
 
 
@@ -439,6 +523,8 @@ def comecar():
                 finalidades=FINALIDADES,
             )
         varios_pc = request.form.get("varios_computadores") == "sim"
+        tipo_arm_prev = "A3" if varios_pc else "A1"
+        prefs = parse_preferencias_form(request.form, tipo_arm=tipo_arm_prev)
         registro = request.form.get("registro_profissional", "").strip() or request.form.get("crmv", "").strip() or "—"
         registro_uf = request.form.get("registro_uf", "").strip().upper() or request.form.get("crmv_uf", "").strip().upper() or "NA"
         sistema = request.form.get("sistema_receituario", "").strip() or None
@@ -473,6 +559,9 @@ def comecar():
             sistema_receituario=sistema,
             emite_como=emite_como,
             varios_computadores=varios_pc,
+            preferencia_midia=prefs["preferencia_midia"],
+            preferencia_emissao=prefs["preferencia_emissao"],
+            preferencia_validade_anos=prefs["preferencia_validade_anos"],
             origem="publico",
             status_certificado="cadastrado",
             etapa_usuario="precos",
@@ -481,7 +570,8 @@ def comecar():
         db.session.add(vet)
         db.session.commit()
 
-        return redirect(url_for("atualizar_precos_publico", protocolo=vet.protocolo))
+        _garantir_precos_catalogo(vet)
+        return redirect(url_for("jornada", protocolo=vet.protocolo, precos_ok=1))
 
     return render_template(
         "public/comecar.html",
@@ -537,9 +627,11 @@ def jornada(protocolo):
     produto_atual = produto_id_efetivo(vet)
     precos_produto_id = precos[0].get("produto_id") if precos else None
     precos_desatualizados = bool(precos and precos_produto_id and precos_produto_id != produto_atual)
-    if precos_desatualizados:
-        precos = []
+    if precos_desatualizados or not precos:
+        precos = _garantir_precos_catalogo(vet)
     melhor = vet.melhor_preco() if precos else None
+    filtro_precos = filtros_de_vet(vet)
+    catalogo = info_catalogo()
 
     return render_template(
         "public/jornada.html",
@@ -565,7 +657,24 @@ def jornada(protocolo):
         certificadoras=certificadoras_ativas(),
         playwright_ok=playwright_disponivel(),
         precos_ok=request.args.get("precos_ok") == "1",
+        filtro_precos=filtro_precos,
+        catalogo=catalogo,
     )
+
+
+@app.route("/p/<protocolo>/preferencias", methods=["POST"])
+def atualizar_preferencias_publico(protocolo):
+    vet = Veterinario.query.filter_by(protocolo=protocolo.upper()).first_or_404()
+    tipo_arm = tipo_certificado_efetivo(vet)
+    prefs = parse_preferencias_form(request.form, tipo_arm=tipo_arm)
+    vet.preferencia_midia = prefs["preferencia_midia"]
+    vet.preferencia_emissao = prefs["preferencia_emissao"]
+    vet.preferencia_validade_anos = prefs["preferencia_validade_anos"]
+    vet.precos_json = None
+    db.session.commit()
+    _garantir_precos_catalogo(vet)
+    flash("Preferências atualizadas. Preços recalculados.", "success")
+    return redirect(url_for("jornada", protocolo=protocolo, precos_ok=1))
 
 
 @app.route("/p/<protocolo>/certificadora", methods=["POST"])
@@ -614,9 +723,13 @@ def alterar_produto_publico(protocolo):
     produto = PRODUTOS[pid]
     vet.produto_recomendado = pid
     vet.tipo_certificado = produto["tipo_armazenamento"]
+    from catalogo_precos import ajustar_preferencias_vet
+
+    ajustar_preferencias_vet(vet)
     vet.precos_json = None
     db.session.commit()
-    return redirect(url_for("atualizar_precos_publico", protocolo=protocolo))
+    _garantir_precos_catalogo(vet)
+    return redirect(url_for("jornada", protocolo=protocolo, precos_ok=1))
 
 
 @app.route("/p/<protocolo>/atualizar-precos")
@@ -626,28 +739,33 @@ def atualizar_precos_publico(protocolo):
         flash("Produto não definido.", "error")
         return redirect(url_for("jornada", protocolo=protocolo))
 
-    produto_id = produto_id_efetivo(vet)
     ajax = request.args.get("ajax")
-
     if ajax == "status":
-        return jsonify(_status_scrape_precos(protocolo))
+        cat = info_catalogo()
+        precos = vet.precos_lista()
+        tem_ok = any(p.get("ok") for p in precos)
+        if tem_ok and not cat.get("varredura_em_andamento"):
+            return jsonify(ok=True, redirect=_redirect_jornada_precos(protocolo))
+        if cat.get("varredura_em_andamento"):
+            return jsonify(ok=False, pending=True, catalogo=cat)
+        _garantir_precos_catalogo(vet, forcar_varredura=True)
+        precos = vet.precos_lista()
+        if any(p.get("ok") for p in precos):
+            return jsonify(ok=True, redirect=_redirect_jornada_precos(protocolo))
+        return jsonify(ok=False, pending=True, catalogo=info_catalogo())
 
     if ajax == "1":
-        if not playwright_disponivel():
-            return jsonify(ok=False, erro="Playwright indisponível no servidor."), 503
-        return jsonify(_iniciar_scrape_precos(protocolo, produto_id))
+        _garantir_precos_catalogo(vet, forcar_varredura=True)
+        return jsonify(ok=False, pending=True, started=True)
 
-    if not playwright_disponivel():
-        flash("Busca automática indisponível. Instale Playwright no servidor.", "error")
-        return redirect(url_for("jornada", protocolo=protocolo))
-
-    produto = vet.produto_info()
-    return render_template(
-        "public/buscando_precos.html",
-        vet=vet,
-        produto=produto,
-        protocolo=protocolo,
-    )
+    precos = _garantir_precos_catalogo(vet, forcar_varredura=request.args.get("forcar") == "1")
+    if any(p.get("ok") for p in precos):
+        flash("Preços atualizados a partir do catálogo.", "success")
+    elif info_catalogo().get("varredura_em_andamento"):
+        flash("Catálogo em atualização. Os valores aparecerão em alguns minutos.", "warning")
+    else:
+        flash("Nenhum preço encontrado para esta combinação. Varredura iniciada.", "warning")
+    return redirect(url_for("jornada", protocolo=protocolo, precos_ok=1))
 
 
 @app.route("/p/<protocolo>/etapa", methods=["POST"])
@@ -737,6 +855,33 @@ def guia():
         tipos_certificado=TIPOS_CERTIFICADO,
         tipos_nao_usar=TIPOS_NAO_USAR,
     )
+
+
+@admin_bp.route("/catalogo")
+@admin_required
+def catalogo_admin():
+    cat = info_catalogo()
+    amostra = (
+        PrecoCatalogo.query.order_by(PrecoCatalogo.atualizado_em.desc())
+        .limit(50)
+        .all()
+    )
+    return render_template(
+        "catalogo.html",
+        catalogo=cat,
+        amostra=amostra,
+        certificadoras=certificadoras_ativas(),
+    )
+
+
+@admin_bp.route("/catalogo/varredura", methods=["POST"])
+@admin_required
+def catalogo_varredura_admin():
+    if iniciar_varredura_background(app):
+        flash("Varredura de preços iniciada em background.", "success")
+    else:
+        flash("Já existe uma varredura em andamento.", "warning")
+    return redirect(url_for("admin.catalogo_admin"))
 
 
 @admin_bp.route("/dashboard")

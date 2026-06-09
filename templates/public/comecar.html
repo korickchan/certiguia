@@ -1,4 +1,5 @@
 {% extends "public/base.html" %}
+{% from "public/_macros_preferencias.html" import bloco_emissao, bloco_validade, bloco_midia_a1, bloco_midia_a3 %}
 {% block title %}Cadastro rápido{% endblock %}
 
 {% block content %}
@@ -97,8 +98,18 @@
                     <label><input type="radio" name="varios_computadores" value="nao" checked> Não, só um</label>
                     <label><input type="radio" name="varios_computadores" value="sim"> Sim, vários</label>
                 </div>
-                <p class="hint">Vários PCs → A3 (token). Um PC → A1 costuma ser mais barato.</p>
+                <p class="hint">{{ ajuda_varios_computadores }}</p>
             </div>
+        </fieldset>
+
+        <fieldset class="form-section" id="preferencias-cert">
+            <legend>Como quer emitir e guardar o certificado?</legend>
+            <p class="hint">{{ ajuda_preferencias_intro }}</p>
+
+            {{ bloco_emissao('preferencia_emissao', 'videoconferencia') }}
+            {{ bloco_validade('preferencia_validade_anos', 1) }}
+            {{ bloco_midia_a1('preferencia_midia', 'arquivo') }}
+            {{ bloco_midia_a3('preferencia_midia', 'token', hidden=true) }}
         </fieldset>
 
         <div class="form-actions">
@@ -154,6 +165,29 @@ function atualizarCampoCnpj() {
 if (cnpj) cnpj.addEventListener('input', e => { e.target.value = maskCNPJ(e.target.value); });
 emiteRadios.forEach(r => r.addEventListener('change', atualizarCampoCnpj));
 atualizarCampoCnpj();
+
+const variosRadios = document.querySelectorAll('input[name="varios_computadores"]');
+const midiaA1Wrap = document.getElementById('midia-a1-wrap');
+const midiaA3Wrap = document.getElementById('midia-a3-wrap');
+
+function atualizarMidiaPorTipo() {
+    const varios = document.querySelector('input[name="varios_computadores"]:checked')?.value === 'sim';
+    if (midiaA1Wrap) midiaA1Wrap.style.display = varios ? 'none' : '';
+    if (midiaA3Wrap) midiaA3Wrap.style.display = varios ? '' : 'none';
+    document.querySelectorAll('[data-midia-a1]').forEach(el => { el.disabled = varios; });
+    document.querySelectorAll('[data-midia-a3]').forEach(el => { el.disabled = !varios; });
+    if (!varios) {
+        if (!document.querySelector('[data-midia-a1]:checked')) {
+            const arq = document.querySelector('[data-midia-a1][value="arquivo"]');
+            if (arq) arq.checked = true;
+        }
+    } else if (!document.querySelector('[data-midia-a3]:checked')) {
+        const tok = document.querySelector('[data-midia-a3][value="token"]');
+        if (tok) tok.checked = true;
+    }
+}
+variosRadios.forEach(r => r.addEventListener('change', atualizarMidiaPorTipo));
+atualizarMidiaPorTipo();
 
 const form = document.querySelector('.form-cadastro');
 if (form) {

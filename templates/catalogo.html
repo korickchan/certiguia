@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Catálogo de preços{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Catálogo de preços</h1>
+    <div class="header-actions">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline">← Dashboard</a>
+        <form method="post" action="{{ url_for('admin.catalogo_varredura_admin') }}" style="display:inline">
+            <button type="submit" class="btn btn-primary">Varredura agora</button>
+        </form>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <span class="stat-num">{{ catalogo.total_itens }}</span>
+        <span class="stat-label">Itens no catálogo</span>
+    </div>
+    <div class="stat-card stat-info">
+        <span class="stat-num">{% if catalogo.intervalo_dias >= 1 %}{{ catalogo.intervalo_dias|int }}d{% else %}{{ catalogo.intervalo_horas }}h{% endif %}</span>
+        <span class="stat-label">Intervalo de atualização</span>
+    </div>
+    <div class="stat-card {% if catalogo.precisa_atualizar %}stat-warning{% else %}stat-success{% endif %}">
+        <span class="stat-num">{{ catalogo.status }}</span>
+        <span class="stat-label">Status</span>
+    </div>
+</div>
+
+<section class="section">
+    <p>
+        {% if catalogo.ultima_varredura %}
+        Última varredura concluída em <strong>{{ catalogo.ultima_varredura.strftime('%d/%m/%Y %H:%M') }} UTC</strong>.
+        {% else %}
+        Nenhuma varredura concluída ainda.
+        {% endif %}
+        {% if catalogo.varredura_em_andamento %}
+        <span class="badge badge-yellow">Varredura em andamento…</span>
+        {% elif catalogo.precisa_atualizar %}
+        <span class="badge badge-yellow">Desatualizado — será atualizado automaticamente</span>
+        {% endif %}
+    </p>
+    <p class="text-muted">
+        O usuário vê preços filtrados instantaneamente (produto, mídia, videoconferência, validade).
+        A varredura roda em background a cada
+        {% if catalogo.intervalo_dias >= 1 %}{{ catalogo.intervalo_dias|int }} dia(s){% else %}{{ catalogo.intervalo_horas }} horas{% endif %}
+        ou ao clicar em «Varredura agora».
+    </p>
+</section>
+
+<section class="section">
+    <h2>Amostra recente (50 itens)</h2>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Certificadora</th>
+                    <th>Produto</th>
+                    <th>Mídia</th>
+                    <th>Emissão</th>
+                    <th>Validade</th>
+                    <th>Preço</th>
+                    <th>Atualizado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in amostra %}
+                <tr>
+                    <td>{{ certificadoras[row.certificadora].nome if row.certificadora in certificadoras else row.certificadora }}</td>
+                    <td>{{ row.produto_tipo }} {{ row.armazenamento }} ({{ row.categoria }})</td>
+                    <td>{{ row.midia or '—' }}</td>
+                    <td>{{ row.emissao or '—' }}</td>
+                    <td>{{ row.validade_anos }} ano(s)</td>
+                    <td>R$ {{ '%.2f'|format(row.preco)|replace('.', ',') }}</td>
+                    <td>{{ row.atualizado_em.strftime('%d/%m/%Y %H:%M') if row.atualizado_em else '—' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="empty">Catálogo vazio. Clique em «Varredura agora».</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

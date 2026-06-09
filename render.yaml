@@ -23,4 +23,8 @@ services:
         value: certisign
       - key: GUNICORN_TIMEOUT
         value: "300"
+      - key: CATALOGO_PRECOS_HORAS
+        value: "168"
+      - key: CATALOGO_VARREDURA_INICIO
+        value: "1"
       # Sem DATABASE_URL → SQLite (cadastros podem resetar se o Render reiniciar o container)

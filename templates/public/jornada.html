@@ -1,4 +1,5 @@
 {% extends "public/base.html" %}
+{% from "public/_macros_preferencias.html" import bloco_emissao, bloco_validade, bloco_midia_tipo_arm %}
 
 {% block title %}Seu guia — {{ vet.protocolo }}{% endblock %}
 
@@ -127,11 +128,28 @@
             <option value="{{ pid }}" {% if produto_atual == pid %}selected{% endif %}>{{ p.nome }}</option>
             {% endfor %}
         </select>
-        <p class="hint">Ao trocar o tipo, os preços são buscados novamente nas certificadoras (pode levar alguns minutos).</p>
+        <p class="hint">Ao trocar o tipo, os preços são recarregados do catálogo (instantâneo).</p>
     </form>
 
     {% endif %}
 
+</section>
+
+
+
+<section class="public-card preferencias-precos">
+    <h2>Preferências para comparar preços</h2>
+    <p class="hint">{{ ajuda_preferencias_intro }}</p>
+    <form method="post" action="{{ url_for('atualizar_preferencias_publico', protocolo=vet.protocolo) }}" class="form-preferencias">
+        {{ bloco_emissao('preferencia_emissao', vet.preferencia_emissao or 'videoconferencia') }}
+        <div class="form-row two-cols preferencias-cols">
+            <div>{{ bloco_validade('preferencia_validade_anos', vet.preferencia_validade_anos or 1) }}</div>
+            <div>{{ bloco_midia_tipo_arm('preferencia_midia', tipo_arm, vet.preferencia_midia or ('token' if tipo_arm == 'A3' else 'arquivo')) }}</div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-sm btn-primary">Aplicar e atualizar preços</button>
+        </div>
+    </form>
 </section>
 
 
@@ -142,11 +160,7 @@
 
         <h2>{% if cert_escolhida %}Certificadora escolhida{% else %}Escolha a certificadora{% endif %}</h2>
 
-        {% if playwright_ok %}
-
-        <a href="{{ url_for('atualizar_precos_publico', protocolo=vet.protocolo) }}" class="btn btn-sm">{% if precos %}Atualizar preços{% else %}Buscar preços de {{ produto.nome if produto else 'certificado' }}{% endif %}</a>
-
-        {% endif %}
+        <a href="{{ url_for('atualizar_precos_publico', protocolo=vet.protocolo, forcar=1) }}" class="btn btn-sm">{% if precos %}Atualizar preços{% else %}Buscar preços{% endif %}</a>
 
     </div>
 
@@ -188,8 +202,17 @@
 
     {% if precos %}
 
-    <p class="hint icp-nota">Preços para <strong>{{ produto.nome if produto else produtos[produto_atual].nome }}</strong>.
-        Busca assume <strong>videoconferência</strong> e <strong>validade 1 ano</strong>. Confira o valor final no site antes de comprar.</p>
+    <p class="hint icp-nota">Preços para <strong>{{ produto.nome if produto else produtos[produto_atual].nome }}</strong>
+        — critérios: <strong>{{ filtro_precos.rotulo() }}</strong>.
+        {% if catalogo.ultima_varredura %}
+        Catálogo atualizado em {{ catalogo.ultima_varredura.strftime('%d/%m/%Y %H:%M') }}.
+        {% endif %}
+        {% if catalogo.varredura_em_andamento %}
+        <span class="badge-melhor">Atualizando catálogo…</span>
+        {% elif catalogo.precisa_atualizar %}
+        Valores podem estar desatualizados — nova varredura em background.
+        {% endif %}
+        Confira o valor final no site antes de comprar.</p>
 
     <form method="post" action="{{ url_for('escolher_certificadora', protocolo=vet.protocolo) }}" class="cert-picker">
 
@@ -227,7 +250,13 @@
 
     {% else %}
 
-    <p class="text-muted">{% if playwright_ok %}Clique em «Buscar preços» para comparar valores.{% else %}Instalação do Playwright necessária no servidor para busca automática de preços.{% endif %}</p>
+    <p class="text-muted">
+        {% if catalogo.varredura_em_andamento %}
+        Catálogo em atualização — os preços aparecerão em alguns minutos. Você pode recarregar a página.
+        {% else %}
+        Nenhum preço no catálogo para esta combinação. Clique em «Buscar preços» ou aguarde a varredura automática.
+        {% endif %}
+    </p>
 
     <form method="post" action="{{ url_for('escolher_certificadora', protocolo=vet.protocolo) }}" class="cert-picker">
 

@@ -1,0 +1,82 @@
+{# Macros para opções de certificado com explicação ao usuário #}
+
+{% macro opcao_radio(name, value, label, explicacao, checked=false, disabled=false, extra_class='', extra_attrs='') %}
+<label class="opcao-item{% if disabled %} is-disabled{% endif %} {{ extra_class }}">
+    <span class="opcao-top">
+        <input type="radio" name="{{ name }}" value="{{ value }}"
+               {% if checked %}checked{% endif %}
+               {% if disabled %}disabled{% endif %}
+               {{ extra_attrs|safe }}>
+        <span class="opcao-label">{{ label }}</span>
+    </span>
+    <p class="opcao-desc">{{ explicacao }}</p>
+</label>
+{% endmacro %}
+
+{% macro bloco_emissao(name, valor_atual='videoconferencia') %}
+<div class="form-row opcao-bloco">
+    <span class="label">Tipo de emissão *</span>
+    <div class="radio-group vertical opcao-lista">
+        {% for val, label in opcoes_emissao %}
+        {{ opcao_radio(name, val, label, ajuda_emissao[val], checked=(valor_atual == val)) }}
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro bloco_validade(name, valor_atual=1) %}
+<div class="form-row opcao-bloco">
+    <label for="{{ name }}">Validade desejada *</label>
+    <select id="{{ name }}" name="{{ name }}">
+        {% for anos in opcoes_validade %}
+        <option value="{{ anos }}" {% if valor_atual == anos %}selected{% endif %}>{{ anos }} ano{% if anos > 1 %}s{% endif %}</option>
+        {% endfor %}
+    </select>
+    <p class="hint opcao-bloco-hint">{{ ajuda_validade }}</p>
+</div>
+{% endmacro %}
+
+{% macro bloco_midia_a1(name, valor_atual='arquivo', wrap_id='midia-a1-wrap', hidden=false) %}
+<div class="form-row opcao-bloco" id="{{ wrap_id }}"{% if hidden %} style="display:none"{% endif %}>
+    <span class="label">Formato A1 (um computador) *</span>
+    <p class="hint opcao-bloco-hint">{{ ajuda_secao_a1 }}</p>
+    <div class="radio-group vertical opcao-lista">
+        {% for val, label in opcoes_midia_a1 %}
+        {{ opcao_radio(name, val, label, ajuda_midia_a1[val], checked=(valor_atual == val), extra_class='', extra_attrs='data-midia-a1') }}
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro bloco_midia_a3(name, valor_atual='token', wrap_id='midia-a3-wrap', hidden=true) %}
+<div class="form-row opcao-bloco" id="{{ wrap_id }}"{% if hidden %} style="display:none"{% endif %}>
+    <span class="label">Formato A3 (vários computadores) *</span>
+    <p class="hint opcao-bloco-hint">{{ ajuda_secao_a3 }}</p>
+    <div class="radio-group vertical opcao-lista">
+        {% for val, label in opcoes_midia_a3 %}
+        {{ opcao_radio(name, val, label, ajuda_midia_a3[val], checked=(valor_atual == val), disabled=hidden, extra_attrs='data-midia-a3') }}
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro bloco_midia_tipo_arm(name, tipo_arm, valor_atual) %}
+<div class="form-row opcao-bloco">
+    <span class="label">Mídia / formato ({{ tipo_arm }})</span>
+    {% if tipo_arm == 'A3' %}
+    <p class="hint opcao-bloco-hint">{{ ajuda_secao_a3 }}</p>
+    <div class="radio-group vertical opcao-lista">
+        {% for val, label in opcoes_midia_a3 %}
+        {{ opcao_radio(name, val, label, ajuda_midia_a3[val], checked=(valor_atual == val)) }}
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="hint opcao-bloco-hint">{{ ajuda_secao_a1 }}</p>
+    <div class="radio-group vertical opcao-lista">
+        {% for val, label in opcoes_midia_a1 %}
+        {{ opcao_radio(name, val, label, ajuda_midia_a1[val], checked=(valor_atual == val)) }}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
