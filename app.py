@@ -48,6 +48,7 @@ from catalogo_precos import (
     OPCOES_VALIDADE,
     aplicar_precos_catalogo_vet,
     catalogo_precisa_atualizar,
+    complementar_catalogo_fixos,
     filtros_de_vet,
     info_catalogo,
     iniciar_varredura_background,
@@ -450,6 +451,7 @@ with app.app_context():
     from catalogo_precos import importar_catalogo_seed
 
     importar_catalogo_seed()
+    complementar_catalogo_fixos()
     if os.getenv("CATALOGO_VARREDURA_INICIO", "1") == "1":
         if PrecoCatalogo.query.count() == 0 or catalogo_precisa_atualizar():
             iniciar_varredura_background(app)
@@ -512,20 +514,11 @@ def index():
 @app.route("/comecar", methods=["GET", "POST"])
 def comecar():
     if request.method == "POST":
-        nome = request.form.get("nome_completo", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        whatsapp = request.form.get("whatsapp", "").strip()
-        cpf = request.form.get("cpf", "").strip()
-
-        if not all([nome, email, whatsapp, cpf]):
-            flash("Preencha nome, e-mail, WhatsApp e CPF.", "error")
-            return render_template(
-                "public/comecar.html",
-                estados=ESTADOS_BR,
-                profissoes=PROFISSOES,
-                finalidades=FINALIDADES,
-                **_ctx_preferencias(),
-            )
+        protocolo_prev = Veterinario.gerar_protocolo()
+        nome = request.form.get("nome_completo", "").strip() or "Profissional"
+        email = request.form.get("email", "").strip().lower() or f"{protocolo_prev.lower()}@guia.local"
+        whatsapp = request.form.get("whatsapp", "").strip() or "—"
+        cpf = request.form.get("cpf", "").strip() or "000.000.000-00"
 
         eh_vet = request.form.get("eh_veterinario") == "sim"
         profissao = request.form.get("profissao", "outro").strip()
@@ -636,6 +629,10 @@ def jornada(protocolo):
         )
         rec_secundario = rec.get("secundario")
         rec_observacoes = rec.get("observacoes") or []
+        if vet.produto_recomendado != rec["produto_id"]:
+            _aplicar_recomendacao(vet, rec)
+            vet.precos_json = None
+            db.session.commit()
         sec_id = rec["secundario"]["id"] if rec.get("secundario") else None
         produtos_cmp = produtos_comparacao(
             rec["produto_id"],
@@ -696,6 +693,7 @@ def jornada(protocolo):
         precos_ok=request.args.get("precos_ok") == "1",
         filtro_precos=filtro_precos,
         catalogo=catalogo,
+        finalidades=FINALIDADES,
     )
 
 

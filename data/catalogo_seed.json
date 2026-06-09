@@ -1400,6 +1400,48 @@
       "url": "https://digitalsigncertificadora.com.br/",
       "observacao": "DigitalSign — e-CPF A3 nuvem (texto da página).",
       "fonte": "digitalsign_playwright"
+    },
+    {
+      "chave": "certisign|e-CPF|A1|pf|mobileid|videoconferencia|1",
+      "certificadora": "certisign",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A1",
+      "midia": "mobileid",
+      "emissao": "videoconferencia",
+      "validade_anos": 1,
+      "preco": 186.9,
+      "url": "https://certisign.com.br/monte-seu-certificado-digital",
+      "observacao": "Certisign — e-CPF A1 MobileID (celular/tablet), 12 meses.",
+      "fonte": "fixo_mobileid"
+    },
+    {
+      "chave": "soluti|e-CPF|A1|pf|mobileid|videoconferencia|1",
+      "certificadora": "soluti",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A1",
+      "midia": "mobileid",
+      "emissao": "videoconferencia",
+      "validade_anos": 1,
+      "preco": 162.0,
+      "url": "https://www.soluti.com.br/certificado-digital/a1/",
+      "observacao": "Soluti — e-CPF A1 MobileID (app no celular), referência de mercado.",
+      "fonte": "fixo_mobileid"
+    },
+    {
+      "chave": "valid|e-CPF|A1|pf|mobileid|videoconferencia|1",
+      "certificadora": "valid",
+      "produto_tipo": "e-CPF",
+      "categoria": "pf",
+      "armazenamento": "A1",
+      "midia": "mobileid",
+      "emissao": "videoconferencia",
+      "validade_anos": 1,
+      "preco": 155.0,
+      "url": "https://validcertificadora.com.br/",
+      "observacao": "Valid — e-CPF A1 via app Valid Credentials (MobileID). Confira no site.",
+      "fonte": "fixo_mobileid"
     }
   ]
 }

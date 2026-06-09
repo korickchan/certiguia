@@ -79,6 +79,23 @@ def _armazenamento_recomendado(
     return "A1"
 
 
+def _observacoes_resumidas(observacoes: list[str], *, preferencia_midia: str | None = None) -> list[str]:
+    """Evita repetir o mesmo aviso na tela de resultado."""
+    vistos: set[str] = set()
+    out: list[str] = []
+    for obs in observacoes:
+        chave = obs.strip().lower()[:96]
+        if chave in vistos:
+            continue
+        vistos.add(chave)
+        if preferencia_midia == "mobileid" and "certificado em nuvem" in chave:
+            continue
+        if preferencia_midia == "nuvem" and "mobileid" in chave and "prefira" in chave:
+            continue
+        out.append(obs.strip())
+    return out[:2]
+
+
 def recomendar(
     *,
     profissao="outro",
@@ -167,7 +184,7 @@ def recomendar(
         "produto": produto,
         "tipo_armazenamento": armazenamento,
         "motivo": motivo,
-        "observacoes": observacoes,
+        "observacoes": _observacoes_resumidas(observacoes, preferencia_midia=preferencia_midia),
         "secundario": PRODUTOS.get(secundario) if secundario else None,
     }
 

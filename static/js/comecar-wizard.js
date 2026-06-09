@@ -10,10 +10,9 @@
     const progressBar = document.getElementById("wizard-progress-bar");
     const stepLabel = document.getElementById("wizard-step-label");
     const variosHidden = document.getElementById("varios_computadores_hidden");
-    const cnpjWrap = document.getElementById("cnpj-wrap");
-    const cnpj = document.getElementById("cnpj");
-    const profSel = form.querySelector('input[name="profissao"]:checked');
-    const lblRegistro = document.getElementById("label-registro");
+    const cnpjWrap = document.getElementById("cnpj-wizard-wrap");
+    const cnpjInput = document.getElementById("cnpj_input");
+    const cnpjHidden = document.getElementById("cnpj");
 
     let stepIndex = 0;
 
@@ -67,16 +66,10 @@
 
     function syncCnpj() {
         const precisa = emiteComo() === "pj" || emiteComo() === "ambos";
-        if (cnpjWrap) cnpjWrap.style.display = precisa ? "" : "none";
-        if (cnpj) cnpj.required = precisa;
-    }
-
-    function syncRegistroLabel() {
-        const key = form.querySelector('input[name="profissao"]:checked')?.value || "outro";
-        const p = (cfg.profissoes || {})[key];
-        if (lblRegistro) {
-            lblRegistro.textContent = (p ? p.registro : "Registro") + " (opcional)";
-        }
+        if (cnpjWrap) cnpjWrap.hidden = !precisa;
+        if (cnpjInput) cnpjInput.required = precisa;
+        if (!precisa && cnpjHidden) cnpjHidden.value = "";
+        else if (cnpjHidden && cnpjInput) cnpjHidden.value = cnpjInput.value;
     }
 
     function maskCNPJ(value) {
@@ -132,7 +125,6 @@
 
         syncMidiaOculta();
         syncCnpj();
-        syncRegistroLabel();
 
         document.querySelectorAll(".wizard-opcao").forEach((el) => {
             el.classList.toggle("is-selected", !!el.querySelector("input:checked"));
@@ -146,11 +138,26 @@
             form.reportValidity();
             return;
         }
+        if (panel?.dataset.step === "titular" && !validarTitularCnpj()) {
+            return;
+        }
         if (stepIndex < visiveis.length - 1) {
             stepIndex += 1;
             atualizarUI();
             panelAtivo()?.scrollIntoView({ behavior: "smooth", block: "start" });
         }
+    }
+
+    function validarTitularCnpj() {
+        const precisa = emiteComo() === "pj" || emiteComo() === "ambos";
+        if (!precisa) return true;
+        const digits = (cnpjInput?.value || "").replace(/\D/g, "");
+        if (digits.length === 14) {
+            if (cnpjHidden) cnpjHidden.value = cnpjInput.value;
+            return true;
+        }
+        cnpjInput?.focus();
+        return false;
     }
 
     function voltar() {
@@ -176,10 +183,6 @@
         r.addEventListener("change", syncCnpj);
     });
 
-    form.querySelectorAll('input[name="profissao"]').forEach((r) => {
-        r.addEventListener("change", syncRegistroLabel);
-    });
-
     form.querySelectorAll(".wizard-opcao input").forEach((inp) => {
         inp.addEventListener("change", () => {
             document.querySelectorAll(".wizard-opcao").forEach((el) => {
@@ -188,9 +191,10 @@
         });
     });
 
-    if (cnpj) {
-        cnpj.addEventListener("input", (e) => {
+    if (cnpjInput) {
+        cnpjInput.addEventListener("input", (e) => {
             e.target.value = maskCNPJ(e.target.value);
+            if (cnpjHidden) cnpjHidden.value = e.target.value;
         });
     }
 
@@ -199,6 +203,7 @@
 
     form.addEventListener("submit", () => {
         syncMidiaOculta();
+        syncCnpj();
         if (btnSubmit) {
             btnSubmit.disabled = true;
             btnSubmit.textContent = "Montando sua recomendação…";
@@ -211,6 +216,6 @@
     });
     panels[0].style.display = "";
 
-    syncRegistroLabel();
+    syncCnpj();
     atualizarUI();
 })();

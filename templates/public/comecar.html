@@ -96,9 +96,12 @@
                     <p class="opcao-desc">{{ ajuda_emite_como.ambos }}</p>
                 </label>
             </div>
+            <div class="form-row" id="cnpj-wizard-wrap" hidden>
+                <label for="cnpj_input">CNPJ da clínica/empresa *</label>
+                <input type="text" id="cnpj_input" placeholder="00.000.000/0000-00" autocomplete="off">
+                <p class="hint">Necessário para emitir documentos em nome da empresa.</p>
+            </div>
         </section>
-
-        {# ── Passo 5: Formato celular (só se escolheu celular) ── #}
         <section class="wizard-panel" data-step="formato" data-required="input[name=preferencia_midia]" data-skip-unless="onde:celular">
             <h2 class="wizard-question">{{ pergunta_wizard.formato }}</h2>
             <p class="wizard-context">{{ contexto_wizard.formato }}</p>
@@ -136,60 +139,9 @@
             </div>
         </section>
 
-        {# ── Passo 7: Dados ── #}
-        <section class="wizard-panel" data-step="dados">
-            <h2 class="wizard-question">{{ pergunta_wizard.dados }}</h2>
-            <p class="wizard-context">{{ contexto_wizard.dados }}</p>
-            <div class="wizard-dados-grid">
-                <div class="form-row">
-                    <label for="nome_completo">Nome completo *</label>
-                    <input type="text" id="nome_completo" name="nome_completo" required>
-                </div>
-                <div class="form-row two-cols">
-                    <div>
-                        <label for="cpf">CPF *</label>
-                        <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
-                    </div>
-                    <div id="cnpj-wrap" style="display:none">
-                        <label for="cnpj">CNPJ da clínica/empresa *</label>
-                        <input type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00">
-                    </div>
-                </div>
-                <div class="form-row two-cols">
-                    <div>
-                        <label for="email">E-mail *</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div>
-                        <label for="whatsapp">WhatsApp *</label>
-                        <input type="tel" id="whatsapp" name="whatsapp" placeholder="(71) 99999-9999" required>
-                    </div>
-                </div>
-                <div class="form-row two-cols">
-                    <div>
-                        <label for="registro_profissional" id="label-registro">Registro profissional</label>
-                        <input type="text" id="registro_profissional" name="registro_profissional" placeholder="Opcional">
-                    </div>
-                    <div>
-                        <label for="registro_uf">UF</label>
-                        <select id="registro_uf" name="registro_uf">
-                            <option value="">—</option>
-                            {% for uf in estados %}
-                            <option value="{{ uf }}">{{ uf }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <label for="sistema_receituario">Sistema de receituário (se já usa)</label>
-                    <input type="text" id="sistema_receituario" name="sistema_receituario"
-                           placeholder="Ex.: VetSoft, Memed, iClinic… (opcional)">
-                </div>
-            </div>
-            <p class="wizard-final-note">Na próxima tela você verá <strong>qual certificado combina com você</strong> e os <strong>preços por certificadora</strong>.</p>
-        </section>
+        {# CNPJ inline quando PJ (sem etapa de cadastro) #}
+        <input type="hidden" name="cnpj" id="cnpj" value="">
 
-        {# Preferências derivadas (não perguntamos ao usuário neste fluxo) #}
         <input type="hidden" name="preferencia_validade_anos" value="1">
 
         <div class="wizard-nav">

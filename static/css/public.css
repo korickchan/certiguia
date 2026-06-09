@@ -346,6 +346,22 @@
 }
 .jornada-etapa-precos[hidden] { display: none !important; }
 
+.recomendacao-box--compact .recomendacao-produto {
+    font-family: 'Fraunces', serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0 0 0.35rem;
+}
+.obs-list--compact { margin-top: 0.75rem; }
+.jornada-header--compact h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+.progress-tracker--compact { margin: 1.5rem 0; }
+details.preferencias-precos summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 0.25rem 0;
+}
+details.preferencias-precos[open] summary { margin-bottom: 1rem; }
+
 .public-body .form-section {
     background: #fafbfc;
     border: 1px solid var(--pub-border);

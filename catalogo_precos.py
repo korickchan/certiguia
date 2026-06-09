@@ -725,6 +725,8 @@ def consultar_catalogo(filtro: FiltroPreco) -> list[dict]:
         moveis = _consultar_catalogo_midias_moveis(filtro)
         if moveis:
             return moveis
+        if filtro.midia == "mobileid":
+            return []
 
     rows = (
         _PrecoCatalogo.query.filter_by(
@@ -805,6 +807,72 @@ def aplicar_precos_catalogo_vet(vet, db_session) -> list[dict]:
 
 
 SEED_PATH = os.path.join(os.path.dirname(__file__), "data", "catalogo_seed.json")
+
+# Preços MobileID — upsert na subida (varredura automática não captura bem)
+ITENS_FIXOS_CATALOGO = [
+    {
+        "certificadora": "certisign",
+        "produto_tipo": "e-CPF",
+        "categoria": "pf",
+        "armazenamento": "A1",
+        "midia": "mobileid",
+        "emissao": "videoconferencia",
+        "validade_anos": 1,
+        "preco": 186.90,
+        "url": "https://certisign.com.br/monte-seu-certificado-digital",
+        "observacao": "Certisign — e-CPF A1 MobileID (celular/tablet), 12 meses.",
+        "fonte": "fixo_mobileid",
+    },
+    {
+        "certificadora": "soluti",
+        "produto_tipo": "e-CPF",
+        "categoria": "pf",
+        "armazenamento": "A1",
+        "midia": "mobileid",
+        "emissao": "videoconferencia",
+        "validade_anos": 1,
+        "preco": 162.00,
+        "url": "https://www.soluti.com.br/certificado-digital/a1/",
+        "observacao": "Soluti — e-CPF A1 MobileID (app no celular), referência de mercado.",
+        "fonte": "fixo_mobileid",
+    },
+    {
+        "certificadora": "valid",
+        "produto_tipo": "e-CPF",
+        "categoria": "pf",
+        "armazenamento": "A1",
+        "midia": "mobileid",
+        "emissao": "videoconferencia",
+        "validade_anos": 1,
+        "preco": 155.00,
+        "url": "https://validcertificadora.com.br/",
+        "observacao": "Valid — e-CPF A1 via app Valid Credentials (MobileID). Confira no site.",
+        "fonte": "fixo_mobileid",
+    },
+]
+
+
+def complementar_catalogo_fixos() -> int:
+    """Garante itens fixos (ex.: MobileID) mesmo com catálogo já populado."""
+    n = 0
+    for item in ITENS_FIXOS_CATALOGO:
+        _upsert_preco(
+            certificadora=item["certificadora"],
+            produto_tipo=item["produto_tipo"],
+            categoria=item["categoria"],
+            armazenamento=item["armazenamento"],
+            midia=item["midia"],
+            emissao=item["emissao"],
+            validade_anos=item["validade_anos"],
+            preco=item["preco"],
+            url=item["url"],
+            observacao=item["observacao"],
+            fonte=item["fonte"],
+        )
+        n += 1
+    if n:
+        _db.session.commit()
+    return n
 
 
 def exportar_catalogo_seed(caminho: str | None = None) -> int:
