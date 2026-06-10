@@ -87,3 +87,22 @@ def salvar_guia(profissao, software_id, formato, markdown: str):
 `advogado`, `veterinario`, `medico`, `dentista`, `contador`, `farmaceutico`, `outro`
 
 Use `outro` como software genérico quando não houver guia dedicado.
+
+## Principais SaaS por ramo (catálogo)
+
+| Profissão | Softwares no picker |
+|-----------|---------------------|
+| Advogado | Projuris, Astrea, CPJ-3C, Legal One, ADVBox, eJus |
+| Veterinário | Prescreve, **Simples Vet**, VetSoft, OneVet, Smart Vet |
+| Médico | Memed, iClinic, Amplimed, Shosp, Doctoralia |
+| Dentista | Simples Dental, Clinicorp, Dental Office, DentalPro |
+| Contador | Domínio, Alterdata, Conta Azul, FortCont, Omie, SCI |
+| Farmacêutico | Trier, Prisma/FarmaFácil, Sofista, Hiper |
+| Outra profissão | **Dietbox** (nutricionista), Navegador/Gov.br, Outro |
+
+Campo `fontes` em cada software (quando preenchido) alimenta `scripts/varredura_instalacao.py`.
+
+```bash
+python scripts/varredura_instalacao.py --profissao veterinario --software simples_vet
+python scripts/varredura_instalacao.py --dry-run
+```

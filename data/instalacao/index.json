@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "formatos": {
     "a1-arquivo": {
       "rotulo": "A1 em arquivo (.pfx) no computador",
@@ -43,16 +43,42 @@
         {
           "id": "projuris",
           "nome": "Projuris",
-          "formatos": ["a1-arquivo", "a3-nuvem", "a3-token"]
+          "site": "https://www.projuris.com.br",
+          "formatos": ["a1-arquivo", "a3-nuvem", "a3-token"],
+          "fontes": {
+            "a1-arquivo": "https://projurisadv.atlassian.net/wiki/spaces/BDC/pages/4369874957/Cofre+de+Certificados+Digitais+como+cadastrar+e+vincular+certificados+no+Projuris+ADV",
+            "a3-nuvem": "https://www.projuris.com.br/blog/certificado-digital/",
+            "a3-token": "https://projurisadv.atlassian.net/wiki/spaces/BDC/pages/3606970369/Projuris+Peticiona+-+Como+fazer+as+configura+es+iniciais"
+          }
         },
         {
           "id": "astrea",
           "nome": "Astrea (Aurum)",
+          "site": "https://www.aurum.com.br/astrea/",
           "formatos": ["a1-arquivo", "a3-nuvem"]
         },
         {
           "id": "cpj",
           "nome": "CPJ-3C",
+          "site": "https://www.dominio.com.br/cpj/",
+          "formatos": ["a1-arquivo", "a3-token"]
+        },
+        {
+          "id": "legal_one",
+          "nome": "Legal One (Thomson Reuters)",
+          "site": "https://legal.thomsonreuters.com.br/",
+          "formatos": ["a1-arquivo", "a3-token"]
+        },
+        {
+          "id": "advbox",
+          "nome": "ADVBox",
+          "site": "https://www.advbox.com.br/",
+          "formatos": ["a1-arquivo", "a3-nuvem"]
+        },
+        {
+          "id": "ejus",
+          "nome": "eJus",
+          "site": "https://www.ejus.com.br/",
           "formatos": ["a1-arquivo", "a3-token"]
         },
         {
@@ -67,11 +93,40 @@
         {
           "id": "prescreve",
           "nome": "Prescreve / VetPrescriber",
-          "formatos": ["a1-arquivo", "a3-nuvem", "a1-mobileid"]
+          "site": "https://www.prescreve.com.br/",
+          "formatos": ["a1-arquivo", "a3-nuvem", "a1-mobileid"],
+          "fontes": {
+            "a1-arquivo": "https://www.prescreve.com.br/",
+            "a3-nuvem": "https://www.prescreve.com.br/",
+            "a1-mobileid": "https://www.prescreve.com.br/"
+          }
+        },
+        {
+          "id": "simples_vet",
+          "nome": "Simples Vet",
+          "site": "https://simples.vet/",
+          "formatos": ["a1-arquivo", "a3-token"],
+            "fontes": {
+            "a1-arquivo": "https://suporte.simples.vet/pt-BR/articles/1982298-como-fazer-ou-renovar-seu-certificado-digital-a1-e-cnpj-ou-nf-e",
+            "a3-token": "https://simples.vet/blog/financeiro/diferenca-certificado-a1-e-a3/"
+          }
         },
         {
           "id": "vetsoft",
           "nome": "VetSoft",
+          "site": "https://www.vetsoft.com.br/",
+          "formatos": ["a1-arquivo", "a3-token"]
+        },
+        {
+          "id": "onevet",
+          "nome": "OneVet",
+          "site": "https://onevet.com.br/",
+          "formatos": ["a1-arquivo", "a3-nuvem"]
+        },
+        {
+          "id": "smartvet",
+          "nome": "Smart Vet",
+          "site": "https://www.smartvet.com.br/",
           "formatos": ["a1-arquivo", "a3-token"]
         },
         {
@@ -86,12 +141,37 @@
         {
           "id": "memed",
           "nome": "Memed",
-          "formatos": ["a1-arquivo", "a3-nuvem", "a1-mobileid"]
+          "site": "https://www.memed.com.br/",
+          "formatos": ["a1-arquivo", "a3-nuvem", "a1-mobileid"],
+          "fontes": {
+            "a1-arquivo": "https://ajuda.memed.com.br/",
+            "a3-nuvem": "https://ajuda.memed.com.br/",
+            "a1-mobileid": "https://ajuda.memed.com.br/"
+          }
         },
         {
           "id": "iclinic",
           "nome": "iClinic",
+          "site": "https://www.iclinic.com.br/",
           "formatos": ["a1-arquivo", "a3-nuvem"]
+        },
+        {
+          "id": "amplimed",
+          "nome": "Amplimed",
+          "site": "https://www.amplimed.com.br/",
+          "formatos": ["a1-arquivo", "a3-nuvem", "a1-mobileid"]
+        },
+        {
+          "id": "shosp",
+          "nome": "Shosp",
+          "site": "https://www.shosp.com.br/",
+          "formatos": ["a1-arquivo", "a3-nuvem"]
+        },
+        {
+          "id": "doctoralia",
+          "nome": "Doctoralia",
+          "site": "https://www.doctoralia.com.br/",
+          "formatos": ["a1-arquivo", "a1-mobileid"]
         },
         {
           "id": "outro",
@@ -105,6 +185,29 @@
         {
           "id": "simples_dental",
           "nome": "Simples Dental",
+          "site": "https://www.simplesdental.com/",
+          "formatos": ["a1-arquivo", "a3-nuvem"],
+          "fontes": {
+            "a1-arquivo": "https://ajuda.simplesdental.com/",
+            "a3-nuvem": "https://ajuda.simplesdental.com/"
+          }
+        },
+        {
+          "id": "clinicorp",
+          "nome": "Clinicorp",
+          "site": "https://www.clinicorp.com/",
+          "formatos": ["a1-arquivo", "a3-nuvem"]
+        },
+        {
+          "id": "dental_office",
+          "nome": "Dental Office",
+          "site": "https://www.dentaloffice.com.br/",
+          "formatos": ["a1-arquivo", "a3-token"]
+        },
+        {
+          "id": "dentalpro",
+          "nome": "DentalPro",
+          "site": "https://www.dentalpro.com.br/",
           "formatos": ["a1-arquivo", "a3-nuvem"]
         },
         {
@@ -119,6 +222,37 @@
         {
           "id": "dominio",
           "nome": "Domínio / Thomson Reuters",
+          "site": "https://www.dominio.com.br/",
+          "formatos": ["a1-arquivo", "a3-token", "a3-cartao"]
+        },
+        {
+          "id": "alterdata",
+          "nome": "Alterdata",
+          "site": "https://www.alterdata.com.br/",
+          "formatos": ["a1-arquivo", "a3-token", "a3-cartao"]
+        },
+        {
+          "id": "contazul",
+          "nome": "Conta Azul",
+          "site": "https://contaazul.com/",
+          "formatos": ["a1-arquivo", "a3-nuvem"]
+        },
+        {
+          "id": "fortcont",
+          "nome": "FortCont / Fortes",
+          "site": "https://www.fortestecnologia.com.br/",
+          "formatos": ["a1-arquivo", "a3-token"]
+        },
+        {
+          "id": "omie",
+          "nome": "Omie",
+          "site": "https://www.omie.com.br/",
+          "formatos": ["a1-arquivo", "a3-nuvem"]
+        },
+        {
+          "id": "sci",
+          "nome": "SCI Visual / Contábil",
+          "site": "https://www.sci.com.br/",
           "formatos": ["a1-arquivo", "a3-token", "a3-cartao"]
         },
         {
@@ -131,14 +265,51 @@
     "farmaceutico": {
       "softwares": [
         {
+          "id": "trier",
+          "nome": "Trier Sistemas",
+          "site": "https://www.triersistemas.com.br/",
+          "formatos": ["a1-arquivo", "a3-token"],
+          "fontes": {
+            "a1-arquivo": "https://documentacao.triersistemas.com.br/diversos/configura%C3%A7%C3%A3o-de-certificado-digital"
+          }
+        },
+        {
+          "id": "prisma",
+          "nome": "Prisma / FarmaFácil",
+          "site": "https://www.prismafive.com.br/",
+          "formatos": ["a1-arquivo", "a3-token"]
+        },
+        {
+          "id": "sofista",
+          "nome": "Sofista",
+          "site": "https://www.sofista.com.br/",
+          "formatos": ["a1-arquivo", "a3-token"]
+        },
+        {
+          "id": "hiper",
+          "nome": "Hiper / FARMACIA POPULAR",
+          "site": "https://www.hiper.com.br/",
+          "formatos": ["a1-arquivo", "a3-token"]
+        },
+        {
           "id": "outro",
-          "nome": "Sistema da farmácia / dispensação",
+          "nome": "Outro sistema da farmácia / dispensação",
           "formatos": ["a1-arquivo", "a3-nuvem", "a3-token"]
         }
       ]
     },
     "outro": {
       "softwares": [
+        {
+          "id": "dietbox",
+          "nome": "Dietbox (nutricionista)",
+          "site": "https://dietbox.me/pt-BR",
+          "formatos": ["a1-arquivo", "a1-mobileid"],
+          "fontes": {
+            "a1-arquivo": "https://db-chat.hubdiet.com/hc/dietbox/pt_BR/categories/suporte",
+            "a1-mobileid": "https://novidades.dietbox.me/"
+          }
+        },
         {
           "id": "navegador",
           "nome": "Navegador / Gov.br / e-mail",
