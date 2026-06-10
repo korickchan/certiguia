@@ -683,11 +683,15 @@ def jornada(protocolo):
             cert_key,
             tipo_arm,
             (produto or {}).get("categoria", "pf"),
+            preferencia_midia=getattr(vet, "preferencia_midia", None),
         )
         cert_info = CERTIFICADORAS.get(cert_key, {})
         if not guia_instalacao:
             impl_passos = guia_implementar_certificado(
-                profissao, tipo_arm, vet.sistema_receituario or ""
+                profissao,
+                tipo_arm,
+                vet.sistema_receituario or "",
+                preferencia_midia=getattr(vet, "preferencia_midia", None),
             )
     leg = legislacao_por_profissao(profissao) if (
         (vet.finalidade or "") == "receituario" or vet.solicita_receituario
@@ -706,7 +710,7 @@ def jornada(protocolo):
         url_compra_cert = (preco_escolhido or {}).get("url") or url_certificadora(
             cert_key, tipo_arm, categoria_prod
         )
-    etapas = etapas_jornada(vet)
+    etapas = etapas_jornada(vet, tem_guia_software=bool(guia_instalacao))
     etapa_atual = normalizar_etapa_usuario(vet.etapa_usuario)
     if etapa_atual not in {e[0] for e in etapas}:
         etapa_atual = "recomendacao"

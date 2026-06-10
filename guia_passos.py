@@ -19,11 +19,15 @@ def normalizar_etapa_usuario(etapa: str | None) -> str:
     return etapa
 
 
-def etapas_jornada(vet) -> list[tuple[str, str]]:
+def etapas_jornada(vet, *, tem_guia_software: bool = False) -> list[tuple[str, str]]:
     """Etapas visíveis no fluxo conforme perfil do usuário."""
     out = list(ETAPAS_USUARIO)
     finalidade = getattr(vet, "finalidade", None) or ""
-    if finalidade != "receituario" and not getattr(vet, "solicita_receituario", False):
+    receituario = finalidade == "receituario" or getattr(vet, "solicita_receituario", False)
+    if not receituario:
+        out = [e for e in out if e[0] != "receituario"]
+    elif tem_guia_software:
+        # Guia do software já cobre configuração — receituário vira só referência legal na instalação
         out = [e for e in out if e[0] != "receituario"]
     return out
 
@@ -53,13 +57,159 @@ def _passos_compra(cert_nome, url, instrucao, tipo):
         },
         {
             "titulo": "Agendar validação",
-            "descricao": f"Após pagamento, agende videoconferência ou atendimento presencial. Tenha RG ou CNH em mãos.",
+            "descricao": "Após pagamento, agende videoconferência ou atendimento presencial. Tenha RG ou CNH em mãos.",
         },
         {
             "titulo": f"Receber o {tipo}",
             "descricao": "A1: link por e-mail para baixar .pfx/.p12. A3: token/cartão enviado ou retirada conforme orientação da certificadora.",
         },
     ]
+
+
+def _normalizar_midia(midia: str | None) -> str:
+    m = (midia or "").strip().lower().replace("_", "-")
+    if m in ("mobileid", "mobile-id"):
+        return "mobileid"
+    if m in ("nuvem", "hsm"):
+        return "nuvem"
+    if m in ("token", "cartao", "cartão", "sem-midia", "sem_midia"):
+        return m.replace("ã", "a")
+    if m == "arquivo" or not m:
+        return "arquivo"
+    return m
+
+
+def label_produto_checkout(tipo: str, categoria: str, preferencia_midia: str | None) -> str:
+    """Nome exato do produto para exibir no checkout (ex.: e-CPF A1 MobileID)."""
+    base = "e-CNPJ" if categoria == "pj" else "e-CPF"
+    t = (tipo or "A1").upper()
+    midia = _normalizar_midia(preferencia_midia)
+    if midia == "mobileid":
+        return f"{base} A1 MobileID"
+    if midia == "nuvem":
+        return f"{base} A3 nuvem (HSM)" if t == "A3" else f"{base} A1 nuvem (HSM)"
+    if midia == "token":
+        return f"{base} A3 token USB"
+    if midia == "cartao":
+        return f"{base} A3 cartão"
+    if midia == "sem-midia":
+        return f"{base} A3 sem mídia"
+    return f"{base} {t}"
+
+
+def _descricao_formato_checkout(preferencia_midia: str | None, tipo: str) -> str:
+    midia = _normalizar_midia(preferencia_midia)
+    if midia == "mobileid":
+        return "MobileID — certificado no app da certificadora no celular (não é arquivo .pfx)"
+    if midia == "nuvem":
+        return "Nuvem (HSM) — uso no PC e celular via app da certificadora"
+    if midia == "token":
+        return "A3 token USB — conecta no computador"
+    if midia == "cartao":
+        return "A3 cartão inteligente + leitora"
+    if (tipo or "A1").upper() == "A3":
+        return "Token USB ou cartão A3"
+    return "Arquivo .pfx/.p12 enviado por e-mail após emissão"
+
+
+def _instrucao_escolher_produto(cert_key: str, produto_label: str, preferencia_midia: str | None) -> str:
+    midia = _normalizar_midia(preferencia_midia)
+    dicas = {
+        "valid": {
+            "mobileid": "Na loja Valid, escolha e-CPF A1 com opção MobileID / app Valid Credentials.",
+            "arquivo": "Na loja Valid, escolha e-CPF A1 em arquivo (.pfx) — não MobileID se usa no PC.",
+            "nuvem": "Na loja Valid, escolha e-CPF A3 nuvem (HSM) ou equivalente Remote ID.",
+        },
+        "certisign": {
+            "mobileid": "Selecione e-CPF A1 MobileID (app Certisign mobileID no celular).",
+            "arquivo": "Selecione e-CPF A1 em arquivo para instalar no Windows.",
+            "nuvem": "Selecione e-CPF A3 em nuvem (HSM) para PC + celular.",
+        },
+        "soluti": {
+            "mobileid": "Na loja Soluti, escolha certificado PF A1 MobileID (app no celular).",
+            "arquivo": "Na loja Soluti, escolha certificado PF A1 em arquivo.",
+        },
+        "safeweb": {
+            "mobileid": "Checkout Safeweb: e-CPF A1 com mídia MobileID (se disponível).",
+            "arquivo": "Checkout Safeweb: e-CPF → Videoconferência → A1 mídia Arquivo.",
+            "nuvem": "Checkout Safeweb: e-CPF A3 nuvem/HSM.",
+        },
+    }
+    cert_dicas = dicas.get(cert_key, {})
+    if midia in cert_dicas:
+        return cert_dicas[midia]
+    if midia == "mobileid":
+        return f"Escolha «{produto_label}» — opção MobileID / app no celular, não arquivo .pfx."
+    if midia == "nuvem":
+        return f"Escolha «{produto_label}» — certificado em nuvem (HSM), não token USB."
+    return f"Escolha «{produto_label}» conforme recomendado acima."
+
+
+def _passo_receber_certificado(produto_label: str, preferencia_midia: str | None) -> dict:
+    midia = _normalizar_midia(preferencia_midia)
+    if midia == "mobileid":
+        return {
+            "titulo": f"Ativar {produto_label}",
+            "descricao": (
+                "Após a videoconferência, ative o certificado no app da certificadora no celular "
+                "(Valid Credentials, Certisign mobileID, Soluti, etc.). "
+                "Não espere e-mail com arquivo .pfx — o MobileID funciona só pelo app."
+            ),
+        }
+    if midia == "nuvem":
+        return {
+            "titulo": f"Ativar {produto_label}",
+            "descricao": (
+                "Após validação, configure o certificado em nuvem (HSM) no app da certificadora "
+                "no celular e/ou no computador, conforme orientação da AC."
+            ),
+        }
+    if midia in ("token", "cartao", "sem-midia"):
+        return {
+            "titulo": f"Receber o {produto_label}",
+            "descricao": "Token ou cartão enviado pelos Correios ou retirada na certificadora, conforme opção escolhida.",
+        }
+    return {
+        "titulo": f"Receber o {produto_label}",
+        "descricao": "Baixe o arquivo .pfx/.p12 do e-mail da certificadora e guarde a senha em local seguro.",
+    }
+
+
+def _passos_compra_execucao(produto_label: str, preferencia_midia: str | None) -> list[dict]:
+    """Passos após escolher o produto — evita repetir checklist do checkout."""
+    return [
+        {
+            "titulo": "Preencher dados pessoais",
+            "descricao": "CPF, nome completo (igual ao documento), e-mail, telefone e endereço. Revise antes de pagar.",
+        },
+        {
+            "titulo": "Pagamento",
+            "descricao": "Cartão, Pix ou boleto (conforme o site). Guarde comprovante e número do pedido.",
+        },
+        {
+            "titulo": "Agendar validação biométrica",
+            "descricao": "Após pagamento, agende videoconferência ou presencial. Tenha RG ou CNH em mãos.",
+        },
+        _passo_receber_certificado(produto_label, preferencia_midia),
+    ]
+
+
+def _extras_checkout_sem_duplicar(itens: list[str], extras: list[str]) -> list[str]:
+    """Remove dicas da AC que repetem produto/emissão/validade já listados."""
+    base = " ".join(itens).lower()
+    out: list[str] = []
+    for linha in extras:
+        chave = linha.lower()[:48]
+        if "validade" in chave and "1 ano" in base:
+            continue
+        if ("videoconfer" in chave or "agende" in chave) and "videoconfer" in base:
+            continue
+        if ("e-cpf" in chave or "e-cnpj" in chave) and "produto:" in base:
+            continue
+        if ("a1" in chave or "a3" in chave) and "produto:" in base and " ou " in chave:
+            continue
+        out.append(linha)
+    return out
 
 
 INSTALACAO_A1_GENERICO = [
@@ -384,38 +534,61 @@ DETALHES_COMPRA_CERTIFICADORA = {
 }
 
 
-def detalhes_compra_certificadora(cert_key: str, tipo: str, categoria: str = "pf") -> dict:
-    """Opções recomendadas no checkout após escolher a certificadora."""
-    tipo = (tipo or "A1").upper()
-    produto = "e-CNPJ" if categoria == "pj" else "e-CPF"
-    midia = "Arquivo (.pfx no e-mail)" if tipo == "A1" else "Token USB ou cartão A3"
+def detalhes_compra_certificadora(
+    cert_key: str,
+    tipo: str,
+    categoria: str = "pf",
+    preferencia_midia: str | None = None,
+) -> dict:
+    """Checklist único do checkout — sem repetir produto/emissão/validade."""
+    produto_label = label_produto_checkout(tipo, categoria, preferencia_midia)
     itens = [
-        f"Produto: {produto} {tipo}",
-        f"Emissão: Videoconferência (preferencial)",
-        f"Validade: 1 ano",
-        f"Formato: {midia}",
+        f"Produto: {produto_label}",
+        f"Formato: {_descricao_formato_checkout(preferencia_midia, tipo)}",
+        "Emissão: Videoconferência (preferencial)",
+        "Validade: 1 ano",
     ]
-    extras = DETALHES_COMPRA_CERTIFICADORA.get(cert_key, [])
+    extras_raw = DETALHES_COMPRA_CERTIFICADORA.get(cert_key, [])
+    extras = _extras_checkout_sem_duplicar(itens, list(extras_raw))
+    dica = _instrucao_escolher_produto(cert_key, produto_label, preferencia_midia)
+    if dica and dica not in extras:
+        extras.insert(0, dica)
     return {
-        "titulo": "Opções no checkout — use exatamente isto",
-        "itens": itens + list(extras),
+        "titulo": f"No checkout da certificadora — {produto_label}",
+        "itens": itens + extras,
+        "produto_label": produto_label,
     }
 
 
-def guia_certificadora(cert_key: str, tipo: str, categoria: str = "pf") -> dict:
+def guia_certificadora(
+    cert_key: str,
+    tipo: str,
+    categoria: str = "pf",
+    preferencia_midia: str | None = None,
+) -> dict:
     """Retorna passos de compra, instalação e receituário para a certificadora."""
     cert = GUIAS_CERTIFICADORA.get(cert_key, GUIAS_CERTIFICADORA["certisign"])
     tipo = tipo.upper() if tipo else "A1"
     chave_tipo = "a1" if tipo == "A1" else "a3"
+    produto_label = label_produto_checkout(tipo, categoria, preferencia_midia)
+    midia = _normalizar_midia(preferencia_midia)
+    detalhes = detalhes_compra_certificadora(cert_key, tipo, categoria, preferencia_midia)
+
     receituario_padrao = RECEITUARIO_A1_GENERICO if tipo == "A1" else RECEITUARIO_A3_GENERICO
+    receituario = cert.get(f"receituario_{chave_tipo}", receituario_padrao)
+    if midia == "mobileid":
+        receituario = None
+
     return {
         "compra": cert.get(f"compra_{chave_tipo}", cert["compra_a1"]),
+        "compra_execucao": _passos_compra_execucao(produto_label, preferencia_midia),
         "instalacao": cert.get(
             f"instalacao_{chave_tipo}",
             INSTALACAO_A1_GENERICO if tipo == "A1" else INSTALACAO_A3_GENERICO,
         ),
-        "receituario": cert.get(f"receituario_{chave_tipo}", receituario_padrao),
-        "detalhes_compra": detalhes_compra_certificadora(cert_key, tipo, categoria),
+        "receituario": receituario,
+        "detalhes_compra": detalhes,
+        "produto_label": produto_label,
         "tipo": tipo,
     }
 
@@ -487,29 +660,48 @@ def legislacao_por_profissao(profissao: str) -> dict:
     return LEGISLACAO_RECEITUARIO["geral"]
 
 
-def guia_implementar_certificado(profissao: str, tipo: str, sistema: str = "") -> list[str]:
+def guia_implementar_certificado(
+    profissao: str,
+    tipo: str,
+    sistema: str = "",
+    preferencia_midia: str | None = None,
+) -> list[str]:
     """Passos genéricos para implementar certificado no receituário/sistema."""
-    passos = [
-        "Instale o certificado no Windows (A1) ou conecte o token (A3) conforme guia da certificadora.",
-        "Abra o software ou plataforma onde você emite receitas/documentos.",
-        "Localize: Configurações → Certificado digital, Assinatura ou Segurança.",
-    ]
-    if tipo == "A1":
-        passos.append("Informe o arquivo .pfx ou selecione o certificado já instalado no Windows.")
+    midia = _normalizar_midia(preferencia_midia)
+    if midia == "mobileid":
+        passos = [
+            "Instale o app da certificadora no celular e ative o e-CPF A1 MobileID.",
+            f"Abra o software{' «' + sistema + '»' if sistema else ''} no celular.",
+            "Em Certificado ou Assinatura, escolha MobileID / app da certificadora.",
+            "Autorize com biometria ou PIN quando solicitado.",
+            "Emita documento de teste e valide o PDF no ITI.",
+        ]
+    elif midia == "nuvem":
+        passos = [
+            "Ative o certificado em nuvem (HSM) no app da certificadora (celular e/ou PC).",
+            f"Abra o software{' «' + sistema + '»' if sistema else ''}.",
+            "Selecione certificado em nuvem / HSM — não token USB nem arquivo .pfx.",
+            "Autorize no app da certificadora quando aparecer a notificação.",
+            "Emita documento de teste e valide no ITI.",
+        ]
     else:
-        passos.append("Selecione certificado A3 / token e instale o driver se ainda não fez.")
-    passos.extend([
-        "Digite a senha do certificado quando solicitado (pode salvar no sistema se confiar no dispositivo).",
-        "Emita um documento de teste (receita simples ou rascunho).",
-        "Verifique se aparecem: selo ICP-Brasil, dados do signatário e QR Code (quando aplicável).",
-        "Na seção «Validação no ITI» abaixo, envie esse PDF assinado ao validador oficial.",
-    ])
+        passos = [
+            "Instale o certificado no Windows (A1) ou conecte o token (A3) conforme guia da certificadora.",
+            f"Abra o software{' «' + sistema + '»' if sistema else ''} onde emite receitas/documentos.",
+            "Localize: Configurações → Certificado digital, Assinatura ou Segurança.",
+        ]
+        if tipo == "A1":
+            passos.append("Informe o arquivo .pfx ou selecione o certificado já instalado no Windows.")
+        else:
+            passos.append("Selecione certificado A3 / token e instale o driver se ainda não fez.")
+        passos.extend([
+            "Digite a senha do certificado quando solicitado.",
+            "Emita um documento de teste e valide no ITI.",
+        ])
     if profissao == "veterinario":
         passos.append("Para controlados: confirme numeração sequencial conforme Portaria MAPA 837/2025 no seu sistema.")
     if profissao == "medico":
         passos.append("Para controlados: verifique integração SNCR quando seu sistema/plataforma disponibilizar.")
-    if sistema:
-        passos.insert(3, f"No sistema «{sistema}», siga a documentação oficial de certificado digital.")
     return passos
 
 

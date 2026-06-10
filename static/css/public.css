@@ -443,6 +443,21 @@
     border: 1px solid #99f6e4;
 }
 .compra-cta-box p { margin: 0 0 1rem; }
+.compra-produto-destaque {
+    margin: 0 0 1rem;
+    padding: 0.75rem 1rem;
+    background: #f0fdf4;
+    border-radius: 8px;
+    border-left: 4px solid var(--pub-primary, #0d9488);
+    font-size: 0.95rem;
+}
+.compra-subtitulo {
+    font-size: 1rem;
+    margin: 1.25rem 0 0.75rem;
+    color: var(--pub-muted, #64748b);
+}
+.passos-lista--compact li { margin-bottom: 0.75rem; }
+.legislacao-box--inline { margin-top: 1.5rem; }
 .guia-instalacao-md--inline {
     margin-top: 1.25rem;
     padding-top: 1.25rem;

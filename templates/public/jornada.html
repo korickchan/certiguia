@@ -191,11 +191,15 @@
 <section class="public-card jornada-step" id="jornada-step-compra" data-step="compra">
     <h2 class="jornada-step-title"><span class="jornada-step-badge">3</span> Comprar na {{ cert_info.nome }}</h2>
 
+    <p class="compra-produto-destaque">
+        Você precisa de: <strong>{{ guia.produto_label }}</strong>
+        · {{ formato_instalacao_rotulo }}
+    </p>
+
     {% if url_compra_cert %}
     <div class="compra-cta-box">
-        <p>Abra o site oficial da certificadora para concluir a compra. Use as opções recomendadas abaixo no checkout.</p>
         <a href="{{ url_compra_cert }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
-            Comprar em {{ cert_info.nome }} ↗
+            Abrir site da {{ cert_info.nome }} ↗
         </a>
     </div>
     {% endif %}
@@ -211,8 +215,9 @@
     </div>
     {% endif %}
 
-    <ol class="passos-lista">
-        {% for passo in guia.compra %}
+    <h3 class="compra-subtitulo">Depois de escolher o produto no site</h3>
+    <ol class="passos-lista passos-lista--compact">
+        {% for passo in guia.compra_execucao %}
         <li><strong>{{ passo.titulo }}</strong><p>{{ passo.descricao }}</p></li>
         {% endfor %}
     </ol>
@@ -310,24 +315,35 @@
     </ol>
     {% endif %}
 
+    {% if mostrar_receituario and legislacao and guia_instalacao %}
+    <div class="legislacao-box legislacao-box--inline">
+        <h3>Referência legal — {{ legislacao.titulo }}</h3>
+        <ul class="leg-lista">
+            {% for item in legislacao.itens %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% if legislacao.links %}
+        <ul class="leg-links">
+            {% for titulo, url in legislacao.links %}
+            <li><a href="{{ url }}" target="_blank" rel="noopener noreferrer">{{ titulo }}</a></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% endif %}
+
     <div class="jornada-step-nav">
-        {% if mostrar_receituario %}
-        <form method="post" action="{{ url_for('atualizar_etapa_publico', protocolo=vet.protocolo) }}" class="jornada-continuar-form">
-            <input type="hidden" name="etapa_usuario" value="receituario">
-            <button type="submit" class="btn btn-primary">Continuar para receituário →</button>
-        </form>
-        {% else %}
         <form method="post" action="{{ url_for('atualizar_etapa_publico', protocolo=vet.protocolo) }}" class="jornada-continuar-form">
             <input type="hidden" name="etapa_usuario" value="concluido">
             <button type="submit" class="btn btn-primary">Concluir guia ✓</button>
         </form>
-        {% endif %}
     </div>
     {% endif %}
 </section>
 
-{% if mostrar_receituario %}
-{# ── 6. Receituário + legislação ── #}
+{% if mostrar_receituario and guia.receituario %}
+{# Receituário genérico — só quando não há guia de software (ex.: A1 arquivo sem MD) #}
 <section class="public-card jornada-step" id="jornada-step-receituario" data-step="receituario">
     <h2 class="jornada-step-title"><span class="jornada-step-badge">6</span> Receituário digital</h2>
     <ol class="passos-lista">
