@@ -676,7 +676,11 @@ def jornada(protocolo):
     )
     guia_instalacao = guia_instalacao_vet(vet) if cert_escolhida else None
     if cert_escolhida:
-        guia = guia_certificadora(cert_key, tipo_arm, produto.categoria if produto else "pf")
+        guia = guia_certificadora(
+            cert_key,
+            tipo_arm,
+            (produto or {}).get("categoria", "pf"),
+        )
         cert_info = CERTIFICADORAS.get(cert_key, {})
         if not guia_instalacao:
             impl_passos = guia_implementar_certificado(
