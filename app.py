@@ -89,6 +89,12 @@ from guia_passos import (
     guia_implementar_certificado,
     legislacao_por_profissao,
 )
+from instalacao_guia import (
+    chave_formato_instalacao,
+    guia_instalacao_vet,
+    listar_softwares,
+    rotulo_formato_instalacao,
+)
 from modelo_guia import gerar_html_guia
 from pix import gerar_pix_copia_cola, qr_code_base64
 from recomendacao import FINALIDADES, PRODUTOS, PROFISSOES, produtos_comparacao, recomendar, _cnpj_informado, produto_id_efetivo, tipo_certificado_efetivo
@@ -195,6 +201,7 @@ class Veterinario(db.Model):
     preferencia_midia = db.Column(db.String(20))
     preferencia_emissao = db.Column(db.String(30), default="videoconferencia")
     preferencia_validade_anos = db.Column(db.Integer, default=1)
+    software_instalacao = db.Column(db.String(50))
 
     @staticmethod
     def gerar_protocolo():
@@ -341,6 +348,7 @@ def _migrate_db():
         "preferencia_midia": "VARCHAR(20)",
         "preferencia_emissao": "VARCHAR(30) DEFAULT 'videoconferencia'",
         "preferencia_validade_anos": "INTEGER DEFAULT 1",
+        "software_instalacao": "VARCHAR(50)",
     }
     for coluna, typedef in novas.items():
         if coluna not in existentes:
@@ -659,12 +667,21 @@ def jornada(protocolo):
     guia = None
     cert_info = {}
     impl_passos = []
+    formato_instalacao = chave_formato_instalacao(vet) if cert_escolhida else None
+    formato_instalacao_rotulo = (
+        rotulo_formato_instalacao(formato_instalacao) if formato_instalacao else ""
+    )
+    softwares_instalacao = (
+        listar_softwares(profissao, formato_instalacao) if formato_instalacao else []
+    )
+    guia_instalacao = guia_instalacao_vet(vet) if cert_escolhida else None
     if cert_escolhida:
         guia = guia_certificadora(cert_key, tipo_arm, produto.categoria if produto else "pf")
         cert_info = CERTIFICADORAS.get(cert_key, {})
-        impl_passos = guia_implementar_certificado(
-            profissao, tipo_arm, vet.sistema_receituario or ""
-        )
+        if not guia_instalacao:
+            impl_passos = guia_implementar_certificado(
+                profissao, tipo_arm, vet.sistema_receituario or ""
+            )
     leg = legislacao_por_profissao(profissao)
     precos = vet.precos_lista()
     produto_atual = produto_id_efetivo(vet)
@@ -704,6 +721,10 @@ def jornada(protocolo):
         catalogo=catalogo,
         finalidades=FINALIDADES,
         uso_celular=uso_formato_celular(vet),
+        formato_instalacao=formato_instalacao,
+        formato_instalacao_rotulo=formato_instalacao_rotulo,
+        softwares_instalacao=softwares_instalacao,
+        guia_instalacao=guia_instalacao,
     )
 
 
@@ -740,14 +761,42 @@ def escolher_certificadora(protocolo):
         vet.certificadora_escolhida = nova
         vet.certificadora = nova
         if vet.etapa_usuario in ("recomendacao", "precos", None, ""):
-            vet.etapa_usuario = "compra"
+            vet.etapa_usuario = "software"
+        vet.software_instalacao = None
         db.session.commit()
         flash(
             f"Certificadora definida: {CERTIFICADORAS[nova]['nome']}. "
-            "Veja abaixo o passo a passo personalizado.",
+            "Escolha abaixo o software onde vai usar o certificado.",
             "success",
         )
-    return redirect(url_for("jornada", protocolo=protocolo))
+    return redirect(url_for("jornada", protocolo=protocolo, instalacao=1))
+
+
+@app.route("/p/<protocolo>/software", methods=["POST"])
+def escolher_software(protocolo):
+    vet = Veterinario.query.filter_by(protocolo=protocolo.upper()).first_or_404()
+    if not vet.certificadora_escolhida:
+        flash("Escolha uma certificadora antes de selecionar o software.", "warning")
+        return redirect(url_for("jornada", protocolo=protocolo))
+
+    software_id = request.form.get("software_instalacao", "").strip()
+    formato = chave_formato_instalacao(vet)
+    validos = {s["id"] for s in listar_softwares(vet.profissao or "outro", formato)}
+    if software_id not in validos:
+        flash("Software inválido para sua profissão e tipo de certificado.", "error")
+        return redirect(url_for("jornada", protocolo=protocolo, instalacao=1))
+
+    vet.software_instalacao = software_id
+    sw_nome = next(
+        (s["nome"] for s in listar_softwares(vet.profissao or "outro", formato) if s["id"] == software_id),
+        software_id,
+    )
+    vet.sistema_receituario = sw_nome
+    if vet.etapa_usuario_index() < 4:
+        vet.etapa_usuario = "instalacao"
+    db.session.commit()
+    flash(f"Guia de instalação carregado para {sw_nome}.", "success")
+    return redirect(url_for("jornada", protocolo=protocolo, instalacao=1))
 
 
 @app.route("/p/<protocolo>/guia-implementacao")

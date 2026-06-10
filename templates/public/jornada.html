@@ -169,6 +169,78 @@
     </ol>
 </section>
 
+<section class="public-card instalacao-software-section" id="jornada-etapa-software">
+    <h2>Onde você vai usar o certificado?</h2>
+    <p class="hint">
+        {{ profissao_info.nome }} · <strong>{{ formato_instalacao_rotulo }}</strong>
+        {% if produto %} · {{ produto.nome }}{% endif %}
+    </p>
+
+    {% if not vet.software_instalacao %}
+    <p class="text-muted">Escolha o programa principal. Mostramos como configurar o certificado neste software para o formato acima.</p>
+    <form method="post" action="{{ url_for('escolher_software', protocolo=vet.protocolo) }}" class="software-picker">
+        <div class="software-grid">
+            {% for sw in softwares_instalacao %}
+            <label class="software-card wizard-opcao">
+                <input type="radio" name="software_instalacao" value="{{ sw.id }}" required>
+                <h4>{{ sw.nome }}</h4>
+                <p class="hint">Guia para {{ formato_instalacao_rotulo }}</p>
+            </label>
+            {% else %}
+            <p class="aviso-compatibilidade">Nenhum software cadastrado para esta combinação.</p>
+            {% endfor %}
+        </div>
+        {% if softwares_instalacao %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Ver guia de instalação</button>
+        </div>
+        {% endif %}
+    </form>
+    {% else %}
+    <p class="software-escolhido">
+        Software: <strong>{{ guia_instalacao.software_nome if guia_instalacao else vet.software_instalacao }}</strong>
+        · <a href="#trocar-software" class="link-muted" onclick="document.getElementById('painel-trocar-software').hidden=false;return false;">Trocar software</a>
+    </p>
+    <div id="painel-trocar-software" class="software-trocar-panel" hidden>
+        <form method="post" action="{{ url_for('escolher_software', protocolo=vet.protocolo) }}" class="software-picker">
+            <div class="software-grid software-grid--compact">
+                {% for sw in softwares_instalacao %}
+                <label class="software-card wizard-opcao {% if sw.id == vet.software_instalacao %}selected{% endif %}">
+                    <input type="radio" name="software_instalacao" value="{{ sw.id }}"
+                           {% if sw.id == vet.software_instalacao %}checked{% endif %}>
+                    <span>{{ sw.nome }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn btn-sm btn-outline">Atualizar guia</button>
+        </form>
+    </div>
+    {% endif %}
+</section>
+
+{% if guia_instalacao %}
+<section class="public-card guia-instalacao-md" id="jornada-etapa-instalacao">
+    <h2>Instalação — {{ guia_instalacao.software_nome }}</h2>
+    <p class="hint">
+        {{ formato_instalacao_rotulo }}
+        {% if not guia_instalacao.especifico %} · guia genérico (sem passos dedicados a este software ainda){% endif %}
+    </p>
+    <div class="guia-md-body">
+        {{ guia_instalacao.html|safe }}
+    </div>
+    <p class="hint fonte-guia">Fonte: {{ guia_instalacao.arquivo }}</p>
+</section>
+{% elif vet.software_instalacao and impl_passos %}
+<section class="public-card">
+    <h2>Instalação e uso</h2>
+    <ol class="passos-lista">
+        {% for passo in impl_passos %}
+        <li>{{ passo }}</li>
+        {% endfor %}
+    </ol>
+</section>
+{% endif %}
+
 {% if vet.solicita_receituario or vet.finalidade == 'receituario' %}
 <section class="public-card">
     <h2>Receituário digital</h2>
@@ -179,15 +251,6 @@
     </ol>
 </section>
 {% endif %}
-
-<section class="public-card">
-    <h2>Instalação e uso</h2>
-    <ol class="passos-lista">
-        {% for passo in impl_passos %}
-        <li>{{ passo }}</li>
-        {% endfor %}
-    </ol>
-</section>
 
 {% if legislacao %}
 <section class="public-card">
@@ -232,6 +295,10 @@
     }
     btn.addEventListener('click', mostrarPrecos);
     if (window.location.hash === '#precos') mostrarPrecos();
+    if (window.location.search.indexOf('instalacao=1') !== -1) {
+        const el = document.getElementById('jornada-etapa-software');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 })();
 </script>
 {% endblock %}

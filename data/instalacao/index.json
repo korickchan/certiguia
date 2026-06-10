@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "formatos": {
+    "a1-arquivo": {
+      "rotulo": "A1 em arquivo (.pfx) no computador",
+      "armazenamento": "A1",
+      "midia": "arquivo"
+    },
+    "a1-mobileid": {
+      "rotulo": "A1 MobileID (app no celular)",
+      "armazenamento": "A1",
+      "midia": "mobileid"
+    },
+    "a1-nuvem": {
+      "rotulo": "A1 em nuvem (HSM)",
+      "armazenamento": "A1",
+      "midia": "nuvem"
+    },
+    "a3-nuvem": {
+      "rotulo": "A3 em nuvem (HSM) — PC e celular",
+      "armazenamento": "A3",
+      "midia": "nuvem"
+    },
+    "a3-token": {
+      "rotulo": "A3 token USB",
+      "armazenamento": "A3",
+      "midia": "token"
+    },
+    "a3-cartao": {
+      "rotulo": "A3 cartão inteligente",
+      "armazenamento": "A3",
+      "midia": "cartao"
+    },
+    "a3-sem-midia": {
+      "rotulo": "A3 sem mídia física (renovação)",
+      "armazenamento": "A3",
+      "midia": "sem_midia"
+    }
+  },
+  "profissoes": {
+    "advogado": {
+      "softwares": [
+        {
+          "id": "projuris",
+          "nome": "Projuris",
+          "formatos": ["a1-arquivo", "a3-nuvem", "a3-token"]
+        },
+        {
+          "id": "astrea",
+          "nome": "Astrea (Aurum)",
+          "formatos": ["a1-arquivo", "a3-nuvem"]
+        },
+        {
+          "id": "cpj",
+          "nome": "CPJ-3C",
+          "formatos": ["a1-arquivo", "a3-token"]
+        },
+        {
+          "id": "outro",
+          "nome": "Outro software jurídico",
+          "formatos": ["a1-arquivo", "a1-mobileid", "a3-nuvem", "a3-token", "a3-cartao"]
+        }
+      ]
+    },
+    "veterinario": {
+      "softwares": [
+        {
+          "id": "prescreve",
+          "nome": "Prescreve / VetPrescriber",
+          "formatos": ["a1-arquivo", "a3-nuvem", "a1-mobileid"]
+        },
+        {
+          "id": "vetsoft",
+          "nome": "VetSoft",
+          "formatos": ["a1-arquivo", "a3-token"]
+        },
+        {
+          "id": "outro",
+          "nome": "Outro sistema veterinário",
+          "formatos": ["a1-arquivo", "a1-mobileid", "a3-nuvem", "a3-token"]
+        }
+      ]
+    },
+    "medico": {
+      "softwares": [
+        {
+          "id": "memed",
+          "nome": "Memed",
+          "formatos": ["a1-arquivo", "a3-nuvem", "a1-mobileid"]
+        },
+        {
+          "id": "iclinic",
+          "nome": "iClinic",
+          "formatos": ["a1-arquivo", "a3-nuvem"]
+        },
+        {
+          "id": "outro",
+          "nome": "Outro prontuário / receituário",
+          "formatos": ["a1-arquivo", "a1-mobileid", "a3-nuvem", "a3-token"]
+        }
+      ]
+    },
+    "dentista": {
+      "softwares": [
+        {
+          "id": "simples_dental",
+          "nome": "Simples Dental",
+          "formatos": ["a1-arquivo", "a3-nuvem"]
+        },
+        {
+          "id": "outro",
+          "nome": "Outro software odontológico",
+          "formatos": ["a1-arquivo", "a3-nuvem", "a3-token"]
+        }
+      ]
+    },
+    "contador": {
+      "softwares": [
+        {
+          "id": "dominio",
+          "nome": "Domínio / Thomson Reuters",
+          "formatos": ["a1-arquivo", "a3-token", "a3-cartao"]
+        },
+        {
+          "id": "outro",
+          "nome": "Outro sistema contábil/fiscal",
+          "formatos": ["a1-arquivo", "a3-nuvem", "a3-token", "a3-cartao"]
+        }
+      ]
+    },
+    "farmaceutico": {
+      "softwares": [
+        {
+          "id": "outro",
+          "nome": "Sistema da farmácia / dispensação",
+          "formatos": ["a1-arquivo", "a3-nuvem", "a3-token"]
+        }
+      ]
+    },
+    "outro": {
+      "softwares": [
+        {
+          "id": "navegador",
+          "nome": "Navegador / Gov.br / e-mail",
+          "formatos": ["a1-arquivo", "a1-mobileid", "a3-nuvem", "a3-token", "a3-cartao"]
+        },
+        {
+          "id": "outro",
+          "nome": "Outro programa",
+          "formatos": ["a1-arquivo", "a1-mobileid", "a3-nuvem", "a3-token", "a3-cartao", "a3-sem-midia"]
+        }
+      ]
+    }
+  }
+}

@@ -4,6 +4,7 @@ ETAPAS_USUARIO = [
     ("recomendacao", "Recomendação"),
     ("precos", "Preços"),
     ("compra", "Compra"),
+    ("software", "Software"),
     ("instalacao", "Instalação"),
     ("receituario", "Receituário"),
     ("validacao", "Validação ITI"),
