@@ -2,14 +2,30 @@
 
 ETAPAS_USUARIO = [
     ("recomendacao", "Recomendação"),
-    ("precos", "Preços"),
+    ("precos", "Certificadora"),
     ("compra", "Compra"),
-    ("software", "Software"),
+    ("validacao", "Validação ITI"),
     ("instalacao", "Instalação"),
     ("receituario", "Receituário"),
-    ("validacao", "Validação ITI"),
     ("concluido", "Concluído"),
 ]
+
+
+def normalizar_etapa_usuario(etapa: str | None) -> str:
+    """Compatibilidade com etapas antigas."""
+    etapa = (etapa or "recomendacao").strip()
+    if etapa == "software":
+        return "instalacao"
+    return etapa
+
+
+def etapas_jornada(vet) -> list[tuple[str, str]]:
+    """Etapas visíveis no fluxo conforme perfil do usuário."""
+    out = list(ETAPAS_USUARIO)
+    finalidade = getattr(vet, "finalidade", None) or ""
+    if finalidade != "receituario" and not getattr(vet, "solicita_receituario", False):
+        out = [e for e in out if e[0] != "receituario"]
+    return out
 
 # ── Guias por certificadora ───────────────────────────────────────────────────
 

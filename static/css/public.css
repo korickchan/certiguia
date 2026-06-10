@@ -359,6 +359,113 @@
 .obs-list--compact { margin-top: 0.75rem; }
 .jornada-header--compact h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
 .progress-tracker--compact { margin: 1.5rem 0; }
+.jornada-fluxo-tracker {
+    position: sticky;
+    top: 0.5rem;
+    z-index: 20;
+    background: var(--pub-bg, #f1f5f9);
+    padding: 0.5rem 0 0.75rem;
+    margin-bottom: 1rem;
+}
+.jornada-fluxo-step-btn {
+    cursor: pointer;
+    font: inherit;
+    width: 100%;
+}
+.jornada-fluxo-step-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+}
+.jornada-step {
+    scroll-margin-top: 5.5rem;
+}
+.jornada-step--inicial {
+    display: none;
+}
+.jornada-step-title {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+.jornada-step-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    background: var(--pub-primary, #0d9488);
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+.jornada-step-nav {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--pub-border, #e2e8f0);
+}
+.jornada-continuar-form { margin: 0; }
+.cert-resumo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1.25rem;
+    border: 2px solid var(--pub-primary, #0d9488);
+    border-radius: var(--pub-radius, 12px);
+    background: linear-gradient(135deg, #ecfdf5, #fff);
+    margin-bottom: 1rem;
+}
+.cert-resumo h3 { margin: 0.25rem 0; font-size: 1.125rem; }
+.cert-resumo-rotulo {
+    margin: 0;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--pub-muted, #64748b);
+    font-weight: 700;
+}
+.cert-resumo-preco { margin: 0.35rem 0; }
+.cert-resumo-acoes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: min(100%, 260px);
+}
+.compra-cta-box {
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    border-radius: var(--pub-radius, 12px);
+    background: #f0fdf4;
+    border: 1px solid #99f6e4;
+}
+.compra-cta-box p { margin: 0 0 1rem; }
+.guia-instalacao-md--inline {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--pub-border, #e2e8f0);
+}
+.legislacao-box {
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid var(--pub-border, #e2e8f0);
+}
+.legislacao-box h3 { font-size: 1rem; margin: 0 0 0.75rem; }
+.leg-links { margin: 0.75rem 0 0; padding-left: 1.15rem; }
+.link-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--pub-primary, #0d9488);
+    text-decoration: underline;
+    cursor: pointer;
+    font: inherit;
+}
 details.preferencias-precos summary {
     cursor: pointer;
     font-weight: 600;

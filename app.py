@@ -85,6 +85,8 @@ from certificado import (
 )
 from guia_passos import (
     ETAPAS_USUARIO,
+    etapas_jornada,
+    normalizar_etapa_usuario,
     guia_certificadora,
     guia_implementar_certificado,
     legislacao_por_profissao,
@@ -260,9 +262,10 @@ class Veterinario(db.Model):
         return None
 
     def etapa_usuario_index(self):
-        keys = [e[0] for e in ETAPAS_USUARIO]
+        keys = [e[0] for e in etapas_jornada(self)]
+        etapa = normalizar_etapa_usuario(self.etapa_usuario)
         try:
-            return keys.index(self.etapa_usuario or "recomendacao")
+            return keys.index(etapa)
         except ValueError:
             return 0
 
@@ -686,7 +689,9 @@ def jornada(protocolo):
             impl_passos = guia_implementar_certificado(
                 profissao, tipo_arm, vet.sistema_receituario or ""
             )
-    leg = legislacao_por_profissao(profissao)
+    leg = legislacao_por_profissao(profissao) if (
+        (vet.finalidade or "") == "receituario" or vet.solicita_receituario
+    ) else None
     precos = vet.precos_lista()
     produto_atual = produto_id_efetivo(vet)
     precos_produto_id = precos[0].get("produto_id") if precos else None
@@ -694,6 +699,17 @@ def jornada(protocolo):
     if precos_desatualizados or not precos:
         precos = _garantir_precos_catalogo(vet)
     melhor = vet.melhor_preco() if precos else None
+    preco_escolhido = next((p for p in precos if p.get("certificadora") == cert_key), None) if cert_key else None
+    categoria_prod = (produto or {}).get("categoria", "pf")
+    url_compra_cert = None
+    if cert_key:
+        url_compra_cert = (preco_escolhido or {}).get("url") or url_certificadora(
+            cert_key, tipo_arm, categoria_prod
+        )
+    etapas = etapas_jornada(vet)
+    etapa_atual = normalizar_etapa_usuario(vet.etapa_usuario)
+    if etapa_atual not in {e[0] for e in etapas}:
+        etapa_atual = "recomendacao"
     filtro_precos = filtros_de_vet(vet)
     catalogo = info_catalogo()
 
@@ -717,7 +733,12 @@ def jornada(protocolo):
         cert_escolhida=cert_escolhida,
         cert_info=cert_info,
         tipo_arm=tipo_arm,
-        etapas=ETAPAS_USUARIO,
+        etapas=etapas,
+        etapa_atual=etapa_atual,
+        etapa_url=request.args.get("etapa"),
+        preco_escolhido=preco_escolhido,
+        url_compra_cert=url_compra_cert,
+        mostrar_receituario=(vet.finalidade or "") == "receituario" or vet.solicita_receituario,
         certificadoras=certificadoras_ativas(),
         playwright_ok=playwright_disponivel(),
         precos_ok=request.args.get("precos_ok") == "1",
@@ -764,16 +785,16 @@ def escolher_certificadora(protocolo):
     if nova in certificadoras_ativas():
         vet.certificadora_escolhida = nova
         vet.certificadora = nova
-        if vet.etapa_usuario in ("recomendacao", "precos", None, ""):
-            vet.etapa_usuario = "software"
+        if normalizar_etapa_usuario(vet.etapa_usuario) in ("recomendacao", "precos", ""):
+            vet.etapa_usuario = "compra"
         vet.software_instalacao = None
         db.session.commit()
         flash(
             f"Certificadora definida: {CERTIFICADORAS[nova]['nome']}. "
-            "Escolha abaixo o software onde vai usar o certificado.",
+            "Siga o guia de compra abaixo — o link do site continua disponível.",
             "success",
         )
-    return redirect(url_for("jornada", protocolo=protocolo, instalacao=1))
+    return redirect(url_for("jornada", protocolo=protocolo, etapa="compra"))
 
 
 @app.route("/p/<protocolo>/software", methods=["POST"])
@@ -788,7 +809,7 @@ def escolher_software(protocolo):
     validos = {s["id"] for s in listar_softwares(vet.profissao or "outro", formato)}
     if software_id not in validos:
         flash("Software inválido para sua profissão e tipo de certificado.", "error")
-        return redirect(url_for("jornada", protocolo=protocolo, instalacao=1))
+        return redirect(url_for("jornada", protocolo=protocolo, etapa="instalacao"))
 
     vet.software_instalacao = software_id
     sw_nome = next(
@@ -796,11 +817,12 @@ def escolher_software(protocolo):
         software_id,
     )
     vet.sistema_receituario = sw_nome
-    if vet.etapa_usuario_index() < 4:
+    keys = [e[0] for e in etapas_jornada(vet)]
+    if normalizar_etapa_usuario(vet.etapa_usuario) in keys[: keys.index("instalacao")]:
         vet.etapa_usuario = "instalacao"
     db.session.commit()
     flash(f"Guia de instalação carregado para {sw_nome}.", "success")
-    return redirect(url_for("jornada", protocolo=protocolo, instalacao=1))
+    return redirect(url_for("jornada", protocolo=protocolo, etapa="instalacao"))
 
 
 @app.route("/p/<protocolo>/guia-implementacao")
@@ -881,8 +903,8 @@ def atualizar_precos_publico(protocolo):
 @app.route("/p/<protocolo>/etapa", methods=["POST"])
 def atualizar_etapa_publico(protocolo):
     vet = Veterinario.query.filter_by(protocolo=protocolo.upper()).first_or_404()
-    nova = request.form.get("etapa_usuario", vet.etapa_usuario)
-    keys = [e[0] for e in ETAPAS_USUARIO]
+    nova = normalizar_etapa_usuario(request.form.get("etapa_usuario", vet.etapa_usuario))
+    keys = [e[0] for e in etapas_jornada(vet)]
     if nova in keys:
         if not vet.certificadora_escolhida and keys.index(nova) > keys.index("precos"):
             flash("Escolha uma certificadora antes de avançar para as próximas etapas.", "warning")
